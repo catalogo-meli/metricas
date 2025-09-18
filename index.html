@@ -56,7 +56,7 @@
       </div>
       <nav id="nav-menu" class="flex-1 space-y-2">
         <a href="#resumen" class="sidebar-link active flex items-center p-3 rounded-lg">Resumen General</a>
-        <a href="#productividad" class="sidebar-link flex items-center p-3 rounded-lg">Productividad por Usuario</a>
+        <a href="#detalle" class="sidebar-link flex items-center p-3 rounded-lg">Detalle por Usuario</a>
         <a href="#lideres" class="sidebar-link flex items-center p-3 rounded-lg">Comparativa de Líderes</a>
         <a href="#evolucion" class="sidebar-link flex items-center p-3 rounded-lg">Evolución Semanal</a>
         <a href="#ubicacion" class="sidebar-link flex items-center p-3 rounded-lg">Análisis por Ubicación</a>
@@ -173,10 +173,10 @@
             </div>
           </section>
 
-          <!-- Productividad por Usuario -->
-          <section id="productividad" class="page-section hidden">
+          <!-- Detalle por Usuario -->
+          <section id="detalle" class="page-section hidden">
             <div class="kpi-card mb-6">
-              <h3 class="text-xl font-semibold mb-4">Promedio Diario por Usuario</h3>
+              <h3 class="text-xl font-semibold mb-4">Promedio Diario y % Efectividad por Usuario</h3>
               <div class="chart-container"><canvas id="tasksByUserChart"></canvas></div>
             </div>
             <div class="kpi-card">
@@ -437,9 +437,6 @@
     setOptions(document.getElementById('filter-lider'), lideres, 'Todos los líderes');
     setOptions(document.getElementById('filter-q'), qs, 'Todos los trimestres');
 
-    // detalle usuario
-    setOptions(document.getElementById('user-detail-select'), usuarios, 'Elegí un usuario');
-
     // Flujo
     const flujoSelEl = document.getElementById('filter-flujo');
     flujoSelEl.innerHTML = `
@@ -466,10 +463,10 @@
         document.querySelector(target).classList.remove('hidden');
         links.forEach(x=>x.classList.remove('active')); a.classList.add('active');
         document.getElementById('page-title').textContent=a.textContent;
-        if(target==='#productividad') renderTasksByUser();
-        if(target==='#lideres')       renderTasksByLeader();
-        if(target==='#evolucion')     renderWeeklyEvolution();
-        if(target==='#ubicacion')     renderByLocation();
+        if(target==='#detalle')      renderTasksByUser();
+        if(target==='#lideres')      renderTasksByLeader();
+        if(target==='#evolucion')    renderWeeklyEvolution();
+        if(target==='#ubicacion')    renderByLocation();
       });
     });
 
@@ -514,6 +511,15 @@
     });
   }
 
+  function updateUserDetailSelect(){
+    const select = document.getElementById('user-detail-select');
+    const prev = select.value;
+    const usuarios = uniqueSorted(currentData.map(r=>r.usuario));
+    setOptions(select, usuarios, 'Elegí un usuario');
+    if(prev && usuarios.includes(prev)) select.value = prev;
+    if(!select.value && usuarios.length) select.value = usuarios[0];
+  }
+
   function applyFilters(){
     const f = {
       mes:document.getElementById('filter-mes').value,
@@ -532,6 +538,7 @@
       (!f.q     || r.q === f.q)
     );
 
+    updateUserDetailSelect();      // <-- lista de usuarios según filtros
     updateKPIs();
     renderNineBox();
     renderDemandPie();
@@ -547,21 +554,14 @@
   function updateKPIs(){
     const f = flujoSel();
 
-    // Total (según flujo)
     const totalFlujo = currentData.reduce((s,r)=> s + tareasFlujo(r,f), 0);
-    // IDs trabajados (no está por flujo en origen -> suma simple)
     const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
-    // Usuarios activos
     const usuarios = new Set(currentData.map(r=>r.usuario)).size;
-    // Correcciones
     const correcc = currentData.reduce((s,r)=> s + (r.correcciones_auditadas||0), 0);
-    // Promedio Diario (según flujo)
     const prom = promedioDiario(currentData, f);
-    // Efectividad (promedio simple filas con dato)
     const vals = currentData.map(r=>r.efectividad).filter(v => v!=='' && v!==null && v!==undefined);
     const ef = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
 
-    // Colores por umbral
     const promEl = document.getElementById('kpi-promedio-diario');
     const efEl   = document.getElementById('kpi-efectividad-prom');
 
@@ -577,7 +577,6 @@
                  : 'text-green-600';
     setColor(efEl, efColor);
 
-    // Render valores
     document.getElementById('kpi-total-tareas').textContent     = fmt.int(totalFlujo);
     document.getElementById('kpi-ids').textContent              = fmt.int(idsTrab);
     document.getElementById('kpi-usuarios').textContent         = fmt.int(usuarios);
@@ -596,7 +595,6 @@
   function renderNineBox(){
     const f = flujoSel();
 
-    // métricas por usuario
     const map = new Map(); // user -> {num,den, effSum, effN}
     currentData.forEach(r=>{
       const u=r.usuario;
@@ -607,8 +605,8 @@
     });
 
     const users = Array.from(map.entries()).map(([u,o])=>{
-      const prom = o.den? o.num/o.den : null;         // null si falta den
-      const eff  = o.effN? o.effSum/o.effN : null;    // null si no hubo dato
+      const prom = o.den? o.num/o.den : null;
+      const eff  = o.effN? o.effSum/o.effN : null;
       return {u, prom, eff};
     });
 
@@ -621,7 +619,7 @@
     const buckets = {};
     rows.forEach(r=>cols.forEach(c=>{ buckets[`${r}-${c}`]=[]; }));
 
-    const missing = []; // usuarios con algún dato faltante
+    const missing = [];
     users.forEach(x=>{
       if(x.prom===null || x.eff===null){
         missing.push(x);
@@ -630,10 +628,8 @@
       }
     });
 
-    // grid 4x4: headers + 9 cells
     const grid = document.getElementById('ninebox-grid');
     const label = s=> s.charAt(0).toUpperCase()+s.slice(1);
-
     const cellClass = (r,c)=>{
       if(r==='alta' && c==='alta') return 'nb-green';
       if(r==='alta' && c==='media') return 'nb-yellow';
@@ -645,7 +641,6 @@
       if(r==='baja' && c==='media') return 'nb-orange';
       return 'nb-red';
     };
-
     const hdrCell = (txt)=>`<div class="nb-cell nb-hdr" style="height:42px">${txt}</div>`;
 
     let html = '';
@@ -662,7 +657,6 @@
     });
     grid.innerHTML = html;
 
-    // Detalle de faltantes
     const missDiv = document.getElementById('ninebox-missing');
     if(missing.length){
       const lines = missing
@@ -703,34 +697,64 @@
       `Total Demanda: ${fmt.int(demand)} — Total Enhancement: ${fmt.int(enh)}`;
   }
 
-  /* ---------- Productividad por usuario ---------- */
+  /* ---------- Detalle por usuario: Promedio + Efectividad ---------- */
   function renderTasksByUser(){
     const f = flujoSel();
-    // Promedio diario por usuario
-    const byUser = new Map();
+
+    // Promedio diario + efectividad por usuario
+    const agg = new Map(); // user -> {num,den, effNum, effDen}
     currentData.forEach(r=>{
-      const u=r.usuario; const o=byUser.get(u)||{num:0,den:0};
-      o.num += tareasFlujo(r,f); o.den += (r.dias_activos||0); byUser.set(u,o);
-    });
-    const arr = Array.from(byUser.entries()).map(([u,o])=>[u, o.den? o.num/o.den : 0]).sort((a,b)=>b[1]-a[1]);
-    createOrUpdateChart('tasksByUserChart',{
-      type:'bar',
-      data:{ labels:arr.map(x=>x[0]), datasets:[{label:'Prom. diario', data: arr.map(x=>x[1])}] },
-      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{x:{ticks:{autoSkip:false,maxRotation:60,minRotation:45}}, y:{ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) }}}}
+      const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
+      o.num += tareasFlujo(r,f);
+      o.den += (r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
+        const w=(r.correcciones_auditadas||0)||1;
+        o.effNum += r.efectividad*w; o.effDen += w;
+      }
+      agg.set(u,o);
     });
 
-    // Detalle de usuario
-    const select=document.getElementById('user-detail-select');
-    if(!select.value && arr.length) select.value=arr[0][0];
+    const arr = Array.from(agg.entries()).map(([u,o])=>({
+      user:u,
+      prom: o.den? o.num/o.den : 0,
+      eff:  o.effDen? o.effNum/o.effDen : 0
+    })).sort((a,b)=>b.prom-a.prom);
+
+    createOrUpdateChart('tasksByUserChart',{
+      type:'bar',
+      data:{
+        labels:arr.map(x=>x.user),
+        datasets:[
+          {label:'Prom. diario', data: arr.map(x=>x.prom), yAxisID:'y'},
+          {label:'% Efectividad', data: arr.map(x=>x.eff*100), type:'line', yAxisID:'y1', borderWidth:2, tension:.2, pointRadius:2}
+        ]
+      },
+      options:{
+        responsive:true,
+        scales:{
+          y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
+          y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` } },
+          x:{ ticks:{ autoSkip:false, maxRotation:60, minRotation:45 } }
+        }
+      }
+    });
+
+    // Detalle de usuario (dropdown ya se actualizó en applyFilters)
+    const select = document.getElementById('user-detail-select');
+    if(!select.value && arr.length) select.value = arr[0].user;
     renderUserDetail(select.value);
-    select.onchange = ()=> renderUserDetail(select.value);
+    select.onchange = () => renderUserDetail(select.value);
   }
 
   function renderUserDetail(user){
     const rows = currentData.filter(r=>r.usuario===user).sort((a,b)=>a.week-b.week);
     const labels = rows.map(r=>`W${String(r.week).padStart(2,'0')} ${r.mes}`);
     const data = rows.map(r=>r.total_tareas||0);
-    createOrUpdateChart('userDetailChart',{ type:'line', data:{ labels, datasets:[{label:`Tareas de ${user}`, data}] }, options:{ responsive:true, plugins:{legend:{display:false}} }});
+    createOrUpdateChart('userDetailChart',{
+      type:'line',
+      data:{ labels, datasets:[{label:`Tareas de ${user}`, data}] },
+      options:{ responsive:true, plugins:{legend:{display:false}} }
+    });
   }
 
   /* ---------- Líderes ---------- */
@@ -882,11 +906,10 @@
     const canvases=[];
     if(id==='resumen'){
       canvases.push(document.getElementById('demandPieChart'));
-      // ninebox: capturamos la tarjeta completa
       const el=document.getElementById('ninebox-card');
       const canvas = await html2canvas(el,{scale:2});
       canvas.toBlob(b=>download('ninebox.png',b));
-    }else if(id==='productividad'){
+    }else if(id==='detalle'){
       canvases.push(document.getElementById('tasksByUserChart'));
       canvases.push(document.getElementById('userDetailChart'));
     }else if(id==='lideres'){
@@ -907,7 +930,6 @@
     const f=flujoSel();
 
     if(id==='resumen'){
-      // Demand/Enhancement
       const demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
       const enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
       const tot = demand+enh;
@@ -918,7 +940,6 @@
       const csv1 = toCSV(['Flujo','Total','Porcentaje'], rows1.map(r=>({Flujo:r.Flujo, Total:r.Total, Porcentaje:(r.Porcentaje)})));
       download('resumen_demanda_enhancement.csv', new Blob([csv1],{type:'text/csv;charset=utf-8'}));
 
-      // Ninebox: buckets y faltantes
       const nb = buildNineboxData(f);
       const headers=['Caja','Usuarios','Conteo'];
       const rows=[];
@@ -933,15 +954,12 @@
         download('resumen_ninebox_faltantes.csv', new Blob([csv3],{type:'text/csv;charset=utf-8'}));
       }
 
-    }else if(id==='productividad'){
-      // Promedio diario por usuario
-      const byUser=new Map();
-      currentData.forEach(r=>{ const u=r.usuario; const o=byUser.get(u)||{num:0,den:0}; o.num+=tareasFlujo(r,f); o.den+=(r.dias_activos||0); byUser.set(u,o); });
-      const rows=[...byUser.entries()].map(([u,o])=>({Usuario:u, Promedio_Diario: o.den? o.num/o.den : 0}));
-      const csv=toCSV(['Usuario','Promedio_Diario'], rows);
-      download('productividad_por_usuario.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
+    }else if(id==='detalle'){
+      const data = buildUsersPromEff(f);
+      const rows = data.map(d=>({Usuario:d.user, Promedio_Diario:d.prom, Efectividad:d.eff}));
+      const csv=toCSV(['Usuario','Promedio_Diario','Efectividad'], rows);
+      download('detalle_por_usuario.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
 
-      // Detalle usuario seleccionado
       const sel=document.getElementById('user-detail-select').value;
       if(sel){
         const rows2=currentData.filter(r=>r.usuario===sel).sort((a,b)=>a.week-b.week)
@@ -968,7 +986,6 @@
       const csv = toCSV(['Ubicacion','Promedio_Diario','Efectividad'], rows);
       download('ubicacion_prom_y_efectividad.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
 
-      // Antigüedad
       const rows2 = data.antig.map(([loc,avg])=>({Ubicacion:loc, Antiguedad_Promedio:avg}));
       const csv2=toCSV(['Ubicacion','Antiguedad_Promedio'], rows2);
       download('ubicacion_antiguedad.csv', new Blob([csv2],{type:'text/csv;charset=utf-8'}));
@@ -979,7 +996,6 @@
     const f=flujoSel();
     const zip=new JSZip();
 
-    // CSVs
     function addCSV(name, headers, rows){
       zip.file(name, toCSV(headers, rows));
     }
@@ -998,20 +1014,18 @@
         addCSV('resumen_ninebox_faltantes.csv', ['Usuario','Promedio_Diario','Efectividad'],
           nb.missing.map(m=>({Usuario:m.u,Promedio_Diario:(m.prom==null?'':m.prom),Efectividad:(m.eff==null?'':m.eff)})));
       }
-      // PNGs
       const el=document.getElementById('ninebox-card');
       const canvas = await html2canvas(el,{scale:2});
       const blobNb = await new Promise(res=>canvas.toBlob(res));
       zip.file('ninebox.png', blobNb);
       const c1=document.getElementById('demandPieChart');
-      const blob1 = await (await fetch(c1.toDataURL('image/png'))).blob();
-      zip.file('demanda_enhancement.png', blob1);
+      const b1=await (await fetch(c1.toDataURL('image/png'))).blob();
+      zip.file('demanda_enhancement.png', b1);
 
-    }else if(id==='productividad'){
-      const byUser=new Map();
-      currentData.forEach(r=>{ const u=r.usuario; const o=byUser.get(u)||{num:0,den:0}; o.num+=tareasFlujo(r,f); o.den+=(r.dias_activos||0); byUser.set(u,o); });
-      const rows=[...byUser.entries()].map(([u,o])=>({Usuario:u, Promedio_Diario: o.den? o.num/o.den : 0}));
-      addCSV('productividad_por_usuario.csv', ['Usuario','Promedio_Diario'], rows);
+    }else if(id==='detalle'){
+      const data = buildUsersPromEff(f);
+      addCSV('detalle_por_usuario.csv', ['Usuario','Promedio_Diario','Efectividad'],
+             data.map(d=>({Usuario:d.user,Promedio_Diario:d.prom,Efectividad:d.eff})));
       const sel=document.getElementById('user-detail-select').value;
       if(sel){
         const rows2=currentData.filter(r=>r.usuario===sel).sort((a,b)=>a.week-b.week)
@@ -1022,7 +1036,7 @@
       const c2=document.getElementById('userDetailChart');
       const b1=await (await fetch(c1.toDataURL('image/png'))).blob();
       const b2=await (await fetch(c2.toDataURL('image/png'))).blob();
-      zip.file('promedio_usuario.png', b1); zip.file('detalle_usuario.png', b2);
+      zip.file('detalle_prom_efectividad.png', b1); zip.file('detalle_usuario_tareas.png', b2);
 
     }else if(id==='lideres'){
       const data = buildLideresData(f);
@@ -1053,6 +1067,18 @@
 
     const blob=await zip.generateAsync({type:'blob'});
     download(`${id}_export.zip`, blob);
+  }
+  function buildUsersPromEff(f){
+    const agg=new Map();
+    currentData.forEach(r=>{
+      const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
+      o.num+=tareasFlujo(r,f); o.den+=(r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
+        const w=(r.correcciones_auditadas||0)||1; o.effNum+=r.efectividad*w; o.effDen+=w;
+      }
+      agg.set(u,o);
+    });
+    return [...agg.entries()].map(([u,o])=>({user:u, prom:o.den?o.num/o.den:0, eff:o.effDen?o.effNum/o.effDen:0}));
   }
   function buildNineboxData(f){
     const map = new Map();
@@ -1120,7 +1146,6 @@
     return {labels, prom, eff, antig:ant};
   }
   async function exportToGoogleSheets(){
-    // Tomamos el CSV principal de la sección y lo copiamos al portapapeles + abrimos sheets.new
     const id=getActiveSectionId();
     const f=flujoSel();
     let headers=[], rows=[];
@@ -1130,11 +1155,10 @@
       const tot = demand+enh;
       headers=['Flujo','Total','Porcentaje'];
       rows=[{Flujo:'Demanda',Total:demand,Porcentaje:tot?demand/tot:0},{Flujo:'Enhancement',Total:enh,Porcentaje:tot?enh/tot:0}];
-    }else if(id==='productividad'){
-      const byUser=new Map();
-      currentData.forEach(r=>{ const u=r.usuario; const o=byUser.get(u)||{num:0,den:0}; o.num+=tareasFlujo(r,f); o.den+=(r.dias_activos||0); byUser.set(u,o); });
-      headers=['Usuario','Promedio_Diario'];
-      rows=[...byUser.entries()].map(([u,o])=>({Usuario:u, Promedio_Diario:o.den?o.num/o.den:0}));
+    }else if(id==='detalle'){
+      const data=buildUsersPromEff(f);
+      headers=['Usuario','Promedio_Diario','Efectividad'];
+      rows=data.map(d=>({Usuario:d.user, Promedio_Diario:d.prom, Efectividad:d.eff}));
     }else if(id==='lideres'){
       const data=buildLideresData(f);
       headers=['Lider','Promedio_Diario','Efectividad'];
@@ -1154,7 +1178,6 @@
       window.open('https://sheets.new','_blank');
       alert('CSV copiado al portapapeles. Pegalo en la celda A1 de la nueva hoja de Google Sheets.');
     }catch{
-      // fallback: descarga csv
       download(`${id}.csv`, new Blob([csv],{type:'text/csv;charset=utf-8'}));
       alert('No se pudo copiar al portapapeles. Te descargué el CSV para subirlo a Google Sheets.');
     }
@@ -1182,7 +1205,7 @@
   function setupGeminiFeatures(){
     document.getElementById('generate-summary-btn').addEventListener('click', async ()=>{
       const block=document.getElementById('summary-output');
-      if(block){ block.remove(); } // limpiar si existía de otra versión
+      if(block){ block.remove(); }
       const cont = document.createElement('div');
       cont.id='summary-output';
       cont.className='mt-4 p-4 bg-slate-50 rounded-md border border-slate-200';
