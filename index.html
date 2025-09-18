@@ -61,13 +61,15 @@
         </div>
 
         <!-- Filtros -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4 mb-8">
           <select id="filter-mes" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
           <select id="filter-semana" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
           <select id="filter-q" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
           <select id="filter-lider" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
           <select id="filter-ubicacion" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
           <select id="filter-usuario" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
+          <!-- Nuevo: Flujo -->
+          <select id="filter-flujo" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
         </div>
 
         <!-- Secciones -->
@@ -208,7 +210,6 @@
   /**********************
    * CONFIG
    **********************/
-  // Si ya creaste tu Worker proxy de Gemini, poné acá la URL pública:
   const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
 
   // Archivos CSV fuente (en la raíz del repo)
@@ -466,8 +467,17 @@
     // selector para detalle de usuario
     setOptions(document.getElementById('user-detail-select'), usuarios, 'Elegí un usuario');
 
+    // NUEVO: Flujo (para Evolución Semanal)
+    const flujoSel = document.getElementById('filter-flujo');
+    flujoSel.innerHTML = `
+      <option value="mixto">Flujo mixto</option>
+      <option value="demanda">Demanda</option>
+      <option value="enhancement">Enhancement</option>
+    `;
+    flujoSel.value = 'mixto';
+
     // listeners
-    ['filter-mes','filter-semana','filter-ubicacion','filter-usuario','filter-lider','filter-q']
+    ['filter-mes','filter-semana','filter-ubicacion','filter-usuario','filter-lider','filter-q','filter-flujo']
       .forEach(id => document.getElementById(id).addEventListener('change', applyFilters));
   }
 
@@ -627,49 +637,70 @@
     });
   }
 
-function renderWeeklyEvolution(){
-  // Agrego por semana (numérica) el total de tareas
-  const byW = new Map();
-  currentData.forEach(r => {
-    const w = Number(r.week);
-    if (!Number.isFinite(w)) return;
-    byW.set(w, (byW.get(w) || 0) + (r.total_tareas || 0));
-  });
+  /* =========================
+     Evolución Semanal (Promedio Diario + Filtro de Flujo)
+     ========================= */
+  function renderWeeklyEvolution(){
+    // flujo seleccionado
+    const flujo = (document.getElementById('filter-flujo')?.value || 'mixto').toLowerCase();
 
-  const weeks = Array.from(byW.keys());
-  if (!weeks.length) {
-    createOrUpdateChart('weeklyEvolutionChart', { type:'line', data:{labels:[], datasets:[]}, options:{} });
-    return;
-  }
+    // agrego por semana: numerador (tareas del flujo) y denominador (días)
+    const agg = new Map(); // week -> { num, den }
+    currentData.forEach(r=>{
+      const w = Number(r.week);
+      if (!Number.isFinite(w)) return;
 
-  const minW = Math.min(...weeks);
-  const maxW = Math.max(...weeks);
+      const dias = Number(r.dias_activos || 0);
+      let num = 0;
+      if (flujo === 'demanda')       num = Number(r.tareas_demanda || 0);
+      else if (flujo === 'enhancement') num = Number(r.tareas_enhancement || 0);
+      else                            num = Number(r.total_tareas || 0); // mixto
 
-  const labels = [];
-  const values = [];
-  for (let w = minW; w <= maxW; w++) {
-    labels.push('W' + String(w).padStart(2,'0'));
-    values.push(byW.get(w) || 0);
-  }
+      const o = agg.get(w) || { num:0, den:0 };
+      o.num += num;
+      o.den += dias;
+      agg.set(w, o);
+    });
 
-  createOrUpdateChart('weeklyEvolutionChart', {
-    type: 'line',
-    data: { labels, datasets: [{ label: 'Total Tareas', data: values, borderWidth: 2, tension: .2, pointRadius: 2 }] },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: {
-          ticks: {
-            autoSkip: false,    // <- muestra todas
-            maxRotation: 0,     // sin rotación; si querés, probá 45
-            minRotation: 0
-          }
+    const weeks = Array.from(agg.keys());
+    if (!weeks.length){
+      createOrUpdateChart('weeklyEvolutionChart',{type:'line',data:{labels:[],datasets:[]},options:{}});
+      return;
+    }
+
+    // serie continua Wmin..Wmax (completa faltantes con 0)
+    const minW = Math.min(...weeks);
+    const maxW = Math.max(...weeks);
+
+    const labels = [];
+    const values = [];
+    for (let w=minW; w<=maxW; w++){
+      labels.push('W' + String(w).padStart(2,'0'));
+      const o = agg.get(w);
+      const prom = (o && o.den) ? (o.num / o.den) : 0;
+      values.push(prom);
+    }
+
+    const labelSerie =
+      flujo === 'demanda' ? 'Promedio Diario (Demanda)' :
+      flujo === 'enhancement' ? 'Promedio Diario (Enhancement)' :
+      'Promedio Diario (Flujo Mixto)';
+
+    createOrUpdateChart('weeklyEvolutionChart', {
+      type: 'line',
+      data: { labels, datasets: [{ label: labelSerie, data: values, borderWidth: 2, tension: .2, pointRadius: 2 }] },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { autoSkip: false, maxRotation: 0, minRotation: 0 } },
+          y: { ticks: {
+            callback: (v)=> Number(v).toLocaleString('es-AR',{ minimumFractionDigits:2, maximumFractionDigits:2 })
+          }}
         }
       }
-    }
-  });
-}
+    });
+  }
 
   function renderByLocation(){
     // barras por ubicación
@@ -733,48 +764,42 @@ function renderWeeklyEvolution(){
   /**********************
    * GEMINI (opcional)
    **********************/
-  // === reemplazar por completo en index.html ===
-async function geminiRequest(prompt) {
-  if (!GEMINI_PROXY_URL) {
-    return "Configura la URL del proxy de Gemini (GEMINI_PROXY_URL) para usar esta función.";
-  }
-
-  const attempts = [
-    // 1) Proxies que esperan { prompt: "..." }
-    { prompt: String(prompt) },
-    // 2) Proxies que esperan el payload de Google
-    { contents: [{ parts: [{ text: String(prompt) }]}] },
-  ];
-
-  let lastErr;
-  for (const body of attempts) {
-    try {
-      const r = await fetch(GEMINI_PROXY_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-
-      const raw = await r.text();
-      if (!r.ok) throw new Error(raw || `HTTP ${r.status}`);
-
-      // Devuelve texto directo o JSON de Google
-      let data;
-      try { data = JSON.parse(raw); } catch { return raw; }
-
-      const out =
-        data?.candidates?.[0]?.content?.parts?.[0]?.text ??
-        data?.text ??
-        data?.output ??
-        data;
-
-      return (typeof out === 'string') ? out : JSON.stringify(out);
-    } catch (e) {
-      lastErr = e;
+  async function geminiRequest(prompt) {
+    if (!GEMINI_PROXY_URL) {
+      return "Configura la URL del proxy de Gemini (GEMINI_PROXY_URL) para usar esta función.";
     }
+
+    const attempts = [
+      { prompt: String(prompt) }, // proxies simples
+      { contents: [{ parts: [{ text: String(prompt) }]}] }, // payload Google
+    ];
+
+    let lastErr;
+    for (const body of attempts) {
+      try {
+        const r = await fetch(GEMINI_PROXY_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+
+        const raw = await r.text();
+        if (!r.ok) throw new Error(raw || `HTTP ${r.status}`);
+
+        let data;
+        try { data = JSON.parse(raw); } catch { return raw; }
+
+        const out =
+          data?.candidates?.[0]?.content?.parts?.[0]?.text ??
+          data?.text ?? data?.output ?? data;
+
+        return (typeof out === 'string') ? out : JSON.stringify(out);
+      } catch (e) {
+        lastErr = e;
+      }
+    }
+    throw lastErr || new Error('Gemini request failed');
   }
-  throw lastErr || new Error('Gemini request failed');
-}
 
   function setupGeminiFeatures(){
     document.getElementById('generate-summary-btn').addEventListener('click', async ()=>{
@@ -787,12 +812,12 @@ async function geminiRequest(prompt) {
           const d = currentData.reduce((s,r)=>s+(r.dias_activos||0),0);
           return d? total/d : 0;
         })();
-        const top = (()=> {
+        const top = (()=>{
           const map = new Map();
           currentData.forEach(r=>map.set(r.usuario,(map.get(r.usuario)||0)+(r.total_tareas||0)));
           return Array.from(map.entries()).sort((a,b)=>b[1]-a[1]).slice(0,5).map(x=>`${x[0]} (${x[1]} tareas)`).join(', ');
         })();
-        const prompt = `Actúa como analista. Resume hallazgos en 6 viñetas. Datos: total tareas=${total}, promedio diario ponderado=${prom.toFixed(2)}, top usuarios=${top}. Sugerí 3 acciones.`;        
+        const prompt = `Actúa como analista. Resume hallazgos en 6 viñetas. Datos: total tareas=${total}, promedio diario ponderado=${prom.toFixed(2)}, top usuarios=${top}. Sugerí 3 acciones.`;
         const resp = await geminiRequest(prompt);
         block.textContent = resp;
       }catch(e){
@@ -806,7 +831,6 @@ async function geminiRequest(prompt) {
       out.classList.remove('hidden'); out.textContent = 'Analizando...';
       try{
         const rows = currentData.filter(r=>r.usuario===user).sort((a,b)=>a.week-b.week);
-        const last = rows[rows.length-1];
         const prompt = `Feedback breve para ${user}. Evolución semanas: ${rows.map(r=>`W${r.week}:${r.total_tareas}`).join(', ')}. Porcentaje de efectividad promedio ${(rows.map(r=>r.efectividad).filter(v=>v!=='').reduce((a,b)=>a+b,0)/(rows.filter(r=>r.efectividad!=='').length||1)).toFixed(2)}. Señala 2 fortalezas y 2 oportunidades.`;
         const resp = await geminiRequest(prompt);
         out.textContent = resp;
@@ -821,7 +845,10 @@ async function geminiRequest(prompt) {
       try{
         const dmd = currentData.reduce((s,r)=>s+(r.tareas_demanda||0),0);
         const enh = currentData.reduce((s,r)=>s+(r.tareas_enhancement||0),0);
-        const eff = (()=>{ const v=currentData.map(r=>r.efectividad).filter(v=>v!==''); return v.length? v.reduce((a,b)=>a+b,0)/v.length : 0; })();
+        const eff = (()=>{
+          const v=currentData.map(r=>r.efectividad).filter(v=>v!=='');
+          return v.length? v.reduce((a,b)=>a+b,0)/v.length : 0;
+        })();
         const prompt = `Con los datos filtrados, genera 6 insights accionables y una conclusión: demanda=${dmd}, enhancement=${enh}, efectividad=${eff.toFixed(3)}.`;
         const resp = await geminiRequest(prompt);
         out.textContent = resp;
@@ -863,7 +890,3 @@ async function geminiRequest(prompt) {
   </script>
 </body>
 </html>
-
-
-
-
