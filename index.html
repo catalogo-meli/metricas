@@ -23,6 +23,14 @@
     .kpi-card:hover{transform:translateY(-4px);box-shadow:0 10px 15px -3px rgb(0 0 0 / .1),0 4px 6px -4px rgb(0 0 0 / .1);}
     .chart-container{height:400px;}
     #mobile-menu{transition: transform .3s ease-in-out;}
+    /* Nine-box */
+    .nb-cell{display:flex;align-items:center;justify-content:center;height:80px;border-radius:.5rem;border:1px solid rgb(226 232 240);}
+    .nb-hdr{font-weight:600;color:#475569}
+    .nb-badge{font-size:1.5rem;font-weight:700}
+    .nb-green{background:#dcfce7}
+    .nb-yellow{background:#fef9c3}
+    .nb-orange{background:#ffedd5}
+    .nb-red{background:#fee2e2}
   </style>
 </head>
 
@@ -104,20 +112,26 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <!-- Nine-box -->
               <div class="kpi-card">
                 <div class="flex justify-between items-center mb-4">
-                  <h3 class="text-xl font-semibold">Top 10 Usuarios</h3>
+                  <h3 class="text-xl font-semibold">Nine-Box: Productividad × Calidad</h3>
                   <button id="generate-summary-btn" class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition-colors text-sm font-medium">✨ Generar Resumen</button>
                 </div>
-                <div class="chart-container"><canvas id="topUsersChart"></canvas></div>
-                <div id="summary-output" class="mt-4 p-4 bg-slate-50 rounded-md border border-slate-200 hidden"></div>
+                <div id="ninebox-grid" class="grid grid-cols-4 gap-2"></div>
+                <p class="mt-3 text-xs text-slate-500">
+                  Productividad: Alta ≥80; Media 70–&lt;80; Baja &lt;70. &nbsp;|&nbsp;
+                  Calidad: Alta ≥90%; Media 75%–&lt;90%; Baja &lt;75%.
+                </p>
               </div>
 
+              <!-- Demanda vs Enhancement -->
               <div class="kpi-card">
                 <h3 class="text-xl font-semibold mb-4">Tareas: Demanda vs. Enhancement</h3>
                 <div class="chart-container relative mx-auto" style="height:320px;max-width:360px">
                   <canvas id="demandPieChart"></canvas>
                 </div>
+                <div id="demandTotals" class="mt-3 text-center text-sm text-slate-600"></div>
               </div>
             </div>
           </section>
@@ -161,12 +175,12 @@
           <section id="ubicacion" class="page-section hidden">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div class="kpi-card">
-                <h3 class="text-xl font-semibold mb-4">Promedio Diario por Ubicación</h3>
-                <div class="chart-container"><canvas id="tasksByLocationChart"></canvas></div>
+                <h3 class="text-xl font-semibold mb-4">Prom. Diario & % Efectividad por Ubicación</h3>
+                <div class="chart-container"><canvas id="locCombinedChart"></canvas></div>
               </div>
               <div class="kpi-card">
-                <h3 class="text-xl font-semibold mb-4">% Efectividad por Ubicación</h3>
-                <div class="chart-container"><canvas id="effByLocationChart"></canvas></div>
+                <h3 class="text-xl font-semibold mb-4">Antigüedad Promedio por Ubicación (meses)</h3>
+                <ul id="avg-antiguedad-list" class="space-y-2 text-slate-700"></ul>
               </div>
             </div>
           </section>
@@ -207,7 +221,6 @@
    * CONFIG
    **********************/
   const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
-
   const FILES = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
 
   /**********************
@@ -342,7 +355,6 @@
 
     const rows = Array.from(weeks.values()).sort((a,b)=>a.week-b.week).map(o=>{
       const prom = o.dias.size ? (o.total/o.dias.size) : '';
-      const tot  = o.demand + o.enh;
       const pEf  = o.idsCal>0 ? (1 - (o.errCal/o.idsCal)) : '';
       return {
         week:o.week, mes:o.mes, mesIndex:o.mesIndex, usuario:o.user, líder:o.lider, ciudad:o.ciudad, antigüedad:o.antig,
@@ -454,7 +466,7 @@
     );
 
     updateKPIs();
-    renderTopUsers();
+    renderNineBox();
     renderDemandPie();
     renderTasksByUser();
     renderTasksByLeader();
@@ -514,26 +526,75 @@
     charts[id]=new Chart(ctx,cfg); return charts[id];
   }
 
-  function renderTopUsers(){
+  /* ---------- Nine-box ---------- */
+  function renderNineBox(){
     const f = flujoSel();
-    const byUser = new Map(); // user -> promedio diario
+
+    // métricas por usuario
+    const map = new Map(); // user -> {num,den, effSum, effN}
     currentData.forEach(r=>{
       const u=r.usuario;
-      const o = byUser.get(u) || {num:0,den:0};
-      o.num += tareasFlujo(r,f);
-      o.den += (r.dias_activos||0);
-      byUser.set(u,o);
+      const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
+      o.num += tareasFlujo(r,f); o.den += (r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){ o.effSum+=r.efectividad; o.effN++; }
+      map.set(u,o);
     });
-    const arr = Array.from(byUser.entries()).map(([u,o])=>[u, o.den? o.num/o.den : 0]).sort((a,b)=>b[1]-a[1]).slice(0,10);
-    createOrUpdateChart('topUsersChart',{
-      type:'bar',
-      data:{ labels:arr.map(x=>x[0]), datasets:[{label:'Prom. diario', data: arr.map(x=>x[1])}] },
-      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) }}}}
+
+    const users = Array.from(map.entries()).map(([u,o])=>{
+      const prom = o.den? o.num/o.den : 0;
+      const eff  = o.effN? o.effSum/o.effN : 0;
+      return {u, prom, eff};
     });
+
+    const prodBand = p => (p>=80 ? 'alta' : p>=70 ? 'media' : 'baja');
+    const calBand  = e => (e>=0.90 ? 'alta' : e>=0.75 ? 'media' : 'baja');
+
+    const rows=['alta','media','baja']; // productividad
+    const cols=['alta','media','baja']; // calidad
+
+    const buckets = {};
+    rows.forEach(r=>cols.forEach(c=>{ buckets[`${r}-${c}`]=[]; }));
+    users.forEach(x=>{
+      buckets[`${prodBand(x.prom)}-${calBand(x.eff)}`].push(x.u);
+    });
+
+    // grid 4x4: headers + 9 cells
+    const grid = document.getElementById('ninebox-grid');
+    const cellTitle = (r,c)=>`Prod ${r} / Calidad ${c}`;
+    const label = s=> s.charAt(0).toUpperCase()+s.slice(1);
+
+    const cellClass = (r,c)=>{
+      if(r==='alta' && c==='alta') return 'nb-green';
+      if(r==='alta' && c==='media') return 'nb-yellow';
+      if(r==='alta' && c==='baja') return 'nb-orange';
+      if(r==='media' && c==='alta') return 'nb-yellow';
+      if(r==='media' && c==='media') return 'nb-yellow';
+      if(r==='media' && c==='baja') return 'nb-orange';
+      if(r==='baja' && c==='alta') return 'nb-yellow';
+      if(r==='baja' && c==='media') return 'nb-orange';
+      return 'nb-red';
+    };
+
+    const hdrCell = (txt, extra='')=>`<div class="nb-cell nb-hdr ${extra}" style="height:42px">${txt}</div>`;
+
+    let html = '';
+    html += hdrCell('&nbsp;'); // esquina
+    cols.forEach(c=> html += hdrCell('Calidad '+label(c)));
+    rows.forEach(r=>{
+      html += hdrCell('Prod. '+label(r));
+      cols.forEach(c=>{
+        const arr = buckets[`${r}-${c}`]||[];
+        html += `<div class="nb-cell ${cellClass(r,c)}" title="${cellTitle(label(r),label(c))}\n${arr.join(', ')}">
+                  <span class="nb-badge">${arr.length}</span>
+                </div>`;
+      });
+    });
+    grid.innerHTML = html;
   }
 
+  /* ---------- Demanda vs Enhancement (percent + totales) ---------- */
   function renderDemandPie(){
-    // Siempre muestra % dentro del subset filtrado (sin importar valor de "flujo")
+    // composición dentro del subset filtrado
     const demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
     const enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
     const tot = demand+enh;
@@ -551,8 +612,12 @@
         }
       }
     });
+
+    document.getElementById('demandTotals').textContent =
+      `Total Demanda: ${fmt.int(demand)} — Total Enhancement: ${fmt.int(enh)}`;
   }
 
+  /* ---------- Productividad por usuario ---------- */
   function renderTasksByUser(){
     const f = flujoSel();
     // Promedio diario por usuario
@@ -568,7 +633,7 @@
       options:{ responsive:true, plugins:{legend:{display:false}}, scales:{x:{ticks:{autoSkip:false,maxRotation:60,minRotation:45}}, y:{ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) }}}}
     });
 
-    // Detalle de usuario (mantengo serie de tareas semanales para el usuario seleccionado)
+    // Detalle de usuario
     const select=document.getElementById('user-detail-select');
     if(!select.value && arr.length) select.value=arr[0][0];
     renderUserDetail(select.value);
@@ -576,16 +641,15 @@
   }
 
   function renderUserDetail(user){
-    // Serie semanal del usuario (total tareas histórico)
     const rows = currentData.filter(r=>r.usuario===user).sort((a,b)=>a.week-b.week);
     const labels = rows.map(r=>`W${String(r.week).padStart(2,'0')} ${r.mes}`);
     const data = rows.map(r=>r.total_tareas||0);
     createOrUpdateChart('userDetailChart',{ type:'line', data:{ labels, datasets:[{label:`Tareas de ${user}`, data}] }, options:{ responsive:true, plugins:{legend:{display:false}} }});
   }
 
+  /* ---------- Líderes ---------- */
   function renderTasksByLeader(){
     const f = flujoSel();
-    // Promedio diario y efectividad ponderada por líder
     const agg = new Map(); // líder -> {num,den, effNum, effDen}
     currentData.forEach(r=>{
       const l = r['líder']; if(!l || l.toLowerCase()==='sin líder') return;
@@ -593,7 +657,7 @@
       o.num += tareasFlujo(r,f);
       o.den += (r.dias_activos||0);
       if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
-        const w = (r.correcciones_auditadas || 0) || 1; // ponderar por correcciones si hay, si no, peso 1
+        const w = (r.correcciones_auditadas || 0) || 1;
         o.effNum += r.efectividad * w;
         o.effDen += w;
       }
@@ -625,6 +689,7 @@
     });
   }
 
+  /* ---------- Evolución semanal ---------- */
   function renderWeeklyEvolution(){
     const f = flujoSel();
     const agg = new Map(); // week -> {num,den}
@@ -649,12 +714,13 @@
     });
   }
 
+  /* ---------- Ubicación: combinado + antigüedad ---------- */
   function renderByLocation(){
     const f = flujoSel();
-    // Promedio diario por ubicación
     const byLoc = new Map(); // ciudad -> {num,den}
-    // Efectividad ponderada por ubicación
     const effLoc = new Map(); // ciudad -> {num,den}
+    const antig = {}; // ciudad -> {sum, n}
+
     currentData.forEach(r=>{
       const c=r.ciudad||'Sin ubicación';
       const o=byLoc.get(c)||{num:0,den:0};
@@ -665,21 +731,48 @@
         const e=effLoc.get(c)||{num:0,den:0};
         e.num += r.efectividad*w; e.den += w; effLoc.set(c,e);
       }
+
+      const a = Number(r.antigüedad||0);
+      if(!antig[c]) antig[c]={sum:0,n:0};
+      if(Number.isFinite(a)){ antig[c].sum+=a; antig[c].n++; }
     });
 
-    const arr = Array.from(byLoc.entries()).map(([c,o])=>[c, o.den? o.num/o.den : 0]).sort((a,b)=>b[1]-a[1]);
-    createOrUpdateChart('tasksByLocationChart',{
-      type:'bar',
-      data:{ labels:arr.map(x=>x[0]), datasets:[{label:'Prom. diario', data: arr.map(x=>x[1])}] },
-      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ y:{ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) }}, x:{ticks:{autoSkip:false}}}}
+    const labels = Array.from(byLoc.keys()).sort((a,b)=>{
+      const va=(byLoc.get(a).den? byLoc.get(a).num/byLoc.get(a).den : 0);
+      const vb=(byLoc.get(b).den? byLoc.get(b).num/byLoc.get(b).den : 0);
+      return vb-va;
     });
 
-    const arrEff = Array.from(effLoc.entries()).map(([c,e])=>[c, e.den? e.num/e.den : 0]).sort((a,b)=>b[1]-a[1]);
-    createOrUpdateChart('effByLocationChart',{
+    const promData = labels.map(c=>{ const o=byLoc.get(c); return (o.den? o.num/o.den : 0); });
+    const effData  = labels.map(c=>{ const e=effLoc.get(c)||{num:0,den:0}; return (e.den? 100*e.num/e.den : 0); });
+
+    createOrUpdateChart('locCombinedChart',{
       type:'bar',
-      data:{ labels:arrEff.map(x=>x[0]), datasets:[{label:'% Efectividad', data: arrEff.map(x=>x[1]*100)}] },
-      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ y:{ticks:{ callback:v=>`${v.toFixed(0)}%` }}, x:{ticks:{autoSkip:false}}}}
+      data:{
+        labels,
+        datasets:[
+          {label:'Prom. diario', data:promData, yAxisID:'y'},
+          {label:'% Efectividad', data:effData, type:'line', yAxisID:'y1', borderWidth:2, tension:.2, pointRadius:2}
+        ]
+      },
+      options:{
+        responsive:true,
+        scales:{
+          y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
+          y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` } },
+          x:{ ticks:{ autoSkip:false } }
+        },
+        plugins:{ legend:{display:true} }
+      }
     });
+
+    // Antigüedad lista
+    const list = labels.map(loc=>{
+      const v=antig[loc]||{sum:0,n:0}; const avg=v.n? v.sum/v.n : 0;
+      return [loc, avg];
+    }).sort((a,b)=>b[1]-a[1]);
+    const ul=document.getElementById('avg-antiguedad-list');
+    ul.innerHTML = list.map(([loc,avg])=>`<li class="flex justify-between"><span>${loc}</span><span class="font-semibold">${fmt.dec(avg)}</span></li>`).join('');
   }
 
   /**********************
@@ -716,7 +809,7 @@
           });
           return Array.from(map.entries()).sort((a,b)=>b[1]-a[1]).slice(0,5).map(x=>`${x[0]} (${x[1]} unidades)`).join(', ');
         })();
-        const prompt = `Actúa como analista. Filtros actuales aplicados (incluye flujo='${f}'). Resume hallazgos en 6 viñetas y sugiere 3 acciones. Datos: total=${total}, promedio_diario=${prom.toFixed(2)}, top usuarios=${top}.`;
+        const prompt = `Actúa como analista. Filtros actuales aplicados (flujo='${f}'). Resume hallazgos en 6 viñetas y sugiere 3 acciones. Datos: total=${total}, promedio_diario=${prom.toFixed(2)}, top usuarios=${top}.`;
         const resp = await geminiRequest(prompt);
         block.textContent=resp;
       }catch(e){ block.textContent=e.message; }
