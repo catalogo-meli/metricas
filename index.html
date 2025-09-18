@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Métricas Catálogo | Grupo KELSOFT</title>
+  <title>Dashboard de Productividad con IA</title>
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -17,13 +17,13 @@
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-  <!-- Inter font -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Montserrat font -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    body { font-family: 'Inter', sans-serif; }
+    body { font-family: 'Montserrat', sans-serif; }
     .sidebar-link { transition: all .2s ease-in-out; }
-    .sidebar-link:hover, .sidebar-link.active { background-color:#999999; color:#fff; transform: translateX(4px); }
+    .sidebar-link:hover, .sidebar-link.active { background-color:#7a7a7a; color:#fff; transform: translateX(4px); }
     .kpi-card{background:#fff;border-radius:.75rem;padding:1.5rem;box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1),0 2px 4px -2px rgb(0 0 0 / 0.1);transition:transform .2s, box-shadow .2s;}
     .kpi-card:hover{transform:translateY(-4px);box-shadow:0 10px 15px -3px rgb(0 0 0 / .1),0 4px 6px -4px rgb(0 0 0 / .1);}
     .chart-container{height:400px;}
@@ -47,17 +47,17 @@
 <body class="bg-slate-100 text-slate-800">
   <div class="flex h-screen overflow-hidden">
     <!-- Sidebar -->
-    <aside id="sidebar" class="hidden md:flex w-64 flex-col bg-sky-800 text-sky-100 p-4">
+    <aside id="sidebar" class="hidden md:flex w-64 flex-col bg-[#999999] text-white p-4">
       <div class="flex items-center mb-8">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-3 text-white" viewBox="0 0 20 20" fill="currentColor">
           <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
         </svg>
-        <h1 class="text-2xl font-bold text-white">Dashboard</h1>
+        <h1 class="text-2xl font-bold text-white">Catálogo</h1>
       </div>
       <nav id="nav-menu" class="flex-1 space-y-2">
         <a href="#resumen" class="sidebar-link active flex items-center p-3 rounded-lg">Resumen General</a>
         <a href="#detalle" class="sidebar-link flex items-center p-3 rounded-lg">Detalle por Usuario</a>
-        <a href="#lideres" class="sidebar-link flex items-center p-3 rounded-lg">Comparativa de Líderes</a>
+        <a href="#lideres" class="sidebar-link flex items-center p-3 rounded-lg">Comparativa por equipo</a>
         <a href="#evolucion" class="sidebar-link flex items-center p-3 rounded-lg">Evolución Semanal</a>
         <a href="#ubicacion" class="sidebar-link flex items-center p-3 rounded-lg">Análisis por Ubicación</a>
         <a href="#analisis" class="sidebar-link flex items-center p-3 rounded-lg">Análisis Inteligente</a>
@@ -106,7 +106,6 @@
           <select id="filter-lider" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
           <select id="filter-ubicacion" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
           <select id="filter-usuario" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
-          <!-- Flujo -->
           <select id="filter-flujo" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
         </div>
 
@@ -115,32 +114,26 @@
           <!-- Resumen -->
           <section id="resumen" class="page-section">
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-6 mb-6">
-              <!-- 1) Total Tareas -->
               <div class="kpi-card text-center">
                 <h3 class="text-slate-500 font-medium">Total Tareas</h3>
                 <p id="kpi-total-tareas" class="text-4xl font-bold mt-2"></p>
               </div>
-              <!-- 2) IDs trabajados -->
               <div class="kpi-card text-center">
                 <h3 class="text-slate-500 font-medium">IDs trabajados</h3>
                 <p id="kpi-ids" class="text-4xl font-bold mt-2"></p>
               </div>
-              <!-- 3) Promedio Diario -->
               <div class="kpi-card text-center">
                 <h3 class="text-slate-500 font-medium">Promedio Diario</h3>
                 <p id="kpi-promedio-diario" class="text-4xl font-bold mt-2"></p>
               </div>
-              <!-- 4) % Efectividad -->
               <div class="kpi-card text-center">
                 <h3 class="text-slate-500 font-medium">% Efectividad</h3>
                 <p id="kpi-efectividad-prom" class="text-4xl font-bold mt-2"></p>
               </div>
-              <!-- 5) Correcciones -->
               <div class="kpi-card text-center">
                 <h3 class="text-slate-500 font-medium">Correcciones auditadas</h3>
                 <p id="kpi-correcciones" class="text-4xl font-bold mt-2"></p>
               </div>
-              <!-- 6) Usuarios activos -->
               <div class="kpi-card text-center">
                 <h3 class="text-slate-500 font-medium">Usuarios Activos</h3>
                 <p id="kpi-usuarios" class="text-4xl font-bold mt-2"></p>
@@ -175,27 +168,16 @@
 
           <!-- Detalle por Usuario -->
           <section id="detalle" class="page-section hidden">
-            <div class="kpi-card mb-6">
+            <div class="kpi-card">
               <h3 class="text-xl font-semibold mb-4">Promedio Diario y % Efectividad por Usuario</h3>
               <div class="chart-container"><canvas id="tasksByUserChart"></canvas></div>
             </div>
-            <div class="kpi-card">
-              <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
-                <h3 class="text-xl font-semibold">Detalle de Usuario</h3>
-                <div class="flex items-center gap-2">
-                  <select id="user-detail-select" class="w-full max-w-xs p-2 border rounded-md bg-white shadow-sm"></select>
-                  <button id="generate-feedback-btn" class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition-colors text-sm font-medium whitespace-nowrap">✨ Generar Feedback</button>
-                </div>
-              </div>
-              <div id="feedback-output" class="mb-4 p-4 bg-slate-50 rounded-md border border-slate-200 hidden"></div>
-              <div class="chart-container"><canvas id="userDetailChart"></canvas></div>
-            </div>
           </section>
 
-          <!-- Líderes -->
+          <!-- Comparativa por equipo -->
           <section id="lideres" class="page-section hidden">
             <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-4">Comparativa de Desempeño por Líder</h3>
+              <h3 class="text-xl font-semibold mb-4">Comparativa por equipo</h3>
               <div class="chart-container"><canvas id="tasksByLeaderChart"></canvas></div>
             </div>
           </section>
@@ -203,7 +185,7 @@
           <!-- Evolución -->
           <section id="evolucion" class="page-section hidden">
             <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-4">Evolución Semanal (Promedio Diario)</h3>
+              <h3 class="text-xl font-semibold mb-4">Evolución Semanal (Promedio Diario y % Efectividad)</h3>
               <div class="chart-container"><canvas id="weeklyEvolutionChart"></canvas></div>
             </div>
           </section>
@@ -216,7 +198,7 @@
                 <div class="chart-container"><canvas id="locCombinedChart"></canvas></div>
               </div>
               <div class="kpi-card">
-                <h3 class="text-xl font-semibold mb-4">Antigüedad Promedio por Ubicación (meses)</h3>
+                <h3 class="text-xl font-semibold mb-4">Antigüedad Promedio (meses)</h3>
                 <ul id="avg-antiguedad-list" class="space-y-2 text-slate-700"></ul>
               </div>
             </div>
@@ -240,7 +222,7 @@
 
   <!-- Menú móvil -->
   <div id="mobile-menu" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden">
-    <aside class="absolute top-0 left-0 h-full w-64 bg-sky-800 text-sky-100 p-4 transform -translate-x-full transition-transform duration-300">
+    <aside class="absolute top-0 left-0 h-full w-64 bg-[#999999] text-white p-4 transform -translate-x-full transition-transform duration-300">
       <div class="flex justify-between items-center mb-8">
         <h1 class="text-2xl font-bold text-white">Menú</h1>
         <button id="close-mobile-menu">
@@ -454,7 +436,7 @@
   function setupNavigation(){
     const links=[...document.querySelectorAll('#nav-menu a')];
     const mobile=document.getElementById('mobile-nav-menu');
-    mobile.innerHTML = links.map(a=>`<a href="${a.getAttribute('href')}" class="block p-3 rounded-lg hover:bg-sky-700">${a.textContent}</a>`).join('');
+    mobile.innerHTML = links.map(a=>`<a href="${a.getAttribute('href')}" class="block p-3 rounded-lg hover:bg-gray-700">${a.textContent}</a>`).join('');
     links.forEach(a=>{
       a.addEventListener('click', e=>{
         e.preventDefault();
@@ -506,18 +488,8 @@
         const el=document.getElementById(id); if(el) el.value='';
       });
       const f=document.getElementById('filter-flujo'); if(f) f.value='mixto';
-      const u=document.getElementById('user-detail-select'); if(u) u.value='';
       applyFilters();
     });
-  }
-
-  function updateUserDetailSelect(){
-    const select = document.getElementById('user-detail-select');
-    const prev = select.value;
-    const usuarios = uniqueSorted(currentData.map(r=>r.usuario));
-    setOptions(select, usuarios, 'Elegí un usuario');
-    if(prev && usuarios.includes(prev)) select.value = prev;
-    if(!select.value && usuarios.length) select.value = usuarios[0];
   }
 
   function applyFilters(){
@@ -538,7 +510,6 @@
       (!f.q     || r.q === f.q)
     );
 
-    updateUserDetailSelect();      // <-- lista de usuarios según filtros
     updateKPIs();
     renderNineBox();
     renderDemandPie();
@@ -738,26 +709,9 @@
         }
       }
     });
-
-    // Detalle de usuario (dropdown ya se actualizó en applyFilters)
-    const select = document.getElementById('user-detail-select');
-    if(!select.value && arr.length) select.value = arr[0].user;
-    renderUserDetail(select.value);
-    select.onchange = () => renderUserDetail(select.value);
   }
 
-  function renderUserDetail(user){
-    const rows = currentData.filter(r=>r.usuario===user).sort((a,b)=>a.week-b.week);
-    const labels = rows.map(r=>`W${String(r.week).padStart(2,'0')} ${r.mes}`);
-    const data = rows.map(r=>r.total_tareas||0);
-    createOrUpdateChart('userDetailChart',{
-      type:'line',
-      data:{ labels, datasets:[{label:`Tareas de ${user}`, data}] },
-      options:{ responsive:true, plugins:{legend:{display:false}} }
-    });
-  }
-
-  /* ---------- Líderes ---------- */
+  /* ---------- Comparativa por equipo ---------- */
   function renderTasksByLeader(){
     const f = flujoSel();
     const agg = new Map(); // líder -> {num,den, effNum, effDen}
@@ -799,28 +753,54 @@
     });
   }
 
-  /* ---------- Evolución semanal ---------- */
+  /* ---------- Evolución semanal: Promedio + Efectividad ---------- */
   function renderWeeklyEvolution(){
     const f = flujoSel();
-    const agg = new Map(); // week -> {num,den}
+    const agg = new Map(); // week -> {num,den, effNum, effDen}
     currentData.forEach(r=>{
       const w = Number(r.week); if(!Number.isFinite(w)) return;
-      const o = agg.get(w)||{num:0,den:0};
-      o.num += tareasFlujo(r,f); o.den += (r.dias_activos||0);
+      const o = agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
+      o.num += tareasFlujo(r,f);
+      o.den += (r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
+        const weight = (r.correcciones_auditadas||0)||1;
+        o.effNum += r.efectividad*weight;
+        o.effDen += weight;
+      }
       agg.set(w,o);
     });
+
     const weeks = Array.from(agg.keys());
-    if(!weeks.length){ createOrUpdateChart('weeklyEvolutionChart',{type:'line',data:{labels:[],datasets:[]},options:{}}); return; }
+    if(!weeks.length){
+      createOrUpdateChart('weeklyEvolutionChart',{type:'line',data:{labels:[],datasets:[]},options:{}});
+      return;
+    }
     const minW=Math.min(...weeks), maxW=Math.max(...weeks);
-    const labels=[], values=[];
+    const labels=[], promValues=[], effValues=[];
     for(let w=minW; w<=maxW; w++){
       labels.push('W'+String(w).padStart(2,'0'));
-      const o=agg.get(w); values.push((o&&o.den)? o.num/o.den : 0);
+      const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
+      promValues.push((o.den? o.num/o.den : 0));
+      effValues.push((o.effDen? 100*o.effNum/o.effDen : 0));
     }
     createOrUpdateChart('weeklyEvolutionChart',{
-      type:'line',
-      data:{ labels, datasets:[{label:'Prom. diario', data:values, borderWidth:2, tension:.2, pointRadius:2}] },
-      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ x:{ticks:{autoSkip:false,maxRotation:0}}, y:{ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}}}}
+      type:'bar',
+      data:{
+        labels,
+        datasets:[
+          {label:'Prom. diario', data:promValues, yAxisID:'y'},
+          {label:'% Efectividad', data:effValues, type:'line', yAxisID:'y1', borderWidth:2, tension:.2, pointRadius:2}
+        ]
+      },
+      options:{
+        responsive:true,
+        plugins:{ legend:{display:true} },
+        scales:{
+          x:{ ticks:{autoSkip:false,maxRotation:0} },
+          y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
+          y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` } }
+        }
+      }
     });
   }
 
@@ -908,10 +888,9 @@
       canvases.push(document.getElementById('demandPieChart'));
       const el=document.getElementById('ninebox-card');
       const canvas = await html2canvas(el,{scale:2});
-      canvas.toBlob(b=>download('ninebox.png',b));
+      canvas.toBlob(b=>download('productividad-calidad.png',b));
     }else if(id==='detalle'){
       canvases.push(document.getElementById('tasksByUserChart'));
-      canvases.push(document.getElementById('userDetailChart'));
     }else if(id==='lideres'){
       canvases.push(document.getElementById('tasksByLeaderChart'));
     }else if(id==='evolucion'){
@@ -947,11 +926,11 @@
         rows.push({Caja:k,Usuarios:arr.join(' | '),Conteo:arr.length});
       });
       const csv2 = toCSV(headers, rows);
-      download('resumen_ninebox.csv', new Blob([csv2],{type:'text/csv;charset=utf-8'}));
+      download('resumen_productividad_calidad.csv', new Blob([csv2],{type:'text/csv;charset=utf-8'}));
       if(nb.missing.length){
         const csv3 = toCSV(['Usuario','Promedio_Diario','Efectividad'],
           nb.missing.map(m=>({Usuario:m.u, Promedio_Diario: (m.prom==null?'':m.prom), Efectividad:(m.eff==null?'':m.eff)})));
-        download('resumen_ninebox_faltantes.csv', new Blob([csv3],{type:'text/csv;charset=utf-8'}));
+        download('resumen_productividad_calidad_faltantes.csv', new Blob([csv3],{type:'text/csv;charset=utf-8'}));
       }
 
     }else if(id==='detalle'){
@@ -960,25 +939,17 @@
       const csv=toCSV(['Usuario','Promedio_Diario','Efectividad'], rows);
       download('detalle_por_usuario.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
 
-      const sel=document.getElementById('user-detail-select').value;
-      if(sel){
-        const rows2=currentData.filter(r=>r.usuario===sel).sort((a,b)=>a.week-b.week)
-          .map(r=>({Semana:r.week, Mes:r.mes, Total_Tareas:r.total_tareas}));
-        const csv2=toCSV(['Semana','Mes','Total_Tareas'], rows2);
-        download(`detalle_${sel}.csv`, new Blob([csv2],{type:'text/csv;charset=utf-8'}));
-      }
-
     }else if(id==='lideres'){
       const data = buildLideresData(f);
       const rows = data.map(d=>({Lider:d.lider, Promedio_Diario:d.prom, Efectividad:d.eff}));
       const csv = toCSV(['Lider','Promedio_Diario','Efectividad'], rows);
-      download('lideres_prom_y_efectividad.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
+      download('comparativa_equipo.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
 
     }else if(id==='evolucion'){
       const series = buildEvolucionData(f);
-      const rows = series.labels.map((lab,i)=>({Semana:lab, Promedio_Diario:series.values[i]}));
-      const csv = toCSV(['Semana','Promedio_Diario'], rows);
-      download('evolucion_promedio_diario.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
+      const rows = series.labels.map((lab,i)=>({Semana:lab, Promedio_Diario:series.values[i], Efectividad:series.eff[i]}));
+      const csv = toCSV(['Semana','Promedio_Diario','Efectividad'], rows);
+      download('evolucion_promedio_y_efectividad.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
 
     }else if(id==='ubicacion'){
       const data = buildUbicacionData(f);
@@ -1009,15 +980,15 @@
       );
       const nb = buildNineboxData(f);
       const rows=[]; Object.entries(nb.buckets).forEach(([k,arr])=> rows.push({Caja:k,Usuarios:arr.join(' | '),Conteo:arr.length}));
-      addCSV('resumen_ninebox.csv', ['Caja','Usuarios','Conteo'], rows);
+      addCSV('resumen_productividad_calidad.csv', ['Caja','Usuarios','Conteo'], rows);
       if(nb.missing.length){
-        addCSV('resumen_ninebox_faltantes.csv', ['Usuario','Promedio_Diario','Efectividad'],
+        addCSV('resumen_productividad_calidad_faltantes.csv', ['Usuario','Promedio_Diario','Efectividad'],
           nb.missing.map(m=>({Usuario:m.u,Promedio_Diario:(m.prom==null?'':m.prom),Efectividad:(m.eff==null?'':m.eff)})));
       }
       const el=document.getElementById('ninebox-card');
       const canvas = await html2canvas(el,{scale:2});
       const blobNb = await new Promise(res=>canvas.toBlob(res));
-      zip.file('ninebox.png', blobNb);
+      zip.file('productividad-calidad.png', blobNb);
       const c1=document.getElementById('demandPieChart');
       const b1=await (await fetch(c1.toDataURL('image/png'))).blob();
       zip.file('demanda_enhancement.png', b1);
@@ -1026,30 +997,22 @@
       const data = buildUsersPromEff(f);
       addCSV('detalle_por_usuario.csv', ['Usuario','Promedio_Diario','Efectividad'],
              data.map(d=>({Usuario:d.user,Promedio_Diario:d.prom,Efectividad:d.eff})));
-      const sel=document.getElementById('user-detail-select').value;
-      if(sel){
-        const rows2=currentData.filter(r=>r.usuario===sel).sort((a,b)=>a.week-b.week)
-          .map(r=>({Semana:r.week, Mes:r.mes, Total_Tareas:r.total_tareas}));
-        addCSV(`detalle_${sel}.csv`, ['Semana','Mes','Total_Tareas'], rows2);
-      }
       const c1=document.getElementById('tasksByUserChart');
-      const c2=document.getElementById('userDetailChart');
       const b1=await (await fetch(c1.toDataURL('image/png'))).blob();
-      const b2=await (await fetch(c2.toDataURL('image/png'))).blob();
-      zip.file('detalle_prom_efectividad.png', b1); zip.file('detalle_usuario_tareas.png', b2);
+      zip.file('detalle_prom_efectividad.png', b1);
 
     }else if(id==='lideres'){
       const data = buildLideresData(f);
-      addCSV('lideres_prom_y_efectividad.csv', ['Lider','Promedio_Diario','Efectividad'],
+      addCSV('comparativa_equipo.csv', ['Lider','Promedio_Diario','Efectividad'],
              data.map(d=>({Lider:d.lider,Promedio_Diario:d.prom,Efectividad:d.eff})));
       const c=document.getElementById('tasksByLeaderChart');
       const b=await (await fetch(c.toDataURL('image/png'))).blob();
-      zip.file('lideres.png', b);
+      zip.file('comparativa_equipo.png', b);
 
     }else if(id==='evolucion'){
       const series=buildEvolucionData(f);
-      addCSV('evolucion_promedio_diario.csv', ['Semana','Promedio_Diario'],
-             series.labels.map((lab,i)=>({Semana:lab,Promedio_Diario:series.values[i]})));
+      addCSV('evolucion_promedio_y_efectividad.csv', ['Semana','Promedio_Diario','Efectividad'],
+             series.labels.map((lab,i)=>({Semana:lab,Promedio_Diario:series.values[i],Efectividad:series.eff[i]})));
       const c=document.getElementById('weeklyEvolutionChart');
       const b=await (await fetch(c.toDataURL('image/png'))).blob();
       zip.file('evolucion.png', b);
@@ -1117,13 +1080,23 @@
     const agg=new Map();
     currentData.forEach(r=>{
       const w=Number(r.week); if(!Number.isFinite(w)) return;
-      const o=agg.get(w)||{num:0,den:0}; o.num+=tareasFlujo(r,f); o.den+=(r.dias_activos||0); agg.set(w,o);
+      const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
+      o.num+=tareasFlujo(r,f); o.den+=(r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
+        const weight=(r.correcciones_auditadas||0)||1; o.effNum+=r.efectividad*weight; o.effDen+=weight;
+      }
+      agg.set(w,o);
     });
-    const weeks=[...agg.keys()]; if(!weeks.length) return {labels:[],values:[]};
+    const weeks=[...agg.keys()]; if(!weeks.length) return {labels:[],values:[],eff:[]};
     const minW=Math.min(...weeks), maxW=Math.max(...weeks);
-    const labels=[], values=[];
-    for(let w=minW; w<=maxW; w++){ labels.push('W'+String(w).padStart(2,'0')); const o=agg.get(w); values.push((o&&o.den)?o.num/o.den:0); }
-    return {labels, values};
+    const labels=[], values=[], eff=[];
+    for(let w=minW; w<=maxW; w++){
+      labels.push('W'+String(w).padStart(2,'0'));
+      const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
+      values.push((o&&o.den)?o.num/o.den:0);
+      eff.push((o&&o.effDen)? (o.effNum/o.effDen) : 0);
+    }
+    return {labels, values, eff};
   }
   function buildUbicacionData(f){
     const byLoc=new Map(), effLoc=new Map(), antig={};
@@ -1165,8 +1138,8 @@
       rows=data.map(d=>({Lider:d.lider, Promedio_Diario:d.prom, Efectividad:d.eff}));
     }else if(id==='evolucion'){
       const series=buildEvolucionData(f);
-      headers=['Semana','Promedio_Diario'];
-      rows=series.labels.map((lab,i)=>({Semana:lab, Promedio_Diario:series.values[i]}));
+      headers=['Semana','Promedio_Diario','Efectividad'];
+      rows=series.labels.map((lab,i)=>({Semana:lab, Promedio_Diario:series.values[i], Efectividad:series.eff[i]}));
     }else if(id==='ubicacion'){
       const data=buildUbicacionData(f);
       headers=['Ubicacion','Promedio_Diario','Efectividad'];
@@ -1204,8 +1177,7 @@
 
   function setupGeminiFeatures(){
     document.getElementById('generate-summary-btn').addEventListener('click', async ()=>{
-      const block=document.getElementById('summary-output');
-      if(block){ block.remove(); }
+      const old=document.getElementById('summary-output'); if(old) old.remove();
       const cont = document.createElement('div');
       cont.id='summary-output';
       cont.className='mt-4 p-4 bg-slate-50 rounded-md border border-slate-200';
@@ -1227,19 +1199,6 @@
         const resp = await geminiRequest(prompt);
         cont.textContent=resp;
       }catch(e){ cont.textContent=e.message; }
-    });
-
-    document.getElementById('generate-feedback-btn').addEventListener('click', async ()=>{
-      const user=document.getElementById('user-detail-select').value;
-      let out=document.getElementById('feedback-output');
-      out.classList.remove('hidden'); out.textContent='Analizando...';
-      try{
-        const rows=currentData.filter(r=>r.usuario===user).sort((a,b)=>a.week-b.week);
-        const effAvg=(rows.map(r=>r.efectividad).filter(v=>v!=='').reduce((a,b)=>a+b,0)/(rows.filter(r=>r.efectividad!=='').length||1));
-        const prompt=`Feedback breve para ${user}. Evolución semanas: ${rows.map(r=>`W${r.week}:${r.total_tareas}`).join(', ')}. Efectividad promedio ${(effAvg).toFixed(2)}. Señala 2 fortalezas y 2 oportunidades.`;
-        const resp=await geminiRequest(prompt);
-        out.textContent=resp;
-      }catch(e){ out.textContent=e.message; }
     });
 
     document.getElementById('generate-insights-btn').addEventListener('click', async ()=>{
@@ -1287,4 +1246,3 @@
   </script>
 </body>
 </html>
-
