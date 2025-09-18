@@ -446,10 +446,11 @@
   }
 
   function uniqueSorted(arr){ return Array.from(new Set(arr)).sort(); }
+  function uniqueSortedNum(arr){ return Array.from(new Set(arr)).sort((a,b)=>a-b); }
 
   function setupFilters(){
     const meses = MONTHS_ES.filter(m => originalData.some(r=>r.mes===m)); // orden cronológico real
-    const semanas = uniqueSorted(originalData.map(r=>r.week)).map(String);
+    const semanas = uniqueSortedNum(originalData.map(r=>r.week)).map(String);
     const ubic = uniqueSorted(originalData.map(r=>r.ciudad).filter(Boolean));
     const usuarios = uniqueSorted(originalData.map(r=>r.usuario));
     const lideres = uniqueSorted(originalData.map(r=>r['líder']).filter(l => l && l.toLowerCase() !== 'sin líder'));
@@ -626,20 +627,49 @@
     });
   }
 
-  function renderWeeklyEvolution(){
-    const byW = new Map();
-    currentData.forEach(r=>{
-      const key = `W${String(r.week).padStart(2,'0')}`;
-      byW.set(key, (byW.get(key)||0) + (r.total_tareas||0));
-    });
-    const labels = Array.from(byW.keys()).sort((a,b)=> Number(a.slice(1))-Number(b.slice(1)));
-    const values = labels.map(k=>byW.get(k));
-    createOrUpdateChart('weeklyEvolutionChart',{
-      type:'line',
-      data:{ labels, datasets:[{label:'Total Tareas', data: values}] },
-      options:{ responsive:true, plugins:{legend:{display:false}}}
-    });
+function renderWeeklyEvolution(){
+  // Agrego por semana (numérica) el total de tareas
+  const byW = new Map();
+  currentData.forEach(r => {
+    const w = Number(r.week);
+    if (!Number.isFinite(w)) return;
+    byW.set(w, (byW.get(w) || 0) + (r.total_tareas || 0));
+  });
+
+  const weeks = Array.from(byW.keys());
+  if (!weeks.length) {
+    createOrUpdateChart('weeklyEvolutionChart', { type:'line', data:{labels:[], datasets:[]}, options:{} });
+    return;
   }
+
+  const minW = Math.min(...weeks);
+  const maxW = Math.max(...weeks);
+
+  const labels = [];
+  const values = [];
+  for (let w = minW; w <= maxW; w++) {
+    labels.push('W' + String(w).padStart(2,'0'));
+    values.push(byW.get(w) || 0);
+  }
+
+  createOrUpdateChart('weeklyEvolutionChart', {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Total Tareas', data: values, borderWidth: 2, tension: .2, pointRadius: 2 }] },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: {
+          ticks: {
+            autoSkip: false,    // <- muestra todas
+            maxRotation: 0,     // sin rotación; si querés, probá 45
+            minRotation: 0
+          }
+        }
+      }
+    }
+  });
+}
 
   function renderByLocation(){
     // barras por ubicación
@@ -833,6 +863,7 @@ async function geminiRequest(prompt) {
   </script>
 </body>
 </html>
+
 
 
 
