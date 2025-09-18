@@ -14,28 +14,20 @@
   <style>
     body { font-family: 'Inter', sans-serif; }
     .sidebar-link { transition: all 0.2s ease-in-out; }
-    .sidebar-link:hover, .sidebar-link.active {
-      background-color: #0369a1; color: #fff; transform: translateX(4px);
-    }
-    .kpi-card {
-      background-color: #fff; border-radius: 0.75rem; padding: 1.5rem;
-      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    }
-    .kpi-card:hover { transform: translateY(-4px);
-      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+    .sidebar-link:hover, .sidebar-link.active { background-color: #0369a1; color: #fff; transform: translateX(4px); }
+    .kpi-card { background-color: #fff; border-radius: 0.75rem; padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
     .chart-container { height: 400px; }
-    #mobile-menu { transition: transform 0.3s ease-in-out; }
-    .prose { line-height: 1.6; }
-    .prose strong { color: #0f172a; }
-    .prose li { margin-top: 0.5rem; }
+    #debug-panel code { background: #0b1020; color: #a7f3d0; padding: 0.25rem 0.5rem; border-radius: 6px; display: inline-block; }
+    table.preview { border-collapse: collapse; font-size: 12px; }
+    table.preview th, table.preview td { border: 1px solid #e5e7eb; padding: 4px 6px; white-space: nowrap; }
   </style>
 </head>
 
 <body class="bg-slate-100 text-slate-800">
   <div class="flex h-screen overflow-hidden">
     <!-- Sidebar -->
-    <aside id="sidebar" class="hidden md:flex w-64 flex-col bg-sky-800 text-sky-100 p-4 transition-all duration-300">
+    <aside id="sidebar" class="hidden md:flex w-64 flex-col bg-sky-800 text-sky-100 p-4">
       <div class="flex items-center mb-8">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-3 text-white" viewBox="0 0 20 20" fill="currentColor">
           <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
@@ -53,138 +45,154 @@
       </nav>
     </aside>
 
-    <!-- Main Content -->
+    <!-- Main -->
     <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100">
       <div class="container mx-auto px-6 py-8">
-        <!-- Header y Menú Móvil -->
         <div class="flex justify-between items-center mb-6">
-          <button id="mobile-menu-button" class="md:hidden text-slate-600">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-            </svg>
-          </button>
           <h2 id="page-title" class="text-3xl font-bold text-slate-700">Resumen General</h2>
         </div>
 
-        <!-- Aviso mapping -->
-        <div id="mapping-warning" class="hidden mb-6 p-4 rounded-lg border border-amber-300 bg-amber-50 text-amber-800"></div>
+        <!-- Avisos -->
+        <div id="mapping-warning" class="hidden mb-4 p-4 rounded-lg border border-amber-300 bg-amber-50 text-amber-800"></div>
+        <div id="fatal-error" class="hidden mb-4 p-4 rounded-lg border border-red-300 bg-red-50 text-red-800"></div>
 
-        <!-- Filters -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <!-- Debug visible -->
+        <details id="debug-panel" class="mb-6">
+          <summary class="cursor-pointer text-slate-600">🧪 Debug de datos (encabezados, filas y mapeo)</summary>
+          <div class="mt-3 space-y-3 text-sm">
+            <div>Filas leídas: <span id="dbg-rows" class="font-semibold">0</span></div>
+            <div>Separador detectado: <code id="dbg-delim">?</code></div>
+            <div>Encabezados detectados:</div>
+            <div id="dbg-headers" class="p-2 bg-white rounded border text-xs"></div>
+            <div>Mapeo de columnas (clave → encabezado):</div>
+            <pre id="dbg-map" class="p-3 bg-white rounded border overflow-auto text-xs"></pre>
+            <div>Preview (primeras 10 filas):</div>
+            <div id="dbg-preview" class="p-2 bg-white rounded border overflow-auto"></div>
+          </div>
+        </details>
+
+        <!-- Filtros (ahora con 5 columnas, incluye Usuario) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           <select id="filter-mes" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
           <select id="filter-semana" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
           <select id="filter-lider" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
           <select id="filter-ubicacion" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
+          <select id="filter-usuario" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
         </div>
 
-        <!-- Dashboard Sections -->
-        <div id="dashboard-content">
-          <!-- Resumen General -->
-          <section id="resumen" class="page-section">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-              <div class="kpi-card text-center">
-                <h3 class="text-slate-500 font-medium">Total Tareas</h3>
-                <p id="kpi-total-tareas" class="text-4xl font-bold mt-2"></p>
-              </div>
-              <div class="kpi-card text-center">
-                <h3 class="text-slate-500 font-medium">% Efectividad Prom.</h3>
-                <p id="kpi-efectividad-prom" class="text-4xl font-bold mt-2 text-green-600"></p>
-              </div>
-              <div class="kpi-card text-center">
-                <h3 class="text-slate-500 font-medium">Correcciones Totales</h3>
-                <p id="kpi-correcciones" class="text-4xl font-bold mt-2 text-amber-600"></p>
-              </div>
-              <div class="kpi-card text-center">
-                <h3 class="text-slate-500 font-medium">Usuarios Activos</h3>
-                <p id="kpi-usuarios" class="text-4xl font-bold mt-2"></p>
-              </div>
+        <!-- Resumen -->
+        <section id="resumen" class="page-section">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div class="kpi-card text-center">
+              <h3 class="text-slate-500 font-medium">Total Tareas</h3>
+              <p id="kpi-total-tareas" class="text-4xl font-bold mt-2">—</p>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div class="kpi-card">
-                <h3 class="text-xl font-semibold mb-4">Top 10 Usuarios por Tareas</h3>
-                <div class="chart-container"><canvas id="tasksByUserChart"></canvas></div>
-              </div>
-              <div class="kpi-card">
-                <h3 class="text-xl font-semibold mb-4">Tareas: Demanda vs. Enhancement</h3>
-                <div class="chart-container relative mx-auto" style="height:300px;width:100%;max-width:360px">
-                  <canvas id="demandPieChart"></canvas>
-                </div>
-              </div>
+            <div class="kpi-card text-center">
+              <h3 class="text-slate-500 font-medium">% Efectividad Prom.</h3>
+              <p id="kpi-efectividad-prom" class="text-4xl font-bold mt-2 text-green-600">—</p>
             </div>
-          </section>
+            <div class="kpi-card text-center">
+              <h3 class="text-slate-500 font-medium">Correcciones Totales</h3>
+              <p id="kpi-correcciones" class="text-4xl font-bold mt-2 text-amber-600">—</p>
+            </div>
+            <div class="kpi-card text-center">
+              <h3 class="text-slate-500 font-medium">Usuarios Activos</h3>
+              <p id="kpi-usuarios" class="text-4xl font-bold mt-2">—</p>
+            </div>
+          </div>
 
-          <!-- Otras secciones (placeholders por ahora) -->
-          <section id="productividad" class="page-section hidden">
-            <div class="kpi-card"><h3 class="text-xl font-semibold mb-4">Detalle por Usuario</h3>
-              <div class="chart-container"><canvas id="userDetailChart"></canvas></div>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="kpi-card">
+              <h3 class="text-xl font-semibold mb-4">Top 10 Usuarios por Tareas</h3>
+              <div class="chart-container"><canvas id="tasksByUserChart"></canvas></div>
             </div>
-          </section>
-
-          <section id="lideres" class="page-section hidden">
-            <div class="kpi-card"><h3 class="text-xl font-semibold mb-4">Comparativa por Líder</h3>
-              <div class="chart-container"><canvas id="tasksByLeaderChart"></canvas></div>
-            </div>
-          </section>
-
-          <section id="evolucion" class="page-section hidden">
-            <div class="kpi-card"><h3 class="text-xl font-semibold mb-4">Evolución Semanal</h3>
-              <div class="chart-container"><canvas id="weeklyEvolutionChart"></canvas></div>
-            </div>
-          </section>
-
-          <section id="ubicacion" class="page-section hidden">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div class="kpi-card"><h3 class="text-xl font-semibold mb-4">Total por Ubicación</h3>
-                <div class="chart-container"><canvas id="tasksByLocationChart"></canvas></div>
-              </div>
-              <div class="kpi-card"><h3 class="text-xl font-semibold mb-4">Antigüedad Promedio (meses)</h3>
-                <div id="avg-antiguedad-list"></div>
+            <div class="kpi-card">
+              <h3 class="text-xl font-semibold mb-4">Tareas: Demanda vs. Enhancement</h3>
+              <div class="chart-container relative mx-auto" style="height:300px;width:100%;max-width:360px">
+                <canvas id="demandPieChart"></canvas>
               </div>
             </div>
-          </section>
+          </div>
+        </section>
 
-          <section id="proyecciones" class="page-section hidden">
-            <div class="kpi-card"><h3 class="text-xl font-semibold mb-4">Proyección</h3>
-              <div class="chart-container"><canvas id="projectionsChart"></canvas></div>
-            </div>
-          </section>
+        <!-- Productividad por Usuario -->
+        <section id="productividad" class="page-section hidden">
+          <div class="kpi-card"><h3 class="text-xl font-semibold mb-4">Detalle por Usuario (semanal)</h3>
+            <div class="chart-container"><canvas id="userDetailChart"></canvas></div>
+            <p id="user-detail-hint" class="text-slate-500 mt-3">Elegí un <strong>Usuario</strong> en el filtro superior para ver su evolución semanal.</p>
+          </div>
+        </section>
 
-          <section id="analisis" class="page-section hidden">
-            <div class="kpi-card"><h3 class="text-xl font-semibold mb-2">Análisis Inteligente</h3>
-              <p class="text-slate-600">Acá se engancha Gemini luego.</p>
+        <!-- Comparativa de Líderes -->
+        <section id="lideres" class="page-section hidden">
+          <div class="kpi-card"><h3 class="text-xl font-semibold mb-4">Comparativa por Líder</h3>
+            <div class="chart-container"><canvas id="tasksByLeaderChart"></canvas></div>
+          </div>
+        </section>
+
+        <!-- Evolución Semanal -->
+        <section id="evolucion" class="page-section hidden">
+          <div class="kpi-card"><h3 class="text-xl font-semibold mb-4">Evolución Semanal de Tareas</h3>
+            <div class="chart-container"><canvas id="weeklyEvolutionChart"></canvas></div>
+          </div>
+        </section>
+
+        <!-- Análisis por Ubicación -->
+        <section id="ubicacion" class="page-section hidden">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="kpi-card"><h3 class="text-xl font-semibold mb-4">Total por Ubicación</h3>
+              <div class="chart-container"><canvas id="tasksByLocationChart"></canvas></div>
             </div>
-          </section>
-        </div>
+            <div class="kpi-card"><h3 class="text-xl font-semibold mb-4">Antigüedad Promedio (meses)</h3>
+              <div id="avg-antiguedad-list" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Proyecciones (placeholder) -->
+        <section id="proyecciones" class="page-section hidden">
+          <div class="kpi-card"><h3 class="text-xl font-semibold mb-4">Proyección (próximos pasos)</h3>
+            <p class="text-slate-600">Podemos aplicar regresión lineal sobre los datos semanales filtrados. Lo activo si te sirve.</p>
+          </div>
+        </section>
+
+        <!-- Análisis Inteligente -->
+        <section id="analisis" class="page-section hidden">
+          <div class="kpi-card">
+            <h3 class="text-xl font-semibold mb-2">Análisis Inteligente (Gemini)</h3>
+            <p class="text-slate-600 mb-4">Genera insights con IA a partir de los datos filtrados actuales.</p>
+            <div class="flex gap-3 items-center mb-3">
+              <button id="generate-insights-btn" class="bg-sky-600 text-white px-5 py-2 rounded-lg hover:bg-sky-700">
+                ✨ Generar insights
+              </button>
+              <span id="insights-status" class="text-slate-500"></span>
+            </div>
+            <div id="insights-output" class="p-4 bg-slate-50 rounded-md border border-slate-200 hidden"></div>
+            <p class="mt-3 text-xs text-slate-500">
+              Nota: por seguridad, el front llama a un <em>proxy</em> (serverless) que usa tu clave de Gemini. Nunca publiques la API key en el cliente.
+            </p>
+          </div>
+        </section>
       </div>
     </main>
   </div>
 
-  <!-- Menú móvil -->
-  <div id="mobile-menu" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden">
-    <aside class="absolute top-0 left-0 h-full w-64 bg-sky-800 text-sky-100 p-4 transform -translate-x-full transition-transform duration-300">
-      <div class="flex justify-between items-center mb-8">
-        <h1 class="text-2xl font-bold text-white">Menú</h1>
-        <button id="close-mobile-menu">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
-        </button>
-      </div>
-      <nav id="mobile-nav-menu" class="flex-1 space-y-2"></nav>
-    </aside>
-  </div>
-
-  <!-- PapaParse para CSV -->
+  <!-- PapaParse -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
-  <!-- App script -->
+  <!-- App -->
   <script>
-    // ====== Estado global ======
+    /********** CONFIG GEMINI (proxy) **********/
+    // Cambiá esta URL por la de tu función/proxy (Cloud Functions, Cloud Run, Vercel/Netlify Functions, etc.)
+    const GEMINI_PROXY_URL = "https://TU-ENDPOINT-DE-PROXY/gemini"; // <- reemplazar
+
+    /********** ESTADO **********/
     let originalData = [];
     let charts = {};
     let COL = {};
+    let DETECTED_DELIM = ',';
 
-    // ====== Normalización ======
+    /********** NORMALIZACIÓN **********/
     const removeAccents = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
     const normKey = s => removeAccents(String(s||'').toLowerCase().trim().replace(/\s+/g,' ').replace(/[^\w %/()-]/g,''));
 
@@ -199,13 +207,15 @@
       return t;
     }
 
-    // ====== CSV: autodetecta separador y limpia BOM ======
+    /********** CSV **********/
     function parseCSV(text) {
-      if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1); // BOM
+      if (!text) return [];
+      if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
       const semi = (text.match(/;/g)||[]).length;
       const coma = (text.match(/,/g)||[]).length;
-      const delimiter = semi > coma ? ';' : ',';
-      const parsed = Papa.parse(text, { header: true, skipEmptyLines: true, delimiter });
+      DETECTED_DELIM = semi > coma ? ';' : ',';
+
+      const parsed = Papa.parse(text, { header: true, skipEmptyLines: true, delimiter: DETECTED_DELIM });
       return parsed.data.map(row => {
         const out = {};
         for (const [k, v] of Object.entries(row)) out[String(k).trim()] = normalizeValue(v);
@@ -213,11 +223,9 @@
       });
     }
 
-    // ====== Detección flexible de columnas ======
     function buildColumnMap(rows) {
       const headers = Object.keys(rows[0] || {});
-      const idx = {};
-      headers.forEach(h => idx[normKey(h)] = h);
+      const idx = {}; headers.forEach(h => idx[normKey(h)] = h);
 
       const want = {
         mes: ['mes'],
@@ -240,8 +248,8 @@
       const findCol = candidates => {
         for (const c of candidates) {
           const nk = normKey(c);
-          if (idx[nk]) return idx[nk]; // match exacto normalizado
-          const hit = headers.find(h => normKey(h).includes(nk)); // match laxo
+          if (idx[nk]) return idx[nk];
+          const hit = headers.find(h => normKey(h).includes(nk));
           if (hit) return hit;
         }
         return null;
@@ -249,22 +257,47 @@
 
       const map = {};
       for (const key of Object.keys(want)) map[key] = findCol(want[key]);
+
+      // Fallback: si no hay total_tareas, elegimos la columna numérica con mayor suma
+      if (!map.total_tareas) {
+        const numericCols = headers.filter(h => {
+          const nk = normKey(h);
+          const looksPercent = nk.includes('%') || nk.includes('porcentaje');
+          return !looksPercent;
+        });
+        let best = null, bestSum = -Infinity;
+        numericCols.forEach(h => {
+          const s = rows.reduce((acc,r)=> acc + (Number(r[h])||0), 0);
+          if (s > bestSum) { bestSum = s; best = h; }
+        });
+        if (best) map.total_tareas = best;
+      }
+
       return { map, headers };
     }
 
-    // ====== Helpers ======
+    /********** HELPERS **********/
     const uniq = arr => Array.from(new Set(arr.filter(x => x !== '' && x != null)));
     const sum = arr => arr.reduce((a,b) => a + (Number(b)||0), 0);
     const avg = arr => arr.length ? sum(arr)/arr.length : 0;
     const q = id => document.getElementById(id);
     const getValue = (row, colName) => colName ? row[colName] : undefined;
 
-    // ====== UI de filtros ======
+    const MONTHS = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const monthIndex = m => {
+      const i = MONTHS.indexOf(String(m||'').toLowerCase());
+      return i === -1 ? 99 : i;
+    };
+
+    /********** FILTROS **********/
     function setupFilters(data, col) {
-      const mes = uniq(data.map(r => getValue(r, col.mes))).sort();
-      const semana = uniq(data.map(r => getValue(r, col.semana))).sort((a,b)=> (a||0)-(b||0));
-      const lider = uniq(data.map(r => getValue(r, col.lider))).sort();
-      const ubic = uniq(data.map(r => getValue(r, col.ubicacion))).sort();
+      const meses = uniq(data.map(r => getValue(r, col.mes))).sort((a,b)=> monthIndex(a) - monthIndex(b));
+      const semanas = uniq(data.map(r => getValue(r, col.semana))).sort((a,b)=> (a||0)-(b||0));
+      const lideres = uniq(data.map(r => getValue(r, col.lider)))
+        .filter(v => v && !/sin\s*l[ií]der/i.test(String(v))) // fuera "Sin líder"
+        .sort((a,b)=> String(a).localeCompare(String(b), 'es'));
+      const ubic = uniq(data.map(r => getValue(r, col.ubicacion))).sort((a,b)=> String(a).localeCompare(String(b),'es'));
+      const usuarios = uniq(data.map(r => getValue(r, col.usuario))).sort((a,b)=> String(a).localeCompare(String(b),'es'));
 
       const fill = (sel, values, label) => {
         sel.innerHTML = '';
@@ -278,12 +311,13 @@
         });
       };
 
-      fill(q('filter-mes'), mes, 'los meses');
-      fill(q('filter-semana'), semana, 'las semanas');
-      fill(q('filter-lider'), lider, 'los líderes');
+      fill(q('filter-mes'), meses, 'los meses');
+      fill(q('filter-semana'), semanas, 'las semanas');
+      fill(q('filter-lider'), lideres, 'los líderes');
       fill(q('filter-ubicacion'), ubic, 'las ubicaciones');
+      fill(q('filter-usuario'), usuarios, 'los usuarios');
 
-      ['filter-mes','filter-semana','filter-lider','filter-ubicacion'].forEach(id => {
+      ['filter-mes','filter-semana','filter-lider','filter-ubicacion','filter-usuario'].forEach(id => {
         q(id).addEventListener('change', applyFilters);
       });
     }
@@ -295,10 +329,11 @@
         semana: v('filter-semana') || null,
         lider: v('filter-lider') || null,
         ubicacion: v('filter-ubicacion') || null,
+        usuario: v('filter-usuario') || null,
       };
     }
 
-    // ====== Charts ======
+    /********** CHARTS **********/
     function createOrUpdateChart(id, type, data, options) {
       const ctx = q(id);
       if (!ctx) return;
@@ -306,21 +341,8 @@
       charts[id] = new Chart(ctx, { type, data, options });
     }
 
-    // ====== Render principal ======
-    function applyFilters() {
-      if (!originalData.length) return;
-
-      // Filtros activos
-      const f = getActiveFilters();
-      const rows = originalData.filter(r => {
-        const okMes = !f.mes || getValue(r, COL.mes) == f.mes;
-        const okSem = !f.semana || getValue(r, COL.semana) == f.semana;
-        const okLid = !f.lider || getValue(r, COL.lider) == f.lider;
-        const okUbi = !f.ubicacion || getValue(r, COL.ubicacion) == f.ubicacion;
-        return okMes && okSem && okLid && okUbi;
-      });
-
-      // KPIs
+    /********** RENDER POR SECCIÓN **********/
+    function renderResumen(rows) {
       const totalTareas = COL.total_tareas
         ? sum(rows.map(r => getValue(r, COL.total_tareas)))
         : sum(rows.map(r => (getValue(r, COL.tareas_demanda)||0) + (getValue(r, COL.tareas_enh)||0)));
@@ -329,23 +351,10 @@
       const correcciones = COL.correcciones ? sum(rows.map(r => getValue(r, COL.correcciones))) : 0;
       const usuariosActivos = COL.usuario ? uniq(rows.map(r => getValue(r, COL.usuario))).length : 0;
 
-      q('kpi-total-tareas').textContent = totalTareas.toLocaleString('es-AR');
-      q('kpi-efectividad-prom').textContent = (efectProm != null) ? (efectProm.toFixed(2) + '%') : '—';
-      q('kpi-correcciones').textContent = correcciones.toLocaleString('es-AR');
-      q('kpi-usuarios').textContent = usuariosActivos.toLocaleString('es-AR');
-
-      // Avisos de mapping si faltan columnas
-      const missing = [];
-      if (!COL.usuario)        missing.push('Usuario');
-      if (!COL.total_tareas && !COL.tareas_demanda && !COL.tareas_enh) missing.push('Total Tareas o Demanda/Enhancement');
-      const warn = q('mapping-warning');
-      if (missing.length) {
-        warn.classList.remove('hidden');
-        warn.innerHTML = `<strong>Atención:</strong> no se detectaron columnas: ${missing.join(', ')}. Revisá encabezados del CSV.`;
-      } else {
-        warn.classList.add('hidden');
-        warn.textContent = '';
-      }
+      q('kpi-total-tareas').textContent = Number(totalTareas||0).toLocaleString('es-AR');
+      q('kpi-efectividad-prom').textContent = (efectProm != null && isFinite(efectProm)) ? (efectProm.toFixed(2) + '%') : '—';
+      q('kpi-correcciones').textContent = Number(correcciones||0).toLocaleString('es-AR');
+      q('kpi-usuarios').textContent = Number(usuariosActivos||0).toLocaleString('es-AR');
 
       // Pie Demanda vs Enhancement
       const totDem = sum(rows.map(r => getValue(r, COL.tareas_demanda)));
@@ -362,20 +371,147 @@
         const t = COL.total_tareas
           ? (getValue(r, COL.total_tareas) || 0)
           : (getValue(r, COL.tareas_demanda)||0) + (getValue(r, COL.tareas_enh)||0);
-        byUser[u] = (byUser[u] || 0) + t;
+        byUser[u] = (byUser[u] || 0) + (Number(t)||0);
       });
       const ranked = Object.entries(byUser).sort((a,b)=>b[1]-a[1]).slice(0,10);
       createOrUpdateChart('tasksByUserChart', 'bar', {
         labels: ranked.map(x => x[0]),
         datasets: [{ label: 'Tareas', data: ranked.map(x => x[1]) }]
-      }, {
-        responsive: true,
-        plugins: { legend: { display:false } },
-        scales: { y: { beginAtZero: true } }
+      }, { responsive: true, plugins: { legend: { display:false } }, scales: { y: { beginAtZero: true } } });
+    }
+
+    function renderProductividad(rows, filters) {
+      const hint = q('user-detail-hint');
+      if (!filters.usuario) {
+        hint.classList.remove('hidden');
+        createOrUpdateChart('userDetailChart', 'line', { labels: [], datasets: [] }, { });
+        return;
+      }
+      hint.classList.add('hidden');
+
+      // Agrupo por semana para el usuario
+      const userRows = rows.filter(r => getValue(r, COL.usuario) == filters.usuario);
+      const map = {};
+      userRows.forEach(r => {
+        const w = getValue(r, COL.semana);
+        const t = COL.total_tareas
+          ? (getValue(r, COL.total_tareas) || 0)
+          : (getValue(r, COL.tareas_demanda)||0) + (getValue(r, COL.tareas_enh)||0);
+        map[w] = (map[w] || 0) + (Number(t)||0);
+      });
+      const weeks = Object.keys(map).sort((a,b)=>(a||0)-(b||0));
+      const values = weeks.map(w => map[w]);
+
+      createOrUpdateChart('userDetailChart', 'line', {
+        labels: weeks,
+        datasets: [{ label: `Tareas de ${filters.usuario}`, data: values, fill:false, tension:0.2 }]
+      }, { responsive:true, plugins:{ legend:{ display:true } }, scales:{ y:{ beginAtZero:true } } });
+    }
+
+    function renderLideres(rows) {
+      const byLead = {};
+      rows.forEach(r => {
+        const lead = getValue(r, COL.lider);
+        if (!lead || /sin\s*l[ií]der/i.test(String(lead))) return;
+        const t = COL.total_tareas
+          ? (getValue(r, COL.total_tareas) || 0)
+          : (getValue(r, COL.tareas_demanda)||0) + (getValue(r, COL.tareas_enh)||0);
+        byLead[lead] = (byLead[lead] || 0) + (Number(t)||0);
+      });
+      const ranked = Object.entries(byLead).sort((a,b)=>b[1]-a[1]);
+      createOrUpdateChart('tasksByLeaderChart', 'bar', {
+        labels: ranked.map(x => x[0]),
+        datasets: [{ label: 'Tareas', data: ranked.map(x => x[1]) }]
+      }, { responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true } } });
+    }
+
+    function renderEvolucion(rows) {
+      const byWeek = {};
+      rows.forEach(r => {
+        const w = getValue(r, COL.semana);
+        const t = COL.total_tareas
+          ? (getValue(r, COL.total_tareas) || 0)
+          : (getValue(r, COL.tareas_demanda)||0) + (getValue(r, COL.tareas_enh)||0);
+        byWeek[w] = (byWeek[w] || 0) + (Number(t)||0);
+      });
+      const weeks = Object.keys(byWeek).sort((a,b)=>(a||0)-(b||0));
+      const vals = weeks.map(w => byWeek[w]);
+
+      createOrUpdateChart('weeklyEvolutionChart', 'line', {
+        labels: weeks,
+        datasets: [{ label: 'Tareas totales', data: vals, fill:false, tension:0.2 }]
+      }, { responsive:true, plugins:{ legend:{ display:true } }, scales:{ y:{ beginAtZero:true } } });
+    }
+
+    function renderUbicacion(rows) {
+      const byLoc = {};
+      const age = {};
+      rows.forEach(r => {
+        const loc = getValue(r, COL.ubicacion) || '—';
+        const t = COL.total_tareas
+          ? (getValue(r, COL.total_tareas) || 0)
+          : (getValue(r, COL.tareas_demanda)||0) + (getValue(r, COL.tareas_enh)||0);
+        byLoc[loc] = (byLoc[loc] || 0) + (Number(t)||0);
+
+        const a = Number(getValue(r, COL.antiguedad));
+        if (Number.isFinite(a)) {
+          if (!age[loc]) age[loc] = [];
+          age[loc].push(a);
+        }
+      });
+      const labels = Object.keys(byLoc).sort((a,b)=> String(a).localeCompare(String(b),'es'));
+      const values = labels.map(l => byLoc[l]);
+
+      createOrUpdateChart('tasksByLocationChart', 'bar', {
+        labels, datasets: [{ label: 'Tareas', data: values }]
+      }, { responsive:true, plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true } } });
+
+      const cont = q('avg-antiguedad-list');
+      cont.innerHTML = '';
+      Object.keys(age).sort((a,b)=> String(a).localeCompare(String(b),'es')).forEach(loc => {
+        const v = avg(age[loc]);
+        const item = document.createElement('div');
+        item.className = 'p-2 border rounded bg-white';
+        item.textContent = `${loc}: ${v.toFixed(1)} meses`;
+        cont.appendChild(item);
       });
     }
 
-    // ====== Navegación simple ======
+    /********** APLICAR FILTROS (actualiza TODO) **********/
+    function applyFilters() {
+      if (!originalData.length) return;
+
+      const f = getActiveFilters();
+      const rows = originalData.filter(r => {
+        const okMes = !f.mes || getValue(r, COL.mes) == f.mes;
+        const okSem = !f.semana || getValue(r, COL.semana) == f.semana;
+        const okLid = !f.lider || getValue(r, COL.lider) == f.lider;
+        const okUbi = !f.ubicacion || getValue(r, COL.ubicacion) == f.ubicacion;
+        const okUsr = !f.usuario || getValue(r, COL.usuario) == f.usuario;
+        return okMes && okSem && okLid && okUbi && okUsr;
+      });
+
+      // Render de todas las secciones con el subset filtrado
+      renderResumen(rows);
+      renderProductividad(rows, f);
+      renderLideres(rows);
+      renderEvolucion(rows);
+      renderUbicacion(rows);
+
+      // Aviso de mapeo faltante
+      const missing = [];
+      if (!COL.usuario) missing.push('Usuario');
+      if (!COL.total_tareas && !COL.tareas_demanda && !COL.tareas_enh) missing.push('Total Tareas o Demanda/Enhancement');
+      const warn = q('mapping-warning');
+      if (missing.length) {
+        warn.classList.remove('hidden');
+        warn.innerHTML = `<strong>Atención:</strong> columnas no detectadas: ${missing.join(', ')}. Revisá encabezados del CSV.`;
+      } else {
+        warn.classList.add('hidden'); warn.textContent = '';
+      }
+    }
+
+    /********** NAVEGACIÓN **********/
     function setupNavigation() {
       const links = document.querySelectorAll('#nav-menu a');
       const sections = document.querySelectorAll('.page-section');
@@ -388,16 +524,58 @@
           const target = document.querySelector(link.getAttribute('href'));
           if (target) target.classList.remove('hidden');
           q('page-title').textContent = link.textContent.trim();
+          // Redibujo por si cambian tamaños al mostrar/ocultar
+          applyFilters();
         });
       });
     }
 
-    // ====== Carga robusta del CSV ======
-    async function fetchCSV() {
-      const rel = './datos.csv?v=' + Date.now();          // relativo (funciona en Pages)
-      const base = '/metricas/datos.csv?v=' + Date.now(); // base del project page
-      const raw  = 'https://raw.githubusercontent.com/catalogo-meli/metricas/main/datos.csv?v=' + Date.now();
+    /********** INSIGHTS (Gemini vía proxy) **********/
+    async function generateInsights(currentRows) {
+      const status = q('insights-status');
+      const out = q('insights-output');
+      out.classList.add('hidden');
+      status.textContent = 'Generando...';
 
+      // Compacto la data: resumen + primeras 100 filas para contexto
+      const summary = {
+        filas: currentRows.length,
+        total_tareas: currentRows.reduce((a,r)=>a + ((COL.total_tareas?Number(r[COL.total_tareas]):(Number(r[COL.tareas_demanda])||0)+(Number(r[COL.tareas_enh])||0))||0), 0),
+        efectividad_prom: COL.efectividad ? avg(currentRows.map(r => Number(r[COL.efectividad]||0))) : null,
+        por_lider: Object.entries(currentRows.reduce((acc,r)=>{
+          const k = r[COL.lider] || '—';
+          const t = COL.total_tareas ? Number(r[COL.total_tareas]||0) : (Number(r[COL.tareas_demanda])||0)+(Number(r[COL.tareas_enh])||0);
+          acc[k]=(acc[k]||0)+t; return acc;
+        }, {})).sort((a,b)=>b[1]-a[1]).slice(0,10),
+      };
+      const sample = currentRows.slice(0, 100);
+
+      try {
+        const resp = await fetch(GEMINI_PROXY_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: `Sos un analista de operaciones. Dame 6 insights accionables, 3 riesgos y 3 recomendaciones priorizadas (con bullets breves) a partir de este dataset filtrado. Responde en español, claro y directo.`,
+            data: { summary, sample }
+          })
+        });
+        if (!resp.ok) throw new Error('Error del proxy de Gemini');
+        const json = await resp.json();
+        out.innerHTML = `<div class="prose whitespace-pre-wrap">${json.text || json.output || JSON.stringify(json)}</div>`;
+        out.classList.remove('hidden');
+        status.textContent = '';
+      } catch (e) {
+        status.textContent = '';
+        out.classList.remove('hidden');
+        out.innerHTML = `<div class="text-red-700">No pude obtener insights. Revisá el GEMINI_PROXY_URL o los logs del proxy.</div>`;
+      }
+    }
+
+    /********** CARGA CSV **********/
+    async function fetchCSV() {
+      const rel = './datos.csv?v=' + Date.now();
+      const base = '/metricas/datos.csv?v=' + Date.now();
+      const raw  = 'https://raw.githubusercontent.com/catalogo-meli/metricas/main/datos.csv?v=' + Date.now();
       let resp = await fetch(rel, { cache: 'no-store' });
       if (!resp.ok) resp = await fetch(base, { cache: 'no-store' });
       if (!resp.ok) resp = await fetch(raw, { cache: 'no-store' });
@@ -405,27 +583,65 @@
       return resp.text();
     }
 
-    // ====== INIT ÚNICO ======
+    /********** INIT **********/
     document.addEventListener('DOMContentLoaded', async () => {
       try {
         setupNavigation();
 
         const csvText = await fetchCSV();
         originalData = parseCSV(csvText);
-        if (!originalData.length) throw new Error('El CSV está vacío o sin encabezados.');
 
-        const { map, headers } = buildColumnMap(originalData);
+        if (!originalData.length) {
+          q('fatal-error').classList.remove('hidden');
+          q('fatal-error').textContent = 'El CSV está vacío o no se pudo parsear. Verificá separador y encabezados.';
+          return;
+        }
+
+        const headers = Object.keys(originalData[0]);
+        const { map } = buildColumnMap(originalData);
         COL = map;
 
-        console.log('Encabezados detectados:', headers);
-        console.log('Column mapping:', COL);
-        console.log('Ejemplo de fila:', originalData[0]);
+        // Debug visible
+        q('dbg-rows').textContent = String(originalData.length);
+        q('dbg-delim').textContent = DETECTED_DELIM;
+        q('dbg-headers').textContent = headers.join(' | ');
+        q('dbg-map').textContent = JSON.stringify(COL, null, 2);
+        // Preview
+        (function renderPreview(){
+          const cont = q('dbg-preview'); cont.innerHTML = '';
+          const table = document.createElement('table'); table.className = 'preview';
+          const thead = document.createElement('thead'); const trh = document.createElement('tr');
+          headers.forEach(h => { const th = document.createElement('th'); th.textContent = h; trh.appendChild(th); });
+          thead.appendChild(trh); table.appendChild(thead);
+          const tbody = document.createElement('tbody');
+          originalData.slice(0,10).forEach(r => {
+            const tr = document.createElement('tr');
+            headers.forEach(h => { const td = document.createElement('td'); td.textContent = r[h]; tr.appendChild(td); });
+            tbody.appendChild(tr);
+          });
+          table.appendChild(tbody); cont.appendChild(table);
+        })();
 
         setupFilters(originalData, COL);
         applyFilters();
+
+        q('generate-insights-btn').addEventListener('click', () => {
+          const f = getActiveFilters();
+          const rows = originalData.filter(r => {
+            const okMes = !f.mes || getValue(r, COL.mes) == f.mes;
+            const okSem = !f.semana || getValue(r, COL.semana) == f.semana;
+            const okLid = !f.lider || getValue(r, COL.lider) == f.lider;
+            const okUbi = !f.ubicacion || getValue(r, COL.ubicacion) == f.ubicacion;
+            const okUsr = !f.usuario || getValue(r, COL.usuario) == f.usuario;
+            return okMes && okSem && okLid && okUbi && okUsr;
+          });
+          generateInsights(rows);
+        });
+
       } catch (err) {
         console.error(err);
-        document.body.innerHTML = `<div class="p-8 text-center text-red-600 bg-red-100">${err.message}</div>`;
+        q('fatal-error').classList.remove('hidden');
+        q('fatal-error').textContent = err.message;
       }
     });
   </script>
