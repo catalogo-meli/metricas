@@ -15,21 +15,15 @@
     body { font-family: 'Inter', sans-serif; }
     .sidebar-link { transition: all 0.2s ease-in-out; }
     .sidebar-link:hover, .sidebar-link.active {
-      background-color: #0369a1; /* sky-700 */
-      color: #fff;
-      transform: translateX(4px);
+      background-color: #0369a1; color: #fff; transform: translateX(4px);
     }
     .kpi-card {
-      background-color: #fff;
-      border-radius: 0.75rem;
-      padding: 1.5rem;
+      background-color: #fff; border-radius: 0.75rem; padding: 1.5rem;
       box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
       transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     }
-    .kpi-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    }
+    .kpi-card:hover { transform: translateY(-4px);
+      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
     .chart-container { height: 400px; }
     #mobile-menu { transition: transform 0.3s ease-in-out; }
     .prose { line-height: 1.6; }
@@ -105,15 +99,13 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div class="kpi-card">
                 <div class="flex justify-between items-center mb-4">
-                  <h3 class="text-xl font-semibold">Top 5 Usuarios por Efectividad</h3>
-                  <button id="generate-summary-btn" class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition-colors text-sm font-medium">✨ Generar Resumen</button>
+                  <h3 class="text-xl font-semibold">Top 10 Usuarios por Tareas</h3>
                 </div>
-                <div id="top-users-list"></div>
-                <div id="summary-output" class="mt-4 p-4 bg-slate-50 rounded-md border border-slate-200 hidden"></div>
+                <div class="chart-container"><canvas id="tasksByUserChart"></canvas></div>
               </div>
               <div class="kpi-card">
                 <h3 class="text-xl font-semibold mb-4">Tareas: Demanda vs. Enhancement</h3>
-                <div class="chart-container relative mx-auto" style="height:300px;width:100%;max-width:300px">
+                <div class="chart-container relative mx-auto" style="height:300px;width:100%;max-width:360px">
                   <canvas id="demandPieChart"></canvas>
                 </div>
               </div>
@@ -122,19 +114,8 @@
 
           <!-- Productividad por Usuario -->
           <section id="productividad" class="page-section hidden">
-            <div class="kpi-card mb-6">
-              <h3 class="text-xl font-semibold mb-4">Total de Tareas por Usuario</h3>
-              <div class="chart-container"><canvas id="tasksByUserChart"></canvas></div>
-            </div>
             <div class="kpi-card">
-              <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
-                <h3 class="text-xl font-semibold">Detalle de Productividad por Usuario</h3>
-                <div class="flex items-center gap-2">
-                  <select id="user-detail-select" class="w-full max-w-xs p-2 border rounded-md bg-white shadow-sm"></select>
-                  <button id="generate-feedback-btn" class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition-colors text-sm font-medium whitespace-nowrap">✨ Generar Feedback</button>
-                </div>
-              </div>
-              <div id="feedback-output" class="mb-4 p-4 bg-slate-50 rounded-md border border-slate-200 hidden"></div>
+              <h3 class="text-xl font-semibold mb-4">Detalle de Productividad (selección futura)</h3>
               <div class="chart-container"><canvas id="userDetailChart"></canvas></div>
             </div>
           </section>
@@ -142,7 +123,7 @@
           <!-- Comparativa de Líderes -->
           <section id="lideres" class="page-section hidden">
             <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-4">Comparativa de Desempeño por Líder</h3>
+              <h3 class="text-xl font-semibold mb-4">Comparativa por Líder (placeholder)</h3>
               <div class="chart-container"><canvas id="tasksByLeaderChart"></canvas></div>
             </div>
           </section>
@@ -150,7 +131,7 @@
           <!-- Evolución Semanal -->
           <section id="evolucion" class="page-section hidden">
             <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-4">Evolución Semanal de Métricas Clave</h3>
+              <h3 class="text-xl font-semibold mb-4">Evolución Semanal (placeholder)</h3>
               <div class="chart-container"><canvas id="weeklyEvolutionChart"></canvas></div>
             </div>
           </section>
@@ -172,8 +153,7 @@
           <!-- Proyecciones -->
           <section id="proyecciones" class="page-section hidden">
             <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-4">Proyección de Tareas Totales</h3>
-              <p class="text-slate-600 mb-4">Basado en una regresión lineal de los datos semanales filtrados.</p>
+              <h3 class="text-xl font-semibold mb-4">Proyección de Tareas Totales (placeholder)</h3>
               <div class="chart-container"><canvas id="projectionsChart"></canvas></div>
             </div>
           </section>
@@ -181,12 +161,8 @@
           <!-- Análisis Inteligente -->
           <section id="analisis" class="page-section hidden">
             <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-2">Análisis Inteligente con Gemini</h3>
-              <p class="text-slate-600 mb-4">Obtén insights, resúmenes y sugerencias basadas en los datos filtrados actualmente.</p>
-              <button id="generate-insights-btn" class="bg-sky-600 text-white px-6 py-3 rounded-lg hover:bg-sky-700 transition-colors text-base font-semibold">
-                ✨ Analizar Datos y Generar Sugerencias
-              </button>
-              <div id="insights-output" class="mt-6 p-4 bg-slate-50 rounded-md border border-slate-200 hidden"></div>
+              <h3 class="text-xl font-semibold mb-2">Análisis Inteligente (placeholder)</h3>
+              <p class="text-slate-600">Acá se engancha Gemini luego.</p>
             </div>
           </section>
         </div>
@@ -205,33 +181,34 @@
           </svg>
         </button>
       </div>
-      <nav id="mobile-nav-menu" class="flex-1 space-y-2">
-        <!-- Links dinámicos -->
-      </nav>
+      <nav id="mobile-nav-menu" class="flex-1 space-y-2"></nav>
     </aside>
   </div>
 
   <!-- PapaParse para CSV -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
-  <!-- App script: carga CSV + init seguro -->
+  <!-- App script: carga CSV + dashboard -->
   <script>
     // ====== Estado global ======
     let originalData = [];
+    let charts = {};
 
-    // ====== Utils: números con coma y porcentajes ======
+    // ====== Normalización ======
+    const removeAccents = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    const normKey = s => removeAccents(String(s).toLowerCase().trim().replace(/\s+/g,' ').replace(/[^\w %/()-]/g,''));
+
     function normalizeValue(v) {
       if (v === null || v === undefined) return v;
       if (typeof v !== 'string') return v;
       const t = v.trim();
       const isPercent = t.endsWith('%');
-      const cleaned = t.replace('%','').replace(/\./g,'').replace(',', '.');
+      const cleaned = t.replace('%','').replace(/\./g,'').replace(',','.');
       const n = Number(cleaned);
       if (Number.isFinite(n)) return isPercent ? n/100 : n;
       return t;
     }
 
-    // ====== Parse CSV (PapaParse + normalización por celda) ======
     function parseCSV(text) {
       const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
       return parsed.data.map(row => {
@@ -241,48 +218,214 @@
       });
     }
 
-    // ====== Carga robusta del CSV (Pages + fallback a raw) ======
-    async function fetchCSV() {
-      const rel = './datos.csv?v=' + Date.now(); // relativo al HTML
-      const localURL = '/metricas/datos.csv?v=' + Date.now(); // base de GitHub Pages del proyecto
-      const rawURL   = 'https://raw.githubusercontent.com/catalogo-meli/metricas/main/datos.csv?v=' + Date.now();
+    // ====== Detección flexible de columnas ======
+    function buildColumnMap(rows) {
+      const headers = Object.keys(rows[0] || {});
+      const map = {};
+      const want = {
+        mes: ['mes'],
+        semana: ['semana'],
+        usuario: ['usuario','agente','user'],
+        efectividad: ['% de efectividad','efectividad','porcentaje efectividad','efectividad %'],
+        prom_diario: ['promedio diario','promedio','promedio_diario'],
+        tareas_demanda: ['tareas demanda','demanda','cantidad demanda'],
+        tareas_enh: ['tareas enhancement','enhancement','cantidad enhancement','enhanced'],
+        pct_demanda: ['% demanda','porcentaje demanda'],
+        pct_enh: ['% enhancement','porcentaje enhancement'],
+        total_tareas: ['total tareas','tareas totales','total'],
+        ids_trab: ['ids trabajados','ids','ids_trabajados'],
+        correcciones: ['correcciones auditadas','correcciones','auditorias','auditadas'],
+        lider: ['líder','lider','team leader','tl','leader'],
+        antiguedad: ['antigüedad (meses)','antiguedad','antiguedad meses'],
+        ubicacion: ['ubicación','ubicacion','site','sede','location']
+      };
+      // índice normalizado
+      const idx = {};
+      headers.forEach(h => idx[normKey(h)] = h);
 
-      // 1) intento relativo
-      let resp = await fetch(rel, { cache: 'no-store' });
-      if (!resp.ok) {
-        // 2) intento base /metricas/
-        resp = await fetch(localURL, { cache: 'no-store' });
+      const findCol = candidates => {
+        for (const c of candidates) {
+          const nk = normKey(c);
+          // match exacto de la lista
+          if (idx[nk]) return idx[nk];
+          // búsqueda laxa: contiene palabra clave
+          const hit = headers.find(h => normKey(h).includes(nk));
+          if (hit) return hit;
+        }
+        return null;
+      };
+
+      for (const key of Object.keys(want)) {
+        map[key] = findCol(want[key]);
       }
-      if (!resp.ok) {
-        // 3) intento raw
-        resp = await fetch(rawURL, { cache: 'no-store' });
-      }
-      if (!resp.ok) throw new Error('No pude cargar datos.csv. HTTP ' + resp.status);
-      return resp.text();
+      return map;
     }
 
-    // ====== Helpers: llamadas seguras a tus funciones si existen ======
-    function safeCall(fnName, ...args) {
-      const fn = window[fnName];
-      if (typeof fn === 'function') return fn(...args);
+    // ====== Helpers ======
+    const uniq = arr => Array.from(new Set(arr.filter(x => x !== '' && x != null)));
+    const sum = arr => arr.reduce((a,b) => a + (Number(b)||0), 0);
+    const avg = arr => arr.length ? sum(arr)/arr.length : 0;
+
+    function getValue(row, colName) {
+      return colName ? row[colName] : undefined;
+    }
+
+    // ====== Filtros ======
+    function setupFilters(data, col) {
+      const q = (id) => document.getElementById(id);
+
+      const mes = uniq(data.map(r => getValue(r, col.mes))).sort();
+      const semana = uniq(data.map(r => getValue(r, col.semana))).sort((a,b)=> (a||0)-(b||0));
+      const lider = uniq(data.map(r => getValue(r, col.lider))).sort();
+      const ubic = uniq(data.map(r => getValue(r, col.ubicacion))).sort();
+
+      const fill = (sel, values, label) => {
+        sel.innerHTML = '';
+        const optAll = document.createElement('option');
+        optAll.value = ''; optAll.textContent = `Todos ${label||''}`.trim();
+        sel.appendChild(optAll);
+        values.forEach(v => {
+          const o = document.createElement('option');
+          o.value = v; o.textContent = v;
+          sel.appendChild(o);
+        });
+      };
+
+      fill(q('filter-mes'), mes, 'los meses');
+      fill(q('filter-semana'), semana, 'las semanas');
+      fill(q('filter-lider'), lider, 'los líderes');
+      fill(q('filter-ubicacion'), ubic, 'las ubicaciones');
+
+      ['filter-mes','filter-semana','filter-lider','filter-ubicacion'].forEach(id => {
+        q(id).addEventListener('change', applyFilters);
+      });
+    }
+
+    function getActiveFilters() {
+      const v = id => document.getElementById(id).value;
+      return {
+        mes: v('filter-mes') || null,
+        semana: v('filter-semana') || null,
+        lider: v('filter-lider') || null,
+        ubicacion: v('filter-ubicacion') || null,
+      };
+    }
+
+    // ====== Charts ======
+    function createOrUpdateChart(id, type, data, options) {
+      const ctx = document.getElementById(id);
+      if (!ctx) return;
+      if (charts[id]) charts[id].destroy();
+      charts[id] = new Chart(ctx, { type, data, options });
+    }
+
+    // ====== Render principal ======
+    let COL = {};
+
+    function applyFilters() {
+      if (!originalData.length) return;
+      if (!COL.total_tareas && !(COL.tareas_demanda || COL.tareas_enh)) {
+        console.warn('No se detectó columna de Total Tareas ni Demanda/Enhancement. KPIs limitados.');
+      }
+
+      const f = getActiveFilters();
+      const rows = originalData.filter(r => {
+        const okMes = !f.mes || getValue(r, COL.mes) == f.mes;
+        const okSem = !f.semana || getValue(r, COL.semana) == f.semana;
+        const okLid = !f.lider || getValue(r, COL.lider) == f.lider;
+        const okUbi = !f.ubicacion || getValue(r, COL.ubicacion) == f.ubicacion;
+        return okMes && okSem && okLid && okUbi;
+      });
+
+      // KPIs
+      const totalTareas = COL.total_tareas
+        ? sum(rows.map(r => getValue(r, COL.total_tareas)))
+        : sum(rows.map(r => (getValue(r, COL.tareas_demanda)||0) + (getValue(r, COL.tareas_enh)||0)));
+
+      const efectProm = COL.efectividad ? (avg(rows.map(r => getValue(r, COL.efectividad))) * 100) : null;
+      const correcciones = COL.correcciones ? sum(rows.map(r => getValue(r, COL.correcciones))) : 0;
+      const usuariosActivos = COL.usuario ? uniq(rows.map(r => getValue(r, COL.usuario))).length : 0;
+
+      document.getElementById('kpi-total-tareas').textContent = totalTareas.toLocaleString('es-AR');
+      document.getElementById('kpi-efectividad-prom').textContent = (efectProm != null) ? (efectProm.toFixed(2) + '%') : '—';
+      document.getElementById('kpi-correcciones').textContent = correcciones.toLocaleString('es-AR');
+      document.getElementById('kpi-usuarios').textContent = usuariosActivos.toLocaleString('es-AR');
+
+      // Pie Demanda vs Enhancement
+      const totDem = sum(rows.map(r => getValue(r, COL.tareas_demanda)));
+      const totEnh = sum(rows.map(r => getValue(r, COL.tareas_enh)));
+      createOrUpdateChart('demandPieChart', 'pie', {
+        labels: ['Demanda', 'Enhancement'],
+        datasets: [{ data: [totDem, totEnh] }]
+      }, { responsive: true });
+
+      // Barras por usuario (Top 10)
+      const byUser = {};
+      rows.forEach(r => {
+        const u = getValue(r, COL.usuario) || '—';
+        const t = COL.total_tareas
+          ? (getValue(r, COL.total_tareas) || 0)
+          : (getValue(r, COL.tareas_demanda)||0) + (getValue(r, COL.tareas_enh)||0);
+        byUser[u] = (byUser[u] || 0) + t;
+      });
+      const ranked = Object.entries(byUser).sort((a,b)=>b[1]-a[1]).slice(0,10);
+      createOrUpdateChart('tasksByUserChart', 'bar', {
+        labels: ranked.map(x => x[0]),
+        datasets: [{ label: 'Tareas', data: ranked.map(x => x[1]) }]
+      }, {
+        responsive: true,
+        plugins: { legend: { display:false } },
+        scales: { y: { beginAtZero: true } }
+      });
+    }
+
+    // ====== Navegación simple (mostrar/ocultar secciones) ======
+    function setupNavigation() {
+      const links = document.querySelectorAll('#nav-menu a');
+      const sections = document.querySelectorAll('.page-section');
+      links.forEach(link => {
+        link.addEventListener('click', e => {
+          e.preventDefault();
+          links.forEach(l => l.classList.remove('active'));
+          link.classList.add('active');
+          sections.forEach(s => s.classList.add('hidden'));
+          const target = document.querySelector(link.getAttribute('href'));
+          if (target) target.classList.remove('hidden');
+          document.getElementById('page-title').textContent = link.textContent.trim();
+        });
+      });
+    }
+
+    // ====== Carga robusta del CSV ======
+    async function fetchCSV() {
+      const rel = './datos.csv?v=' + Date.now();          // relativo (funciona en Pages)
+      const base = '/metricas/datos.csv?v=' + Date.now(); // base del project page
+      const raw  = 'https://raw.githubusercontent.com/catalogo-meli/metricas/main/datos.csv?v=' + Date.now();
+
+      let resp = await fetch(rel, { cache: 'no-store' });
+      if (!resp.ok) resp = await fetch(base, { cache: 'no-store' });
+      if (!resp.ok) resp = await fetch(raw, { cache: 'no-store' });
+      if (!resp.ok) throw new Error('No pude cargar datos.csv. HTTP ' + resp.status);
+      return resp.text();
     }
 
     // ====== INIT ÚNICO ======
     document.addEventListener('DOMContentLoaded', async () => {
       try {
+        setupNavigation(); // nav listo
+
         const csvText = await fetchCSV();
         originalData = parseCSV(csvText);
 
-        // Debug rápido en consola
-        console.log('Filas CSV:', originalData.length);
+        if (!originalData.length) throw new Error('El CSV está vacío o sin encabezados.');
+        COL = buildColumnMap(originalData);
+
+        // Debug en consola para ver mapeo de columnas
+        console.log('Column map:', COL);
         console.log('Primer registro:', originalData[0]);
 
-        // Llamadas a tus funciones (solo si existen)
-        safeCall('setupFilters');
-        safeCall('setupNavigation');
-        safeCall('setupGeminiFeatures');
-        safeCall('applyFilters');
-
+        setupFilters(originalData, COL);
+        applyFilters(); // primer render
       } catch (err) {
         console.error(err);
         document.body.innerHTML = `<div class="p-8 text-center text-red-600 bg-red-100">${err.message}</div>`;
