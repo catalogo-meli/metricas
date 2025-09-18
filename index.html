@@ -226,25 +226,64 @@ let originalData = [];
 // ... existing code ... -->
 // ... existing code ... -->
 // --- INITIALIZATION ---
-document.addEventListener('DOMContentLoaded', async () => {
+<!-- Parser CSV -->
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+<script>
+  // --- Utils: números con coma y porcentajes ---
+  function normalizeValue(v) {
+    if (v === null || v === undefined) return v;
+    if (typeof v !== 'string') return v;
+    const t = v.trim();
+    const isPercent = t.endsWith('%');
+    // "1.234,56%" -> "1234.56"
+    const cleaned = t.replace('%','').replace(/\./g,'').replace(',', '.');
+    const n = Number(cleaned);
+    if (Number.isFinite(n)) return isPercent ? n/100 : n;
+    return t;
+  }
+
+  // --- parseCSV: PapaParse + normalización por celda ---
+  function parseCSV(text) {
+    const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+    return parsed.data.map(row => {
+      const out = {};
+      for (const [k, v] of Object.entries(row)) out[k] = normalizeValue(v);
+      return out;
+    });
+  }
+
+  // --- Carga robusta del CSV (Pages + fallback a raw) ---
+  async function fetchCSV() {
+    // Ruta para GitHub Pages en repositorio "metricas"
+    const localURL = '/metricas/datos.csv?v=' + Date.now();
+    const rawURL   = 'https://raw.githubusercontent.com/catalogo-meli/metricas/main/datos.csv?v=' + Date.now();
+
+    let resp = await fetch(localURL, { cache: 'no-store' });
+    if (!resp.ok) resp = await fetch(rawURL, { cache: 'no-store' });
+    if (!resp.ok) throw new Error('No pude cargar datos.csv. HTTP ' + resp.status);
+    return resp.text();
+  }
+
+  // --- INIT ---
+  document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const response = await fetch('datos.csv');
-        if (!response.ok) {
-            throw new Error('No se pudo cargar el archivo de datos (datos.csv). Asegúrate de que el archivo exista en la misma carpeta.');
-        }
-        const csvData = await response.text();
-        originalData = parseCSV(csvData);
-        
-        setupFilters();
-        setupNavigation();
-        setupGeminiFeatures();
-        applyFilters(); // Initial render
-    } catch (error) {
-        console.error("Error al inicializar el dashboard:", error);
-        document.body.innerHTML = `<div class="p-8 text-center text-red-600 bg-red-100">${error.message}</div>`;
+      const csvText = await fetchCSV();
+      // originalData es tu estado global ya declarado arriba en tu HTML
+      originalData = parseCSV(csvText);
+
+      // tus funciones existentes
+      setupFilters();
+      setupNavigation();
+      setupGeminiFeatures();
+      applyFilters();
+    } catch (err) {
+      console.error(err);
+      document.body.innerHTML = `<div class="p-8 text-center text-red-600 bg-red-100">${err.message}</div>`;
     }
-});
+  });
 </script>
 </body>
 </html>
+
 
