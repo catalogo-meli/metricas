@@ -4,730 +4,811 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard de Productividad con IA</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js + adapter fechas -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  <!-- PapaParse -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <!-- Inter font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
-    body{font-family:'Inter',sans-serif}
-    .sidebar-link{transition:all .2s ease-in-out}
-    .sidebar-link:hover,.sidebar-link.active{background:#0369a1;color:#fff;transform:translateX(4px)}
-    .kpi-card{background:#fff;border-radius:.75rem;padding:1.25rem;box-shadow:0 4px 6px -1px rgb(0 0 0/.1),0 2px 4px -2px rgb(0 0 0/.1);transition:transform .2s,box-shadow .2s}
-    .kpi-card:hover{transform:translateY(-4px);box-shadow:0 10px 15px -3px rgb(0 0 0/.1),0 4px 6px -4px rgb(0 0 0/.1)}
-    .chart-container{height:400px}
-    #mobile-menu{transition:transform .3s ease-in-out}
-    .prose{line-height:1.6}.prose strong{color:#0f172a}.prose li{margin-top:.5rem}
+    body { font-family: 'Inter', sans-serif; }
+    .sidebar-link { transition: all .2s ease-in-out; }
+    .sidebar-link:hover, .sidebar-link.active { background-color:#0369a1; color:#fff; transform: translateX(4px); }
+    .kpi-card{background:#fff;border-radius:.75rem;padding:1.5rem;box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1),0 2px 4px -2px rgb(0 0 0 / 0.1);transition:transform .2s, box-shadow .2s;}
+    .kpi-card:hover{transform:translateY(-4px);box-shadow:0 10px 15px -3px rgb(0 0 0 / .1),0 4px 6px -4px rgb(0 0 0 / .1);}
+    .chart-container{height:400px;}
+    #mobile-menu{transition: transform .3s ease-in-out;}
   </style>
 </head>
+
 <body class="bg-slate-100 text-slate-800">
-<div class="flex h-screen overflow-hidden">
+  <div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="hidden md:flex w-64 flex-col bg-sky-800 text-sky-100 p-4">
+      <div class="flex items-center mb-8">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+        </svg>
+        <h1 class="text-2xl font-bold text-white">Dashboard</h1>
+      </div>
+      <nav id="nav-menu" class="flex-1 space-y-2">
+        <a href="#resumen" class="sidebar-link active flex items-center p-3 rounded-lg">Resumen General</a>
+        <a href="#productividad" class="sidebar-link flex items-center p-3 rounded-lg">Productividad por Usuario</a>
+        <a href="#lideres" class="sidebar-link flex items-center p-3 rounded-lg">Comparativa de Líderes</a>
+        <a href="#evolucion" class="sidebar-link flex items-center p-3 rounded-lg">Evolución Semanal</a>
+        <a href="#ubicacion" class="sidebar-link flex items-center p-3 rounded-lg">Análisis por Ubicación</a>
+        <a href="#proyecciones" class="sidebar-link flex items-center p-3 rounded-lg">Proyecciones</a>
+        <a href="#analisis" class="sidebar-link flex items-center p-3 rounded-lg">Análisis Inteligente</a>
+      </nav>
+    </aside>
 
-  <!-- Sidebar -->
-  <aside id="sidebar" class="hidden md:flex w-64 flex-col bg-sky-800 text-sky-100 p-4">
-    <div class="flex items-center mb-8">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-3 text-white" viewBox="0 0 20 20" fill="currentColor"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg>
-      <h1 class="text-2xl font-bold text-white">Dashboard</h1>
-    </div>
-    <nav id="nav-menu" class="flex-1 space-y-2">
-      <a href="#resumen" class="sidebar-link active flex items-center p-3 rounded-lg">Resumen General</a>
-      <a href="#productividad" class="sidebar-link flex items-center p-3 rounded-lg">Productividad por Usuario</a>
-      <a href="#lideres" class="sidebar-link flex items-center p-3 rounded-lg">Comparativa de Líderes</a>
-      <a href="#evolucion" class="sidebar-link flex items-center p-3 rounded-lg">Evolución Semanal</a>
-      <a href="#ubicacion" class="sidebar-link flex items-center p-3 rounded-lg">Análisis por Ubicación</a>
-      <a href="#proyecciones" class="sidebar-link flex items-center p-3 rounded-lg">Proyecciones</a>
-      <a href="#analisis" class="sidebar-link flex items-center p-3 rounded-lg">Análisis Inteligente</a>
-    </nav>
-  </aside>
+    <!-- Main -->
+    <main class="flex-1 overflow-x-hidden overflow-y-auto">
+      <div class="container mx-auto px-6 py-8">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+          <button id="mobile-menu-button" class="md:hidden text-slate-600">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+          <h2 id="page-title" class="text-3xl font-bold text-slate-700">Resumen General</h2>
+        </div>
 
-  <!-- Main -->
-  <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100">
-    <div class="container mx-auto px-6 py-8">
-      <div class="flex justify-between items-center mb-6">
-        <button id="mobile-menu-button" class="md:hidden text-slate-600">
+        <!-- Filtros -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+          <select id="filter-mes" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
+          <select id="filter-semana" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
+          <select id="filter-q" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
+          <select id="filter-lider" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
+          <select id="filter-ubicacion" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
+          <select id="filter-usuario" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
+        </div>
+
+        <!-- Secciones -->
+        <div id="dashboard-content">
+          <!-- Resumen -->
+          <section id="resumen" class="page-section">
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 mb-6">
+              <div class="kpi-card text-center">
+                <h3 class="text-slate-500 font-medium">Total Tareas</h3>
+                <p id="kpi-total-tareas" class="text-4xl font-bold mt-2"></p>
+              </div>
+              <div class="kpi-card text-center">
+                <h3 class="text-slate-500 font-medium">% Efectividad Prom.</h3>
+                <p id="kpi-efectividad-prom" class="text-4xl font-bold mt-2 text-green-600"></p>
+              </div>
+              <div class="kpi-card text-center">
+                <h3 class="text-slate-500 font-medium">Correcciones auditadas</h3>
+                <p id="kpi-correcciones" class="text-4xl font-bold mt-2 text-amber-600"></p>
+              </div>
+              <div class="kpi-card text-center">
+                <h3 class="text-slate-500 font-medium">Usuarios Activos</h3>
+                <p id="kpi-usuarios" class="text-4xl font-bold mt-2"></p>
+              </div>
+              <div class="kpi-card text-center">
+                <h3 class="text-slate-500 font-medium">Promedio Diario</h3>
+                <p id="kpi-promedio-diario" class="text-4xl font-bold mt-2 text-sky-600"></p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div class="kpi-card">
+                <div class="flex justify-between items-center mb-4">
+                  <h3 class="text-xl font-semibold">Top 10 Usuarios por Tareas</h3>
+                  <button id="generate-summary-btn" class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition-colors text-sm font-medium">✨ Generar Resumen</button>
+                </div>
+                <div class="chart-container"><canvas id="topUsersChart"></canvas></div>
+                <div id="summary-output" class="mt-4 p-4 bg-slate-50 rounded-md border border-slate-200 hidden"></div>
+              </div>
+
+              <div class="kpi-card">
+                <h3 class="text-xl font-semibold mb-4">Tareas: Demanda vs. Enhancement</h3>
+                <div class="chart-container relative mx-auto" style="height:320px;max-width:360px">
+                  <canvas id="demandPieChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Productividad por Usuario -->
+          <section id="productividad" class="page-section hidden">
+            <div class="kpi-card mb-6">
+              <h3 class="text-xl font-semibold mb-4">Total de Tareas por Usuario</h3>
+              <div class="chart-container"><canvas id="tasksByUserChart"></canvas></div>
+            </div>
+            <div class="kpi-card">
+              <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
+                <h3 class="text-xl font-semibold">Detalle de Productividad por Usuario</h3>
+                <div class="flex items-center gap-2">
+                  <select id="user-detail-select" class="w-full max-w-xs p-2 border rounded-md bg-white shadow-sm"></select>
+                  <button id="generate-feedback-btn" class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition-colors text-sm font-medium whitespace-nowrap">✨ Generar Feedback</button>
+                </div>
+              </div>
+              <div id="feedback-output" class="mb-4 p-4 bg-slate-50 rounded-md border border-slate-200 hidden"></div>
+              <div class="chart-container"><canvas id="userDetailChart"></canvas></div>
+            </div>
+          </section>
+
+          <!-- Líderes -->
+          <section id="lideres" class="page-section hidden">
+            <div class="kpi-card">
+              <h3 class="text-xl font-semibold mb-4">Comparativa de Desempeño por Líder</h3>
+              <div class="chart-container"><canvas id="tasksByLeaderChart"></canvas></div>
+            </div>
+          </section>
+
+          <!-- Evolución -->
+          <section id="evolucion" class="page-section hidden">
+            <div class="kpi-card">
+              <h3 class="text-xl font-semibold mb-4">Evolución Semanal de Métricas Clave</h3>
+              <div class="chart-container"><canvas id="weeklyEvolutionChart"></canvas></div>
+            </div>
+          </section>
+
+          <!-- Ubicación -->
+          <section id="ubicacion" class="page-section hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div class="kpi-card">
+                <h3 class="text-xl font-semibold mb-4">Total de Tareas por Ubicación</h3>
+                <div class="chart-container"><canvas id="tasksByLocationChart"></canvas></div>
+              </div>
+              <div class="kpi-card">
+                <h3 class="text-xl font-semibold mb-4">Antigüedad Promedio por Ubicación (meses)</h3>
+                <ul id="avg-antiguedad-list" class="space-y-2 text-slate-700"></ul>
+              </div>
+            </div>
+          </section>
+
+          <!-- Proyecciones -->
+          <section id="proyecciones" class="page-section hidden">
+            <div class="kpi-card">
+              <h3 class="text-xl font-semibold mb-4">Proyección de Tareas Totales (Regresión lineal)</h3>
+              <div class="chart-container"><canvas id="projectionsChart"></canvas></div>
+            </div>
+          </section>
+
+          <!-- IA -->
+          <section id="analisis" class="page-section hidden">
+            <div class="kpi-card">
+              <h3 class="text-xl font-semibold mb-2">Análisis Inteligente con Gemini</h3>
+              <p class="text-slate-600 mb-4">Insights basados en los datos filtrados.</p>
+              <button id="generate-insights-btn" class="bg-sky-600 text-white px-6 py-3 rounded-lg hover:bg-sky-700 transition-colors text-base font-semibold">
+                ✨ Analizar Datos y Generar Sugerencias
+              </button>
+              <div id="insights-output" class="mt-6 p-4 bg-slate-50 rounded-md border border-slate-200 hidden"></div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Menú móvil -->
+  <div id="mobile-menu" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden">
+    <aside class="absolute top-0 left-0 h-full w-64 bg-sky-800 text-sky-100 p-4 transform -translate-x-full transition-transform duration-300">
+      <div class="flex justify-between items-center mb-8">
+        <h1 class="text-2xl font-bold text-white">Menú</h1>
+        <button id="close-mobile-menu">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
-        <h2 id="page-title" class="text-3xl font-bold text-slate-700">Resumen General</h2>
       </div>
+      <nav id="mobile-nav-menu" class="flex-1 space-y-2"></nav>
+    </aside>
+  </div>
 
-      <!-- Filtros -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
-        <select id="filter-mes" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
-        <select id="filter-semana" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
-        <select id="filter-trimestre" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
-        <select id="filter-lider" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
-        <select id="filter-usuario" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
-        <select id="filter-ubicacion" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
-      </div>
+  <script>
+  /**********************
+   * CONFIG
+   **********************/
+  // Si ya creaste tu Worker proxy de Gemini, poné acá la URL pública:
+  const GEMINI_PROXY_URL = ""; // ej: "https://catalogo.ezequiel-galarza.workers.dev"
 
-      <div id="dashboard-content">
-        <!-- Resumen -->
-        <section id="resumen" class="page-section">
-          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 mb-6">
-            <div class="kpi-card text-center">
-              <h3 class="text-slate-500 font-medium">Total Tareas</h3>
-              <p id="kpi-total-tareas" class="text-4xl font-bold mt-2">—</p>
-            </div>
-            <div class="kpi-card text-center">
-              <h3 class="text-slate-500 font-medium">Promedio Diario</h3>
-              <p id="kpi-promedio" class="text-4xl font-bold mt-2">—</p>
-            </div>
-            <div class="kpi-card text-center">
-              <h3 class="text-slate-500 font-medium">% Efectividad Prom.</h3>
-              <p id="kpi-efectividad-prom" class="text-4xl font-bold mt-2 text-green-600">—</p>
-            </div>
-            <div class="kpi-card text-center">
-              <h3 class="text-slate-500 font-medium">Correcciones auditadas</h3>
-              <p id="kpi-correcciones" class="text-4xl font-bold mt-2 text-amber-600">—</p>
-            </div>
-            <div class="kpi-card text-center">
-              <h3 class="text-slate-500 font-medium">Usuarios Activos</h3>
-              <p id="kpi-usuarios" class="text-4xl font-bold mt-2">—</p>
-            </div>
-          </div>
+  // Archivos CSV fuente (en la raíz del repo)
+  const FILES = {
+    productividad: 'productividad.csv',
+    calidad:       'calidad.csv',
+    base:          'base.csv',
+    lideres:       'lideres.csv'
+  };
 
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="kpi-card">
-              <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-semibold">Top Usuarios por Tareas</h3>
-                <button id="generate-summary-btn" class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition-colors text-sm font-medium">✨ Generar Resumen</button>
-              </div>
-              <div id="top-users-list" class="text-sm"></div>
-              <div id="summary-output" class="mt-4 p-4 bg-slate-50 rounded-md border border-slate-200 hidden"></div>
-            </div>
+  /**********************
+   * HELPERS
+   **********************/
+  const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const Q_OF_MONTH_INDEX = m => 'Q' + (Math.floor(m/3)+1);
 
-            <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-4">Tareas: Demanda vs. Enhancement</h3>
-              <div class="chart-container"><canvas id="demandPieChart"></canvas></div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Productividad por Usuario -->
-        <section id="productividad" class="page-section hidden">
-          <div class="kpi-card mb-6">
-            <h3 class="text-xl font-semibold mb-4">Total de Tareas por Usuario (Top 15)</h3>
-            <div class="chart-container"><canvas id="tasksByUserChart"></canvas></div>
-          </div>
-          <div class="kpi-card">
-            <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
-              <h3 class="text-xl font-semibold">Detalle de Productividad por Usuario</h3>
-              <div class="flex items-center gap-2">
-                <select id="user-detail-select" class="w-full max-w-xs p-2 border rounded-md bg-white shadow-sm"></select>
-                <button id="generate-feedback-btn" class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition-colors text-sm font-medium whitespace-nowrap">✨ Generar Feedback</button>
-              </div>
-            </div>
-            <div id="feedback-output" class="mb-4 p-4 bg-slate-50 rounded-md border border-slate-200 hidden"></div>
-            <div class="chart-container"><canvas id="userDetailChart"></canvas></div>
-          </div>
-        </section>
-
-        <!-- Líderes -->
-        <section id="lideres" class="page-section hidden">
-          <div class="kpi-card">
-            <h3 class="text-xl font-semibold mb-4">Comparativa de Desempeño por Líder</h3>
-            <div class="chart-container"><canvas id="tasksByLeaderChart"></canvas></div>
-          </div>
-        </section>
-
-        <!-- Evolución -->
-        <section id="evolucion" class="page-section hidden">
-          <div class="kpi-card">
-            <h3 class="text-xl font-semibold mb-4">Evolución Semanal (Total de Tareas)</h3>
-            <div class="chart-container"><canvas id="weeklyEvolutionChart"></canvas></div>
-          </div>
-        </section>
-
-        <!-- Ubicación -->
-        <section id="ubicacion" class="page-section hidden">
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-4">Total de Tareas por Ubicación</h3>
-              <div class="chart-container"><canvas id="tasksByLocationChart"></canvas></div>
-            </div>
-            <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-4">% Efectividad Promedio por Ubicación</h3>
-              <div class="chart-container"><canvas id="effByLocationChart"></canvas></div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Proyecciones -->
-        <section id="proyecciones" class="page-section hidden">
-          <div class="kpi-card">
-            <h3 class="text-xl font-semibold mb-4">Proyección de Tareas Totales</h3>
-            <p class="text-slate-600 mb-4">Basado en una regresión lineal de los datos semanales filtrados.</p>
-            <div class="chart-container"><canvas id="projectionsChart"></canvas></div>
-          </div>
-        </section>
-
-        <!-- Análisis Inteligente -->
-        <section id="analisis" class="page-section hidden">
-          <div class="kpi-card">
-            <h3 class="text-xl font-semibold mb-2">Análisis Inteligente con Gemini</h3>
-            <p class="text-slate-600 mb-4">Obtén insights, resúmenes y sugerencias basadas en los datos filtrados actualmente.</p>
-            <button id="generate-insights-btn" class="bg-sky-600 text-white px-6 py-3 rounded-lg hover:bg-sky-700 transition-colors text-base font-semibold">
-              ✨ Analizar Datos y Generar Sugerencias
-            </button>
-            <div id="insights-output" class="mt-6 p-4 bg-slate-50 rounded-md border border-slate-200 hidden"></div>
-          </div>
-        </section>
-
-      </div>
-    </div>
-  </main>
-</div>
-
-<!-- Menú móvil -->
-<div id="mobile-menu" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden">
-  <aside class="absolute top-0 left-0 h-full w-64 bg-sky-800 text-sky-100 p-4 transform -translate-x-full transition-transform duration-300">
-    <div class="flex justify-between items-center mb-8">
-      <h1 class="text-2xl font-bold text-white">Menú</h1>
-      <button id="close-mobile-menu">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </button>
-    </div>
-    <nav id="mobile-nav-menu" class="flex-1 space-y-2"></nav>
-  </aside>
-</div>
-
-<script>
-/* =============== UTILIDADES =============== */
-const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const toNorm = s => String(s||'').normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase();
-const getQuarter = m => 'Q' + (Math.floor(m/3)+1);
-
-function idx(head, names){
-  const H = head.map(toNorm);
-  const opts = (Array.isArray(names)?names:[names]).map(toNorm);
-  for (let i=0;i<H.length;i++){
-    for (const n of opts){
-      if (H[i].includes(n)) return i;
-    }
+  function ghURL(file){
+    const bust = `?v=${Date.now()}`;
+    return [
+      `/metricas/${file}${bust}`,
+      `https://raw.githubusercontent.com/catalogo-meli/metricas/main/${file}${bust}`
+    ];
   }
-  return -1;
-}
 
-function normalizeValue(v){
-  if (v===null || v===undefined) return v;
-  if (typeof v!=='string') return v;
-  const t = v.trim();
-  const isPct = t.endsWith('%');
-  const cleaned = t.replace('%','').replace(/\./g,'').replace(',','.');
-  const n = Number(cleaned);
-  if (Number.isFinite(n)) return isPct? n/100 : n;
-  return v;
-}
-
-function parseCSV(text){
-  const parsed = Papa.parse(text,{header:true,skipEmptyLines:true});
-  return parsed.data.map(row=>{
-    const out={};
-    for(const [k,v] of Object.entries(row)) out[k]=normalizeValue(v);
-    return out;
-  });
-}
-
-async function tryFetch(filename){
-  const enc = encodeURIComponent(filename);
-  const local = `/metricas/${enc}?v=${Date.now()}`;
-  const raw   = `https://raw.githubusercontent.com/catalogo-meli/metricas/main/${enc}?v=${Date.now()}`;
-  let r = await fetch(local,{cache:'no-store'});
-  if(!r.ok) r = await fetch(raw,{cache:'no-store'});
-  if(!r.ok) throw new Error(`No se encontró ${filename}`);
-  return r.text();
-}
-
-async function fetchFirstExistingCSV(candidates){
-  for(const name of candidates){
-    try{ return await tryFetch(name); }catch(_){}
+  async function fetchCSVFile(file){
+    const [u1,u2] = ghURL(file);
+    let r = await fetch(u1,{cache:'no-store'});
+    if(!r.ok) r = await fetch(u2,{cache:'no-store'});
+    if(!r.ok) throw new Error(`No pude cargar ${file}. HTTP ${r.status}`);
+    return r.text();
   }
-  throw new Error(`Ninguno de estos archivos existe: ${candidates.join(', ')}`);
-}
 
-/* Semanas ISO light (suficiente para agrupar) */
-function isoWeekNumber(date){
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-  return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
-}
-
-/* =============== ESTADO GLOBAL =============== */
-let AGG = []; // arreglo de objetos agregados por (user|week|mes)
-let FILTERS = {
-  mes: 'Todos los meses',
-  semana: 'Todas las semanas',
-  trimestre: 'Todos los trimestres',
-  lider: 'Todos los líderes',
-  usuario: 'Todos los usuarios',
-  ubicacion: 'Todas las ubicaciones'
-};
-
-const $ = sel => document.querySelector(sel);
-
-/* =============== CARGA Y TRANSFORMACIÓN =============== */
-async function loadData(){
-  // lee 4 CSV (con nombres flexibles)
-  const prodText   = await fetchFirstExistingCSV(['productividad.csv','Datos -Productividad.csv','Productividad.csv']);
-  const calText    = await fetchFirstExistingCSV(['calidad.csv','Datos -Calidad.csv','Calidad.csv']);
-  let baseText     = '';
-  let liderText    = '';
-  try{ baseText  = await fetchFirstExistingCSV(['base.csv','Base.csv','Datos -Base.csv']); }catch(_){}
-  try{ liderText = await fetchFirstExistingCSV(['lideres.csv','Líderes.csv','Asignación Líder.csv','Asignacion Lider.csv','Asignación Lider.csv']); }catch(_){}
-
-  const prod = parseCSV(prodText);
-  const cal  = parseCSV(calText);
-  const base = baseText? parseCSV(baseText): [];
-  const lid  = liderText? parseCSV(liderText): [];
-
-  // índices dinámicos
-  const pH = prod.length? Object.keys(prod[0]) : [];
-  const cH = cal.length?  Object.keys(cal[0])  : [];
-  const bH = base.length? Object.keys(base[0]) : [];
-  const lH = lid.length?  Object.keys(lid[0])  : [];
-
-  const iPFecha = idx(pH,['fecha']);
-  const iPUser  = idx(pH,['usuario','mail']);
-  const iPDem   = idx(pH,['tareas de demanda','demanda']);
-  const iPEnh   = idx(pH,['tareas de enhancement','enhancement']);
-  const iPIDs   = idx(pH,['ids trabaj']);
-  const iPTotal = idx(pH,['total tareas','total']);
-  let   iPWeek  = idx(pH,['week','semana']);
-
-  const iCUser  = idx(cH,['usuario','mail']);
-  const iCIDs   = idx(cH,['ids audit','ids','audit']);
-  const iCErr   = idx(cH,['total error','errores']);
-  const iCWeek  = idx(cH,['week','semana']);
-
-  const iBMail   = idx(bH,['mail','correo']);
-  const iBNombre = idx(bH,['nombre']);
-  const iBCiudad = idx(bH,['ciudad','ubicacion','ubicación']);
-  const iBIngreso= idx(bH,['fecha ingreso','ingreso']);
-
-  const iLLider  = idx(lH,['lider','líder']);
-  const iLUserM  = idx(lH,['usuario','mail']);
-
-  // maps de apoyo
-  const perfil = new Map();
-  base.forEach(r=>{
-    const row = Object.values(r);
-    const mail = String(row[iBMail]||'').trim().toLowerCase();
-    if(!mail) return;
-    const user = mail.replace(/@mercadolibre\.com/i,'').trim();
-    perfil.set(user,{
-      nombre: row[iBNombre] || '',
-      ciudad: row[iBCiudad] || '',
-      ingreso: row[iBIngreso]? new Date(row[iBIngreso]) : null
+  function parseCSV(text){
+    const parsed = Papa.parse(text, {
+      header: true,
+      skipEmptyLines: true,
+      delimitersToGuess: [',',';','\t','|']
     });
-  });
+    return parsed.data.map(row=>{
+      const out = {};
+      for(const [k,v] of Object.entries(row)) out[k] = normalizeValue(v);
+      return out;
+    });
+  }
 
-  const liderPorUser = new Map();
-  lid.forEach(r=>{
-    const row = Object.values(r);
-    const mail = String(row[iLUserM]||'').trim().toLowerCase();
-    if(!mail) return;
-    const user = mail.replace(/@mercadolibre\.com/i,'').trim();
-    const lider = row[iLLider] || '';
-    if(lider && String(lider).toLowerCase()!=='sin lider' && String(lider).toLowerCase()!=='sin líder'){
-      liderPorUser.set(user,lider);
+  function normalizeValue(v){
+    if(v===null || v===undefined) return v;
+    if(typeof v !== 'string') return v;
+    const t = v.trim();
+    if(!t) return '';
+    if(t.endsWith('%')){
+      const num = t.replace('%','').replace(/\./g,'').replace(',','.');
+      const n = Number(num);
+      return Number.isFinite(n) ? n/100 : t;
     }
-  });
+    // 1.234,56 -> 1234.56
+    if(/^-?\d{1,3}(\.\d{3})*,\d+$/.test(t)){
+      const num = t.replace(/\./g,'').replace(',','.');
+      const n = Number(num);
+      return Number.isFinite(n) ? n : t;
+    }
+    if(/^-?\d+(\.\d+)?$/.test(t)){
+      const n = Number(t);
+      return Number.isFinite(n) ? n : t;
+    }
+    return t;
+  }
 
-  // agregador por clave user|week|yyyy-mm
-  const weeks = new Map();
-  prod.forEach(r=>{
-    const row = Object.values(r);
-    const fecha = row[iPFecha]? new Date(row[iPFecha]) : null;
-    const semana = (iPWeek>=0 && row[iPWeek])? Number(row[iPWeek]) : (fecha? isoWeekNumber(fecha) : null);
-    let   user  = String(row[iPUser]||'').trim().toLowerCase();
-    if(!user) return;
-    user = user.replace(/@mercadolibre\.com/i,'').trim();
+  function parseDateAny(val){
+    if(val===null || val===undefined || val==='') return null;
+    if(typeof val === 'number'){ // serial Excel
+      const ms = Math.round((val - 25569) * 86400 * 1000);
+      const d = new Date(ms);
+      return isNaN(d.getTime()) ? null : d;
+    }
+    const s = String(val).trim();
+    const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+    if(m){
+      const d=Number(m[1]), mo=Number(m[2])-1, y=Number(m[3].length===2?'20'+m[3]:m[3]);
+      const dt = new Date(y,mo,d);
+      return isNaN(dt.getTime()) ? null : dt;
+    }
+    const dt = new Date(s);
+    return isNaN(dt.getTime()) ? null : dt;
+  }
 
-    if(!fecha || !semana) return;
-    const y = fecha.getFullYear();
-    const m = fecha.getMonth(); // 0..11
-    const ym = `${y}-${String(m+1).padStart(2,'0')}`;
-    const key = `${user}|${semana}|${ym}`;
+  function keyIncludes(k, needle){ return k.toLowerCase().includes(needle); }
+  function pick(row, needles){
+    const keys = Object.keys(row);
+    for(const n of needles){
+      const k = keys.find(k => keyIncludes(k,n));
+      if(k) return row[k];
+    }
+    return undefined;
+  }
+  function correoAUsuario(mail){
+    if(!mail) return '';
+    return String(mail).toLowerCase().replace(/\s/g,'').replace(/@mercadolibre\.com/i,'');
+  }
 
-    if(!weeks.has(key)){
-      const pf = perfil.get(user)||{};
-      const lid = liderPorUser.get(user) || 'Sin líder';
-      const ingreso = pf.ingreso;
-      const hoy = new Date();
-      const finAntig = (ingreso && ingreso<=hoy)? hoy : ingreso || hoy;
-      const antig = ingreso ? Math.max(0,(finAntig.getFullYear()-ingreso.getFullYear())*12+(finAntig.getMonth()-ingreso.getMonth())) : '';
-      weeks.set(key,{
-        week: semana,
-        mes: MONTHS_ES[m],
-        monthIndex: m,
-        quarter: getQuarter(m),
-        user,
-        lider: lid,
-        ciudad: pf.ciudad || '',
-        antig,
-        dias: new Set(),
-        demand:0, enh:0, total:0, idsWork:0, idsCal:0, errCal:0
+  const fmt = {
+    int: n => (n ?? 0).toLocaleString('es-AR'),
+    pct: x => (x ?? 0).toLocaleString('es-AR',{style:'percent',minimumFractionDigits:2,maximumFractionDigits:2}),
+    dec: x => (x ?? 0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})
+  };
+
+  /**********************
+   * BUILD CONSOLIDADO (igual a Apps Script)
+   **********************/
+  function buildWeeklyRows(prod, cal, base, lideres){
+    const P = prod.map(r=>({
+      fecha: parseDateAny(pick(r,['fecha'])),
+      week:  Number(pick(r,['week'])),
+      user:  correoAUsuario(pick(r,['usuario','user'])),
+      dem:   Number(pick(r,['tareas de demanda','demanda']))||0,
+      enh:   Number(pick(r,['tareas de enhancement','enhancement']))||0,
+      total: Number(pick(r,['total tareas','total']))||0,
+      idsW:  Number(pick(r,['ids trabaj']))||0
+    })).filter(r=>r.fecha && r.week && r.user);
+
+    const C = cal.map(r=>({
+      week: Number(pick(r,['week'])),
+      user: correoAUsuario(pick(r,['usuario','user'])),
+      idsC: Number(pick(r,['ids audit']))||0,
+      err:  Number(pick(r,['total error','errores']))||0
+    })).filter(r=>r.week && r.user);
+
+    const perfiles = new Map();
+    base.forEach(r=>{
+      const user = correoAUsuario(pick(r,['mail','email']));
+      if(!user) return;
+      perfiles.set(user,{
+        ciudad:  pick(r,['ciudad','ubicación']) || '',
+        ingreso: parseDateAny(pick(r,['fecha ingreso','ingreso']))
       });
-    }
-    const o = weeks.get(key);
-    o.demand  += Number(row[iPDem]  || 0);
-    o.enh     += Number(row[iPEnh]  || 0);
-    o.total   += Number(row[iPTotal]|| 0);
-    o.idsWork += Number(row[iPIDs]  || 0);
-    o.dias.add(fecha.toISOString().slice(0,10));
-  });
+    });
 
-  // inyecta calidad por user+week (para cualquier mes)
-  cal.forEach(r=>{
-    const row = Object.values(r);
-    let user = String(row[iCUser]||'').trim().toLowerCase();
-    if(!user) return;
-    user = user.replace(/@mercadolibre\.com/i,'').trim();
-    const week = Number(row[iCWeek]||'');
-    if(!week) return;
-    const pref = `${user}|${week}|`;
-    for(const k of weeks.keys()){
-      if(k.startsWith(pref)){
-        const o = weeks.get(k);
-        o.idsCal += Number(row[iCIDs]||0);
-        o.errCal += Number(row[iCErr]||0);
+    const liderPorUser = new Map();
+    lideres.forEach(r=>{
+      const user  = correoAUsuario(pick(r,['usuario','user']));
+      let lider   = pick(r,['líder','lider']) || '';
+      if(String(lider||'').toLowerCase()==='sin líder') return;
+      if(user) liderPorUser.set(user, lider);
+    });
+
+    const weeks = new Map();
+    for(const r of P){
+      const y = r.fecha.getFullYear();
+      const m = r.fecha.getMonth();
+      const ym = `${y}-${String(m+1).padStart(2,'0')}`;
+      const key = `${r.user}|${r.week}|${ym}`;
+      if(!weeks.has(key)){
+        const perf = perfiles.get(r.user) || {};
+        const ingreso = perf.ingreso;
+        const hoy = new Date();
+        const finAnt = (ingreso && ingreso<=hoy) ? hoy : ingreso || hoy;
+        const antig = ingreso ? Math.max(0,(finAnt.getFullYear()-ingreso.getFullYear())*12+(finAnt.getMonth()-ingreso.getMonth())) : '';
+        weeks.set(key,{
+          week: r.week, mes: MONTHS_ES[m], mesIndex:m,
+          user:r.user, lider: liderPorUser.get(r.user)||'Sin líder',
+          ciudad: perf.ciudad||'', antig,
+          dias:new Set(), demand:0, enh:0, total:0, idsWork:0, idsCal:0, errCal:0
+        });
+      }
+      const o = weeks.get(key);
+      o.demand+=r.dem; o.enh+=r.enh; o.total+=r.total; o.idsWork+=r.idsW;
+      const dKey = `${r.fecha.getFullYear()}-${String(r.fecha.getMonth()+1).padStart(2,'0')}-${String(r.fecha.getDate()).padStart(2,'0')}`;
+      o.dias.add(dKey);
+    }
+
+    for(const r of C){
+      const pref = `${r.user}|${r.week}|`;
+      for(const key of weeks.keys()){
+        if(key.startsWith(pref)){
+          const o = weeks.get(key);
+          o.idsCal += r.idsC;
+          o.errCal += r.err;
+        }
       }
     }
-  });
 
-  // a objetos finales
-  AGG = Array.from(weeks.values())
-    .sort((a,b)=> a.week - b.week)
-    .map(o=>{
-      const tot = o.demand + o.enh;
-      const prom = o.dias.size? (o.total / o.dias.size) : 0;
-      const pDem = tot ? o.demand / tot : 0;
-      const pEnh = tot ? o.enh    / tot : 0;
-      const pEf  = o.idsCal>0 ? (1 - (o.errCal/o.idsCal)) : 0;
-      return {
-        week:o.week, mes:o.mes, monthIndex:o.monthIndex, quarter:o.quarter,
-        user:o.user, lider:o.lider, ciudad:o.ciudad, antig:o.antig,
-        prom, efect:pEf, demand:o.demand, pDemand:pDem, enh:o.enh, pEnh:pEnh,
-        total:o.total, idsWork:o.idsWork, idsCal:o.idsCal, dias:o.dias.size
-      };
-    });
-}
+    const rows = Array.from(weeks.values())
+      .sort((a,b)=> a.week - b.week)
+      .map(o=>{
+        const prom = o.dias.size ? (o.total/o.dias.size) : '';
+        const tot  = o.demand + o.enh;
+        const pDem = tot ? o.demand/tot : '';
+        const pEnh = tot ? o.enh/tot    : '';
+        const pEf  = o.idsCal>0 ? (1 - (o.errCal/o.idsCal)) : '';
+        return {
+          week: o.week,
+          mes: o.mes,
+          mesIndex: o.mesIndex,
+          usuario: o.user,
+          líder: o.lider,
+          ciudad: o.ciudad,
+          antigüedad: o.antig,
+          promedio_diario: prom,
+          efectividad: pEf,
+          tareas_demanda: o.demand,
+          p_demanda: pDem,
+          tareas_enhancement: o.enh,
+          p_enhancement: pEnh,
+          total_tareas: o.total,
+          ids_trabajados: o.idsWork,
+          correcciones_auditadas: o.idsCal,
+          dias_activos: o.dias.size,
+          q: Q_OF_MONTH_INDEX(o.mesIndex)
+        };
+      });
 
-/* =============== FILTROS =============== */
-function uniq(arr){ return Array.from(new Set(arr)); }
+    return rows;
+  }
 
-function setupFilters(){
-  const meses = ['Todos los meses', ...MONTHS_ES.filter(m => AGG.some(x=>x.mes===m))];
-  const semanas = ['Todas las semanas', ...uniq(AGG.map(x=>x.week)).sort((a,b)=>a-b)];
-  const trimestres = ['Todos los trimestres', ...uniq(AGG.map(x=>x.quarter)).sort()];
-  const lideres = ['Todos los líderes', ...uniq(AGG.map(x=>x.lider)).filter(l=>toNorm(l)!=='sin lider').sort()];
-  const usuarios = ['Todos los usuarios', ...uniq(AGG.map(x=>x.user)).sort()];
-  const ubic = ['Todas las ubicaciones', ...uniq(AGG.map(x=>x.ciudad)).filter(Boolean).sort()];
+  /**********************
+   * ESTADO GLOBAL
+   **********************/
+  let originalData = [];       // filas consolidadas
+  let currentData  = [];       // filas filtradas
+  const charts = {};           // instancias Chart.js
 
-  function fill(sel, options){
-    const el = $(sel); el.innerHTML = '';
-    options.forEach(v=>{
-      const opt = document.createElement('option');
-      opt.value = v; opt.textContent = v; el.appendChild(opt);
+  /**********************
+   * FILTROS + NAV
+   **********************/
+  function setOptions(sel, values, placeholder){
+    sel.innerHTML = '';
+    const opt = document.createElement('option');
+    opt.value = ''; opt.textContent = placeholder;
+    sel.appendChild(opt);
+    values.forEach(v=>{
+      const o = document.createElement('option');
+      o.value = v; o.textContent = v;
+      sel.appendChild(o);
     });
   }
 
-  fill('#filter-mes', meses);
-  fill('#filter-semana', semanas);
-  fill('#filter-trimestre', trimestres);
-  fill('#filter-lider', lideres);
-  fill('#filter-usuario', usuarios);
-  fill('#filter-ubicacion', ubic);
+  function uniqueSorted(arr){ return Array.from(new Set(arr)).sort(); }
 
-  // listeners
-  ['#filter-mes','#filter-semana','#filter-trimestre','#filter-lider','#filter-usuario','#filter-ubicacion']
-    .forEach(id=>{
-      $(id).addEventListener('change', ()=>{ applyFilters(); renderAll(); });
+  function setupFilters(){
+    const meses = MONTHS_ES.filter(m => originalData.some(r=>r.mes===m)); // orden cronológico real
+    const semanas = uniqueSorted(originalData.map(r=>r.week)).map(String);
+    const ubic = uniqueSorted(originalData.map(r=>r.ciudad).filter(Boolean));
+    const usuarios = uniqueSorted(originalData.map(r=>r.usuario));
+    const lideres = uniqueSorted(originalData.map(r=>r['líder']).filter(l => l && l.toLowerCase() !== 'sin líder'));
+    const qs = ['Q1','Q2','Q3','Q4'].filter(q => originalData.some(r=>r.q===q));
+
+    setOptions(document.getElementById('filter-mes'), meses, 'Todos los meses');
+    setOptions(document.getElementById('filter-semana'), semanas, 'Todas las semanas');
+    setOptions(document.getElementById('filter-ubicacion'), ubic, 'Todas las ubicaciones');
+    setOptions(document.getElementById('filter-usuario'), usuarios, 'Todos los usuarios');
+    setOptions(document.getElementById('filter-lider'), lideres, 'Todos los líderes');
+    setOptions(document.getElementById('filter-q'), qs, 'Todos los trimestres');
+
+    // selector para detalle de usuario
+    setOptions(document.getElementById('user-detail-select'), usuarios, 'Elegí un usuario');
+
+    // listeners
+    ['filter-mes','filter-semana','filter-ubicacion','filter-usuario','filter-lider','filter-q']
+      .forEach(id => document.getElementById(id).addEventListener('change', applyFilters));
+  }
+
+  function setupNavigation(){
+    const links = [...document.querySelectorAll('#nav-menu a')];
+    const mobile = document.getElementById('mobile-nav-menu');
+    mobile.innerHTML = links.map(a=>`<a href="${a.getAttribute('href')}" class="block p-3 rounded-lg hover:bg-sky-700">${a.textContent}</a>`).join('');
+    links.forEach(a=>{
+      a.addEventListener('click', e=>{
+        e.preventDefault();
+        const target = a.getAttribute('href');
+        document.querySelectorAll('.page-section').forEach(s=>s.classList.add('hidden'));
+        document.querySelector(target).classList.remove('hidden');
+        links.forEach(x=>x.classList.remove('active'));
+        a.classList.add('active');
+        document.getElementById('page-title').textContent = a.textContent;
+        if(target==='#productividad') renderTasksByUser();
+        if(target==='#lideres')       renderTasksByLeader();
+        if(target==='#evolucion')     renderWeeklyEvolution();
+        if(target==='#ubicacion')     renderByLocation();
+        if(target==='#proyecciones')  renderProjections();
+      });
     });
 
-  // también alimentar selector de detalle de usuario
-  const uds = $('#user-detail-select'); uds.innerHTML='';
-  usuarios.slice(1).forEach(u=>{
-    const opt=document.createElement('option'); opt.value=u; opt.text=u; uds.appendChild(opt);
-  });
-}
+    // menú móvil
+    const mobBtn = document.getElementById('mobile-menu-button');
+    const mob    = document.getElementById('mobile-menu');
+    const mobClose = document.getElementById('close-mobile-menu');
+    mobBtn.addEventListener('click', ()=>{ mob.classList.remove('hidden'); mob.querySelector('aside').classList.remove('-translate-x-full'); });
+    mobClose.addEventListener('click', ()=>{ mob.querySelector('aside').classList.add('-translate-x-full'); setTimeout(()=>mob.classList.add('hidden'),200); });
+    mobile.querySelectorAll('a').forEach(a=>{
+      a.addEventListener('click', ()=>{ mob.querySelector('aside').classList.add('-translate-x-full'); setTimeout(()=>mob.classList.add('hidden'),200); });
+    });
+  }
 
-function dataFiltered(){
-  let out = AGG.slice();
-  const m = $('#filter-mes').value, s = $('#filter-semana').value, q=$('#filter-trimestre').value,
-        l = $('#filter-lider').value, u=$('#filter-usuario').value, ub=$('#filter-ubicacion').value;
+  function applyFilters(){
+    const f = {
+      mes: document.getElementById('filter-mes').value,
+      semana: document.getElementById('filter-semana').value,
+      ubic: document.getElementById('filter-ubicacion').value,
+      user: document.getElementById('filter-usuario').value,
+      lider: document.getElementById('filter-lider').value,
+      q: document.getElementById('filter-q').value
+    };
+    currentData = originalData.filter(r =>
+      (!f.mes   || r.mes === f.mes) &&
+      (!f.semana|| String(r.week) === String(f.semana)) &&
+      (!f.ubic  || r.ciudad === f.ubic) &&
+      (!f.user  || r.usuario === f.user) &&
+      (!f.lider || r['líder'] === f.lider) &&
+      (!f.q     || r.q === f.q)
+    );
 
-  if (m && m!=='Todos los meses') out = out.filter(r=>r.mes===m);
-  if (s && s!=='Todas las semanas') out = out.filter(r=>String(r.week)===String(s));
-  if (q && q!=='Todos los trimestres') out = out.filter(r=>r.quarter===q);
-  if (l && l!=='Todos los líderes') out = out.filter(r=>r.lider===l);
-  if (u && u!=='Todos los usuarios') out = out.filter(r=>r.user===u);
-  if (ub && ub!=='Todas las ubicaciones') out = out.filter(r=>r.ciudad===ub);
-  return out;
-}
+    updateKPIs();
+    renderTopUsers();
+    renderDemandPie();
+    renderTasksByUser();
+    renderTasksByLeader();
+    renderWeeklyEvolution();
+    renderByLocation();
+    renderProjections();
+  }
 
-function applyFilters(){
-  FILTERS = {
-    mes: $('#filter-mes').value,
-    semana: $('#filter-semana').value,
-    trimestre: $('#filter-trimestre').value,
-    lider: $('#filter-lider').value,
-    usuario: $('#filter-usuario').value,
-    ubicacion: $('#filter-ubicacion').value
-  };
-}
+  /**********************
+   * KPI + RENDER
+   **********************/
+  function updateKPIs(){
+    const total = currentData.reduce((s,r)=> s + (r.total_tareas||0), 0);
+    const usuarios = new Set(currentData.map(r=>r.usuario)).size;
+    const correcc = currentData.reduce((s,r)=> s + (r.correcciones_auditadas||0), 0);
+    const promDiario = (() => {
+      const days = currentData.reduce((s,r)=> s + (r.dias_activos||0), 0);
+      return days ? total / days : 0;
+    })();
+    const ef = (() => {
+      const vals = currentData.map(r=>r.efectividad).filter(v => v !== '' && v !== null && v !== undefined);
+      if(!vals.length) return 0;
+      return vals.reduce((a,b)=>a+b,0) / vals.length;
+    })();
 
-/* =============== KPI + LISTAS =============== */
-function formatInt(n){ return new Intl.NumberFormat('es-AR').format(Math.round(n)); }
-function formatFloat(n,dec=2){ return new Intl.NumberFormat('es-AR',{minimumFractionDigits:dec,maximumFractionDigits:dec}).format(n); }
-function formatPct(n){ return new Intl.NumberFormat('es-AR',{style:'percent',minimumFractionDigits:2,maximumFractionDigits:2}).format(n||0); }
+    document.getElementById('kpi-total-tareas').textContent     = fmt.int(total);
+    document.getElementById('kpi-usuarios').textContent         = fmt.int(usuarios);
+    document.getElementById('kpi-correcciones').textContent     = fmt.int(correcc);
+    document.getElementById('kpi-promedio-diario').textContent  = fmt.dec(promDiario);
+    document.getElementById('kpi-efectividad-prom').textContent = fmt.pct(ef);
+  }
 
-function renderKPIs(){
-  const d = dataFiltered();
-  const total = d.reduce((s,x)=>s+(x.total||0),0);
-  const idsCal = d.reduce((s,x)=>s+(x.idsCal||0),0);
-  const usuarios = new Set(d.map(x=>x.user)).size;
-  const totalDias = d.reduce((s,x)=>s+(x.dias||0),0);
-  const prom = totalDias? total/totalDias : 0;
-  const ef = (d.map(x=>x.efect).filter(n=>Number.isFinite(n)).reduce((a,b)=>a+b,0) / (d.length||1));
+  function createOrUpdateChart(id, cfg){
+    if(charts[id]) { charts[id].data = cfg.data; charts[id].options = cfg.options || {}; charts[id].update(); return charts[id]; }
+    const ctx = document.getElementById(id).getContext('2d');
+    charts[id] = new Chart(ctx, cfg);
+    return charts[id];
+  }
 
-  $('#kpi-total-tareas').textContent = formatInt(total);
-  $('#kpi-promedio').textContent = formatFloat(prom);
-  $('#kpi-efectividad-prom').textContent = formatPct(ef);
-  $('#kpi-correcciones').textContent = formatInt(idsCal);
-  $('#kpi-usuarios').textContent = String(usuarios);
+  function renderTopUsers(){
+    const byUser = new Map();
+    currentData.forEach(r=>{
+      byUser.set(r.usuario, (byUser.get(r.usuario)||0) + (r.total_tareas||0));
+    });
+    const arr = Array.from(byUser.entries()).sort((a,b)=>b[1]-a[1]).slice(0,10);
+    const data = {
+      labels: arr.map(x=>x[0]),
+      datasets: [{ label:'Tareas', data: arr.map(x=>x[1]) }]
+    };
+    createOrUpdateChart('topUsersChart', { type:'bar', data, options:{ responsive:true, plugins:{legend:{display:false}} }});
+  }
 
-  // Top usuarios
-  const byUser = groupSum(d, 'user', ['total']);
-  const top = byUser.sort((a,b)=>b.total-a.total).slice(0,10);
-  $('#top-users-list').innerHTML = top.map(x=>`<div class="flex justify-between border-b py-1"><span>${x.key}</span><span class="font-semibold">${formatInt(x.total)}</span></div>`).join('');
-}
+  function renderDemandPie(){
+    const demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
+    const enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
+    createOrUpdateChart('demandPieChart',{
+      type:'pie',
+      data:{ labels:['Demanda','Enhancement'], datasets:[{ data:[demand, enh] }] },
+      options:{ responsive:true, plugins:{legend:{position:'bottom'}} }
+    });
+  }
 
-/* =============== CHART HELPERS =============== */
-let charts = {};
-function destroy(id){ if (charts[id]){ charts[id].destroy(); delete charts[id]; } }
-function groupSum(arr, key, fields){
-  const map = new Map();
-  arr.forEach(o=>{
-    const k = o[key];
-    if(!map.has(k)) map.set(k, Object.fromEntries(fields.map(f=>[f,0])));
-    const obj = map.get(k);
-    fields.forEach(f=> obj[f]+= (o[f]||0));
-  });
-  return Array.from(map.entries()).map(([k,vals])=>({key:k, ...vals}));
-}
+  function renderTasksByUser(){
+    const byUser = new Map();
+    currentData.forEach(r=> byUser.set(r.usuario,(byUser.get(r.usuario)||0)+(r.total_tareas||0)));
+    const arr = Array.from(byUser.entries()).sort((a,b)=>b[1]-a[1]);
+    createOrUpdateChart('tasksByUserChart',{
+      type:'bar',
+      data:{ labels:arr.map(x=>x[0]), datasets:[{label:'Tareas', data: arr.map(x=>x[1])}] },
+      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{x:{ticks:{autoSkip:false,maxRotation:60,minRotation:45}}}}
+    });
 
-/* =============== RENDER CHARTS =============== */
-function renderSummaryCharts(){
-  const d = dataFiltered();
-  // pie demanda vs enhancement
-  const dem = d.reduce((s,x)=>s+(x.demand||0),0);
-  const enh = d.reduce((s,x)=>s+(x.enh||0),0);
-  destroy('demandPieChart');
-  charts.demandPieChart = new Chart($('#demandPieChart'),{
-    type:'pie',
-    data:{labels:['Demanda','Enhancement'],datasets:[{data:[dem,enh]}]},
-    options:{plugins:{legend:{position:'bottom'}}}
-  });
-}
+    // detalle de usuario
+    const select = document.getElementById('user-detail-select');
+    if(!select.value && arr.length) select.value = arr[0][0];
+    renderUserDetail(select.value);
+    select.onchange = () => renderUserDetail(select.value);
+  }
 
-function renderTasksByUser(){
-  const d = dataFiltered();
-  const rows = groupSum(d,'user',['total']).sort((a,b)=>b.total-a.total).slice(0,15);
-  destroy('tasksByUserChart');
-  charts.tasksByUserChart = new Chart($('#tasksByUserChart'),{
-    type:'bar',
-    data:{labels:rows.map(r=>r.key),datasets:[{label:'Total',data:rows.map(r=>r.total)}]},
-    options:{indexAxis:'x',plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
-  });
+  function renderUserDetail(user){
+    const rows = currentData.filter(r=>r.usuario===user).sort((a,b)=>a.week-b.week);
+    const labels = rows.map(r=>`W${r.week} ${r.mes}`);
+    const data = rows.map(r=>r.total_tareas||0);
+    createOrUpdateChart('userDetailChart',{
+      type:'line',
+      data:{ labels, datasets:[{label:`Tareas de ${user}`, data}] },
+      options:{ responsive:true, plugins:{legend:{display:false}}}
+    });
+  }
 
-  // detalle usuario (línea por semana)
-  const sel = $('#user-detail-select').value || rows[0]?.key;
-  const sdata = d.filter(x=>x.user===sel).sort((a,b)=>a.week-b.week);
-  destroy('userDetailChart');
-  charts.userDetailChart = new Chart($('#userDetailChart'),{
-    type:'line',
-    data:{labels:sdata.map(x=>`S${x.week}`),datasets:[
-      {label:'Total',data:sdata.map(x=>x.total),borderWidth:2,fill:false},
-      {label:'% Efectividad',data:sdata.map(x=> (x.efect*100)),yAxisID:'y1',borderWidth:2,fill:false}
-    ]},
-    options:{
-      interaction:{mode:'index',intersect:false},
-      scales:{y:{beginAtZero:true}, y1:{position:'right',ticks:{callback:v=>v+'%'}}}
+  function renderTasksByLeader(){
+    const byLeader = new Map();
+    currentData.forEach(r=>{
+      if(!r['líder'] || r['líder'].toLowerCase()==='sin líder') return;
+      byLeader.set(r['líder'], (byLeader.get(r['líder'])||0)+(r.total_tareas||0));
+    });
+    const arr = Array.from(byLeader.entries()).sort((a,b)=>b[1]-a[1]);
+    createOrUpdateChart('tasksByLeaderChart',{
+      type:'bar',
+      data:{ labels:arr.map(x=>x[0]), datasets:[{label:'Tareas', data: arr.map(x=>x[1])}] },
+      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{x:{ticks:{autoSkip:false,maxRotation:45}}}}
+    });
+  }
+
+  function renderWeeklyEvolution(){
+    const byW = new Map();
+    currentData.forEach(r=>{
+      const key = `W${String(r.week).padStart(2,'0')}`;
+      byW.set(key, (byW.get(key)||0) + (r.total_tareas||0));
+    });
+    const labels = Array.from(byW.keys()).sort((a,b)=> Number(a.slice(1))-Number(b.slice(1)));
+    const values = labels.map(k=>byW.get(k));
+    createOrUpdateChart('weeklyEvolutionChart',{
+      type:'line',
+      data:{ labels, datasets:[{label:'Total Tareas', data: values}] },
+      options:{ responsive:true, plugins:{legend:{display:false}}}
+    });
+  }
+
+  function renderByLocation(){
+    // barras por ubicación
+    const byLoc = new Map();
+    currentData.forEach(r=> byLoc.set(r.ciudad,(byLoc.get(r.ciudad)||0)+(r.total_tareas||0)));
+    const arr = Array.from(byLoc.entries()).sort((a,b)=>b[1]-a[1]);
+    createOrUpdateChart('tasksByLocationChart',{
+      type:'bar',
+      data:{ labels:arr.map(x=>x[0]), datasets:[{label:'Tareas', data: arr.map(x=>x[1])}] },
+      options:{ responsive:true, plugins:{legend:{display:false}}}
+    });
+
+    // antigüedad promedio por ubicación (meses)
+    const agg = {};
+    currentData.forEach(r=>{
+      if(!r.ciudad) return;
+      if(!agg[r.ciudad]) agg[r.ciudad] = {sum:0, n:0};
+      const a = Number(r.antigüedad||0);
+      if(Number.isFinite(a)){ agg[r.ciudad].sum += a; agg[r.ciudad].n++; }
+    });
+    const list = Object.entries(agg).map(([k,v])=>[k, v.n? v.sum/v.n : 0]).sort((a,b)=>b[1]-a[1]);
+    const ul = document.getElementById('avg-antiguedad-list');
+    ul.innerHTML = list.map(([loc,avg])=>`<li class="flex justify-between"><span>${loc}</span><span class="font-semibold">${fmt.dec(avg)}</span></li>`).join('');
+  }
+
+  function renderProjections(){
+    // regresión lineal sobre W -> total_tareas
+    const byW = new Map();
+    currentData.forEach(r=>{
+      const w = Number(r.week);
+      byW.set(w, (byW.get(w)||0) + (r.total_tareas||0));
+    });
+    const weeks = Array.from(byW.keys()).sort((a,b)=>a-b);
+    if(weeks.length<2){
+      createOrUpdateChart('projectionsChart',{type:'line',data:{labels:[],datasets:[]},options:{}});
+      return;
+    }
+    const y = weeks.map(w=>byW.get(w)), x = weeks;
+    const n = x.length;
+    const sx = x.reduce((a,b)=>a+b,0), sy = y.reduce((a,b)=>a+b,0);
+    const sxx = x.reduce((a,b)=>a+b*b,0), sxy = x.reduce((a,i)=>a+i*y[x.indexOf(i)],0);
+    const m = (n*sxy - sx*sy)/(n*sxx - sx*sx);
+    const b = (sy - m*sx)/n;
+
+    const next = [];
+    const maxW = Math.max(...weeks);
+    for(let k=1;k<=6;k++) next.push(maxW+k);
+    const allW = weeks.concat(next);
+    const trend = allW.map(w => m*w + b);
+
+    createOrUpdateChart('projectionsChart',{
+      type:'line',
+      data:{ labels: allW.map(w=>'W'+w), datasets:[
+        {label:'Histórico', data: weeks.map(w=>byW.get(w)), borderWidth:2, tension:.2},
+        {label:'Proyección', data: trend, borderDash:[6,4], borderWidth:2, tension:.2}
+      ]},
+      options:{ responsive:true }
+    });
+  }
+
+  /**********************
+   * GEMINI (opcional)
+   **********************/
+  async function geminiRequest(prompt){
+    if(!GEMINI_PROXY_URL){
+      return "Configura la URL del proxy de Gemini para usar esta función.";
+    }
+    const payload = {
+      contents: [{ parts: [{ text: prompt }] }]
+    };
+    const r = await fetch(GEMINI_PROXY_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    if(!r.ok){
+      const t = await r.text();
+      throw new Error(`Gemini error ${r.status}: ${t}`);
+    }
+    const data = await r.json();
+    // soporte a formato de respuesta del proxy (texto plano o candidates)
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || data.text || JSON.stringify(data).slice(0,1000);
+    return text;
+  }
+
+  function setupGeminiFeatures(){
+    document.getElementById('generate-summary-btn').addEventListener('click', async ()=>{
+      const block = document.getElementById('summary-output');
+      block.classList.remove('hidden');
+      block.textContent = 'Generando...';
+      try{
+        const total = currentData.reduce((s,r)=>s+(r.total_tareas||0),0);
+        const prom  = (()=>{
+          const d = currentData.reduce((s,r)=>s+(r.dias_activos||0),0);
+          return d? total/d : 0;
+        })();
+        const top = (()=> {
+          const map = new Map();
+          currentData.forEach(r=>map.set(r.usuario,(map.get(r.usuario)||0)+(r.total_tareas||0)));
+          return Array.from(map.entries()).sort((a,b)=>b[1]-a[1]).slice(0,5).map(x=>`${x[0]} (${x[1]} tareas)`).join(', ');
+        })();
+        const prompt = `Actúa como analista. Resume hallazgos en 6 viñetas. Datos: total tareas=${total}, promedio diario ponderado=${prom.toFixed(2)}, top usuarios=${top}. Sugerí 3 acciones.`;        
+        const resp = await geminiRequest(prompt);
+        block.textContent = resp;
+      }catch(e){
+        block.textContent = e.message;
+      }
+    });
+
+    document.getElementById('generate-feedback-btn').addEventListener('click', async ()=>{
+      const user = document.getElementById('user-detail-select').value;
+      const out = document.getElementById('feedback-output');
+      out.classList.remove('hidden'); out.textContent = 'Analizando...';
+      try{
+        const rows = currentData.filter(r=>r.usuario===user).sort((a,b)=>a.week-b.week);
+        const last = rows[rows.length-1];
+        const prompt = `Feedback breve para ${user}. Evolución semanas: ${rows.map(r=>`W${r.week}:${r.total_tareas}`).join(', ')}. Porcentaje de efectividad promedio ${(rows.map(r=>r.efectividad).filter(v=>v!=='').reduce((a,b)=>a+b,0)/(rows.filter(r=>r.efectividad!=='').length||1)).toFixed(2)}. Señala 2 fortalezas y 2 oportunidades.`;
+        const resp = await geminiRequest(prompt);
+        out.textContent = resp;
+      }catch(e){
+        out.textContent = e.message;
+      }
+    });
+
+    document.getElementById('generate-insights-btn').addEventListener('click', async ()=>{
+      const out = document.getElementById('insights-output');
+      out.classList.remove('hidden'); out.textContent='Pensando...';
+      try{
+        const dmd = currentData.reduce((s,r)=>s+(r.tareas_demanda||0),0);
+        const enh = currentData.reduce((s,r)=>s+(r.tareas_enhancement||0),0);
+        const eff = (()=>{ const v=currentData.map(r=>r.efectividad).filter(v=>v!==''); return v.length? v.reduce((a,b)=>a+b,0)/v.length : 0; })();
+        const prompt = `Con los datos filtrados, genera 6 insights accionables y una conclusión: demanda=${dmd}, enhancement=${enh}, efectividad=${eff.toFixed(3)}.`;
+        const resp = await geminiRequest(prompt);
+        out.textContent = resp;
+      }catch(e){
+        out.textContent = e.message;
+      }
+    });
+  }
+
+  /**********************
+   * INIT
+   **********************/
+  document.addEventListener('DOMContentLoaded', async ()=>{
+    try{
+      const [tProd,tCal,tBase,tLid] = await Promise.all([
+        fetchCSVFile(FILES.productividad),
+        fetchCSVFile(FILES.calidad),
+        fetchCSVFile(FILES.base),
+        fetchCSVFile(FILES.lideres)
+      ]);
+      const prod = parseCSV(tProd);
+      const cal  = parseCSV(tCal);
+      const base = parseCSV(tBase);
+      const lids = parseCSV(tLid);
+
+      originalData = buildWeeklyRows(prod, cal, base, lids);
+
+      setupFilters();
+      setupNavigation();
+      setupGeminiFeatures();
+      // render inicial
+      currentData = originalData.slice();
+      applyFilters();
+    }catch(err){
+      console.error(err);
+      document.body.innerHTML = `<div class="p-8 text-center text-red-600 bg-red-100">${err.message}</div>`;
     }
   });
-}
-
-function renderLeaders(){
-  const d = dataFiltered();
-  const rows = groupSum(d,'lider',['total']).sort((a,b)=>b.total-a.total);
-  destroy('tasksByLeaderChart');
-  charts.tasksByLeaderChart = new Chart($('#tasksByLeaderChart'),{
-    type:'bar',
-    data:{labels:rows.map(r=>r.key),datasets:[{label:'Total',data:rows.map(r=>r.total)}]},
-    options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
-  });
-}
-
-function renderWeekly(){
-  const d = dataFiltered().slice().sort((a,b)=>a.week-b.week);
-  const byWeek = groupSum(d,'week',['total']);
-  destroy('weeklyEvolutionChart');
-  charts.weeklyEvolutionChart = new Chart($('#weeklyEvolutionChart'),{
-    type:'line',
-    data:{labels:byWeek.map(r=>'S'+r.key),datasets:[{label:'Total',data:byWeek.map(r=>r.total),borderWidth:2,fill:false}]},
-    options:{scales:{y:{beginAtZero:true}}}
-  });
-}
-
-function renderLocation(){
-  const d = dataFiltered();
-  const byLoc = groupSum(d,'ciudad',['total']);
-  destroy('tasksByLocationChart');
-  charts.tasksByLocationChart = new Chart($('#tasksByLocationChart'),{
-    type:'bar',
-    data:{labels:byLoc.map(r=>r.key),datasets:[{label:'Total',data:byLoc.map(r=>r.total)}]},
-    options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
-  });
-
-  // efectividad promedio por ubicación
-  const map = new Map();
-  d.forEach(x=>{
-    if(!map.has(x.ciudad)) map.set(x.ciudad,[]);
-    map.get(x.ciudad).push(x.efect);
-  });
-  const eff = Array.from(map.entries()).map(([k,arr])=>({key:k,val:(arr.reduce((a,b)=>a+b,0)/(arr.length||1))*100}));
-  destroy('effByLocationChart');
-  charts.effByLocationChart = new Chart($('#effByLocationChart'),{
-    type:'bar',
-    data:{labels:eff.map(r=>r.key),datasets:[{label:'% Efectividad',data:eff.map(r=>r.val)}]},
-    options:{scales:{y:{beginAtZero:true,ticks:{callback:v=>v+'%'}}}}
-  });
-}
-
-function renderProjection(){
-  const d = dataFiltered().slice().sort((a,b)=>a.week-b.week);
-  const byWeek = groupSum(d,'week',['total']).sort((a,b)=>a.key-b.key);
-  const xs = byWeek.map((_,i)=>i+1);
-  const ys = byWeek.map(r=>r.total);
-  // regresión lineal simple
-  const n = xs.length; if(n<2){ destroy('projectionsChart'); return; }
-  const mean = a => a.reduce((s,x)=>s+x,0)/a.length;
-  const mx = mean(xs), my = mean(ys);
-  let num=0, den=0; for(let i=0;i<n;i++){ num += (xs[i]-mx)*(ys[i]-my); den += (xs[i]-mx)*(xs[i]-mx); }
-  const b = num/den, a = my - b*mx;
-  const yhat = xs.map(x=> a + b*x);
-
-  destroy('projectionsChart');
-  charts.projectionsChart = new Chart($('#projectionsChart'),{
-    type:'line',
-    data:{labels:byWeek.map(r=>'S'+r.key),datasets:[
-      {label:'Total',data:ys,borderWidth:2,fill:false},
-      {label:'Proyección',data:yhat,borderDash:[6,4],borderWidth:2,fill:false}
-    ]},
-    options:{scales:{y:{beginAtZero:true}}}
-  });
-}
-
-function renderAll(){
-  renderKPIs();
-  renderSummaryCharts();
-  renderTasksByUser();
-  renderLeaders();
-  renderWeekly();
-  renderLocation();
-  renderProjection();
-}
-
-/* =============== NAVEGACIÓN Y GEMINI =============== */
-function setupNavigation(){
-  const links = document.querySelectorAll('#nav-menu a');
-  links.forEach(a=>{
-    a.addEventListener('click', e=>{
-      e.preventDefault();
-      links.forEach(x=>x.classList.remove('active'));
-      a.classList.add('active');
-      const id = a.getAttribute('href').substring(1);
-      document.querySelectorAll('.page-section').forEach(s=>s.classList.add('hidden'));
-      document.getElementById(id).classList.remove('hidden');
-      $('#page-title').textContent = a.textContent.trim();
-      renderAll();
-    });
-  });
-
-  // móvil
-  const mobile = $('#mobile-menu'), aside = mobile.querySelector('aside');
-  $('#mobile-menu-button').onclick = ()=>{ mobile.classList.remove('hidden'); setTimeout(()=> aside.classList.remove('-translate-x-full'),10); };
-  $('#close-mobile-menu').onclick = ()=>{ aside.classList.add('-translate-x-full'); setTimeout(()=> mobile.classList.add('hidden'),300); };
-  const mobNav = $('#mobile-nav-menu');
-  mobNav.innerHTML = $('#nav-menu').innerHTML;
-  mobNav.querySelectorAll('a').forEach(a=>{
-    a.addEventListener('click', e=>{
-      e.preventDefault();
-      $('#close-mobile-menu').click();
-      document.querySelector(`#nav-menu a[href="${a.getAttribute('href')}"]`).click();
-    });
-  });
-}
-
-function setupGemini(){
-  // cambia por tu URL pública del Worker proxy si aún no quedó seteada:
-  window.GEMINI_PROXY_URL = window.GEMINI_PROXY_URL || 'https://catalogo.ezequiel-galarza.workers.dev'; // <- tu workers.dev
-  $('#generate-insights-btn').addEventListener('click', async ()=>{
-    const out = $('#insights-output'); out.classList.remove('hidden'); out.textContent = 'Pensando…';
-    try{
-      const d = dataFiltered();
-      const brief = {
-        filtros: FILTERS,
-        kpis:{
-          total: d.reduce((s,x)=>s+(x.total||0),0),
-          promedio: (()=>{ const td=d.reduce((s,x)=>s+(x.dias||0),0); return td? d.reduce((s,x)=>s+x.total,0)/td : 0; })(),
-          efect: (d.map(x=>x.efect).reduce((a,b)=>a+b,0)/(d.length||1)),
-          audit: d.reduce((s,x)=>s+(x.idsCal||0),0)
-        },
-        topUsuarios: groupSum(d,'user',['total']).sort((a,b)=>b.total-a.total).slice(0,5)
-      };
-      const res = await fetch(`${window.GEMINI_PROXY_URL}/v1/summarize`,{
-        method:'POST',headers:{'content-type':'application/json'},
-        body:JSON.stringify({prompt:`Genera insights de productividad a partir de este JSON: ${JSON.stringify(brief)}`})
-      });
-      const txt = await res.text();
-      out.textContent = txt;
-    }catch(err){ out.textContent = String(err); }
-  });
-
-  // para el resumen chico
-  $('#generate-summary-btn').addEventListener('click', ()=>{
-    const d = dataFiltered();
-    const byLeader = groupSum(d,'lider',['total']).sort((a,b)=>b.total-a.total).slice(0,5);
-    $('#summary-output').classList.remove('hidden');
-    $('#summary-output').innerHTML = `<div class="prose text-sm">
-      <strong>Top líderes por tareas</strong>
-      <ul>${byLeader.map(x=>`<li>${x.key}: ${formatInt(x.total)} tareas</li>`).join('')}</ul>
-    </div>`;
-  });
-}
-
-/* =============== INIT =============== */
-document.addEventListener('DOMContentLoaded', async ()=>{
-  try{
-    await loadData();
-    setupFilters();
-    applyFilters();
-    setupNavigation();
-    setupGemini();
-    renderAll();
-  }catch(err){
-    console.error(err);
-    document.body.innerHTML = `<div class="p-8 text-center text-red-600 bg-red-100">${err.message}</div>`;
-  }
-});
-</script>
+  </script>
 </body>
 </html>
