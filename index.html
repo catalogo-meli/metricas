@@ -209,7 +209,7 @@
    * CONFIG
    **********************/
   // Si ya creaste tu Worker proxy de Gemini, poné acá la URL pública:
-  const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/"; // ej: "https://catalogo.ezequiel-galarza.workers.dev"
+  const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
 
   // Archivos CSV fuente (en la raíz del repo)
   const FILES = {
@@ -833,5 +833,6 @@ async function geminiRequest(prompt) {
   </script>
 </body>
 </html>
+
 
 
