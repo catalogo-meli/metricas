@@ -42,7 +42,6 @@
         <a href="#lideres" class="sidebar-link flex items-center p-3 rounded-lg">Comparativa de Líderes</a>
         <a href="#evolucion" class="sidebar-link flex items-center p-3 rounded-lg">Evolución Semanal</a>
         <a href="#ubicacion" class="sidebar-link flex items-center p-3 rounded-lg">Análisis por Ubicación</a>
-        <a href="#proyecciones" class="sidebar-link flex items-center p-3 rounded-lg">Proyecciones</a>
         <a href="#analisis" class="sidebar-link flex items-center p-3 rounded-lg">Análisis Inteligente</a>
       </nav>
     </aside>
@@ -68,7 +67,7 @@
           <select id="filter-lider" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
           <select id="filter-ubicacion" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
           <select id="filter-usuario" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
-          <!-- Nuevo: Flujo -->
+          <!-- Flujo -->
           <select id="filter-flujo" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
         </div>
 
@@ -77,32 +76,37 @@
           <!-- Resumen -->
           <section id="resumen" class="page-section">
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 mb-6">
+              <!-- 1) Total Tareas (ajustado por flujo) -->
               <div class="kpi-card text-center">
                 <h3 class="text-slate-500 font-medium">Total Tareas</h3>
                 <p id="kpi-total-tareas" class="text-4xl font-bold mt-2"></p>
               </div>
+              <!-- 2) Promedio Diario -->
               <div class="kpi-card text-center">
-                <h3 class="text-slate-500 font-medium">% Efectividad Prom.</h3>
-                <p id="kpi-efectividad-prom" class="text-4xl font-bold mt-2 text-green-600"></p>
+                <h3 class="text-slate-500 font-medium">Promedio Diario</h3>
+                <p id="kpi-promedio-diario" class="text-4xl font-bold mt-2"></p>
               </div>
+              <!-- 3) % Efectividad -->
+              <div class="kpi-card text-center">
+                <h3 class="text-slate-500 font-medium">% Efectividad</h3>
+                <p id="kpi-efectividad-prom" class="text-4xl font-bold mt-2"></p>
+              </div>
+              <!-- 4) Correcciones -->
               <div class="kpi-card text-center">
                 <h3 class="text-slate-500 font-medium">Correcciones auditadas</h3>
-                <p id="kpi-correcciones" class="text-4xl font-bold mt-2 text-amber-600"></p>
+                <p id="kpi-correcciones" class="text-4xl font-bold mt-2"></p>
               </div>
+              <!-- 5) Usuarios activos -->
               <div class="kpi-card text-center">
                 <h3 class="text-slate-500 font-medium">Usuarios Activos</h3>
                 <p id="kpi-usuarios" class="text-4xl font-bold mt-2"></p>
-              </div>
-              <div class="kpi-card text-center">
-                <h3 class="text-slate-500 font-medium">Promedio Diario</h3>
-                <p id="kpi-promedio-diario" class="text-4xl font-bold mt-2 text-sky-600"></p>
               </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div class="kpi-card">
                 <div class="flex justify-between items-center mb-4">
-                  <h3 class="text-xl font-semibold">Top 10 Usuarios por Tareas</h3>
+                  <h3 class="text-xl font-semibold">Top 10 Usuarios</h3>
                   <button id="generate-summary-btn" class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition-colors text-sm font-medium">✨ Generar Resumen</button>
                 </div>
                 <div class="chart-container"><canvas id="topUsersChart"></canvas></div>
@@ -121,12 +125,12 @@
           <!-- Productividad por Usuario -->
           <section id="productividad" class="page-section hidden">
             <div class="kpi-card mb-6">
-              <h3 class="text-xl font-semibold mb-4">Total de Tareas por Usuario</h3>
+              <h3 class="text-xl font-semibold mb-4">Promedio Diario por Usuario</h3>
               <div class="chart-container"><canvas id="tasksByUserChart"></canvas></div>
             </div>
             <div class="kpi-card">
               <div class="flex flex-wrap justify-between items-center gap-4 mb-4">
-                <h3 class="text-xl font-semibold">Detalle de Productividad por Usuario</h3>
+                <h3 class="text-xl font-semibold">Detalle de Usuario</h3>
                 <div class="flex items-center gap-2">
                   <select id="user-detail-select" class="w-full max-w-xs p-2 border rounded-md bg-white shadow-sm"></select>
                   <button id="generate-feedback-btn" class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition-colors text-sm font-medium whitespace-nowrap">✨ Generar Feedback</button>
@@ -148,7 +152,7 @@
           <!-- Evolución -->
           <section id="evolucion" class="page-section hidden">
             <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-4">Evolución Semanal de Métricas Clave</h3>
+              <h3 class="text-xl font-semibold mb-4">Evolución Semanal (Promedio Diario)</h3>
               <div class="chart-container"><canvas id="weeklyEvolutionChart"></canvas></div>
             </div>
           </section>
@@ -157,21 +161,13 @@
           <section id="ubicacion" class="page-section hidden">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div class="kpi-card">
-                <h3 class="text-xl font-semibold mb-4">Total de Tareas por Ubicación</h3>
+                <h3 class="text-xl font-semibold mb-4">Promedio Diario por Ubicación</h3>
                 <div class="chart-container"><canvas id="tasksByLocationChart"></canvas></div>
               </div>
               <div class="kpi-card">
-                <h3 class="text-xl font-semibold mb-4">Antigüedad Promedio por Ubicación (meses)</h3>
-                <ul id="avg-antiguedad-list" class="space-y-2 text-slate-700"></ul>
+                <h3 class="text-xl font-semibold mb-4">% Efectividad por Ubicación</h3>
+                <div class="chart-container"><canvas id="effByLocationChart"></canvas></div>
               </div>
-            </div>
-          </section>
-
-          <!-- Proyecciones -->
-          <section id="proyecciones" class="page-section hidden">
-            <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-4">Proyección de Tareas Totales (Regresión lineal)</h3>
-              <div class="chart-container"><canvas id="projectionsChart"></canvas></div>
             </div>
           </section>
 
@@ -179,7 +175,7 @@
           <section id="analisis" class="page-section hidden">
             <div class="kpi-card">
               <h3 class="text-xl font-semibold mb-2">Análisis Inteligente con Gemini</h3>
-              <p class="text-slate-600 mb-4">Insights basados en los datos filtrados.</p>
+              <p class="text-slate-600 mb-4">Insights basados en los datos y filtros actuales.</p>
               <button id="generate-insights-btn" class="bg-sky-600 text-white px-6 py-3 rounded-lg hover:bg-sky-700 transition-colors text-base font-semibold">
                 ✨ Analizar Datos y Generar Sugerencias
               </button>
@@ -212,13 +208,7 @@
    **********************/
   const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
 
-  // Archivos CSV fuente (en la raíz del repo)
-  const FILES = {
-    productividad: 'productividad.csv',
-    calidad:       'calidad.csv',
-    base:          'base.csv',
-    lideres:       'lideres.csv'
-  };
+  const FILES = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
 
   /**********************
    * HELPERS
@@ -228,12 +218,8 @@
 
   function ghURL(file){
     const bust = `?v=${Date.now()}`;
-    return [
-      `/metricas/${file}${bust}`,
-      `https://raw.githubusercontent.com/catalogo-meli/metricas/main/${file}${bust}`
-    ];
+    return [ `/metricas/${file}${bust}`, `https://raw.githubusercontent.com/catalogo-meli/metricas/main/${file}${bust}` ];
   }
-
   async function fetchCSVFile(file){
     const [u1,u2] = ghURL(file);
     let r = await fetch(u1,{cache:'no-store'});
@@ -241,74 +227,29 @@
     if(!r.ok) throw new Error(`No pude cargar ${file}. HTTP ${r.status}`);
     return r.text();
   }
-
   function parseCSV(text){
-    const parsed = Papa.parse(text, {
-      header: true,
-      skipEmptyLines: true,
-      delimitersToGuess: [',',';','\t','|']
-    });
-    return parsed.data.map(row=>{
-      const out = {};
-      for(const [k,v] of Object.entries(row)) out[k] = normalizeValue(v);
-      return out;
-    });
+    const parsed = Papa.parse(text,{ header:true, skipEmptyLines:true, delimitersToGuess:[',',';','\t','|'] });
+    return parsed.data.map(row=>{ const out={}; for(const [k,v] of Object.entries(row)) out[k]=normalizeValue(v); return out; });
   }
-
   function normalizeValue(v){
-    if(v===null || v===undefined) return v;
-    if(typeof v !== 'string') return v;
-    const t = v.trim();
-    if(!t) return '';
-    if(t.endsWith('%')){
-      const num = t.replace('%','').replace(/\./g,'').replace(',','.');
-      const n = Number(num);
-      return Number.isFinite(n) ? n/100 : t;
-    }
-    // 1.234,56 -> 1234.56
-    if(/^-?\d{1,3}(\.\d{3})*,\d+$/.test(t)){
-      const num = t.replace(/\./g,'').replace(',','.');
-      const n = Number(num);
-      return Number.isFinite(n) ? n : t;
-    }
-    if(/^-?\d+(\.\d+)?$/.test(t)){
-      const n = Number(t);
-      return Number.isFinite(n) ? n : t;
-    }
+    if(v===null||v===undefined) return v;
+    if(typeof v!=='string') return v;
+    const t=v.trim(); if(!t) return '';
+    if(t.endsWith('%')){ const n=Number(t.replace('%','').replace(/\./g,'').replace(',','.')); return Number.isFinite(n)? n/100 : t; }
+    if(/^-?\d{1,3}(\.\d{3})*,\d+$/.test(t)){ const n=Number(t.replace(/\./g,'').replace(',','.')); return Number.isFinite(n)? n : t; }
+    if(/^-?\d+(\.\d+)?$/.test(t)){ const n=Number(t); return Number.isFinite(n)? n : t; }
     return t;
   }
-
   function parseDateAny(val){
-    if(val===null || val===undefined || val==='') return null;
-    if(typeof val === 'number'){ // serial Excel
-      const ms = Math.round((val - 25569) * 86400 * 1000);
-      const d = new Date(ms);
-      return isNaN(d.getTime()) ? null : d;
-    }
-    const s = String(val).trim();
-    const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
-    if(m){
-      const d=Number(m[1]), mo=Number(m[2])-1, y=Number(m[3].length===2?'20'+m[3]:m[3]);
-      const dt = new Date(y,mo,d);
-      return isNaN(dt.getTime()) ? null : dt;
-    }
-    const dt = new Date(s);
-    return isNaN(dt.getTime()) ? null : dt;
+    if(val===null||val===undefined||val==='') return null;
+    if(typeof val==='number'){ const ms=Math.round((val-25569)*86400*1000); const d=new Date(ms); return isNaN(d.getTime())? null : d; }
+    const s=String(val).trim(); const m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+    if(m){ const d=Number(m[1]), mo=Number(m[2])-1, y=Number(m[3].length===2?'20'+m[3]:m[3]); const dt=new Date(y,mo,d); return isNaN(dt.getTime())? null : dt; }
+    const dt=new Date(s); return isNaN(dt.getTime())? null : dt;
   }
-
-  function keyIncludes(k, needle){ return k.toLowerCase().includes(needle); }
-  function pick(row, needles){
-    const keys = Object.keys(row);
-    for(const n of needles){
-      const k = keys.find(k => keyIncludes(k,n));
-      if(k) return row[k];
-    }
-    return undefined;
-  }
-  function correoAUsuario(mail){
-    if(!mail) return '';
-    return String(mail).toLowerCase().replace(/\s/g,'').replace(/@mercadolibre\.com/i,'');
-  }
+  function keyIncludes(k,needle){ return k.toLowerCase().includes(needle); }
+  function pick(row,needles){ const keys=Object.keys(row); for(const n of needles){ const k=keys.find(k=>keyIncludes(k,n)); if(k) return row[k]; } }
+  function correoAUsuario(mail){ if(!mail) return ''; return String(mail).toLowerCase().replace(/\s/g,'').replace(/@mercadolibre\.com/i,''); }
 
   const fmt = {
     int: n => (n ?? 0).toLocaleString('es-AR'),
@@ -316,8 +257,21 @@
     dec: x => (x ?? 0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})
   };
 
+  // === helpers de flujo/promedio ===
+  const flujoSel = ()=> (document.getElementById('filter-flujo')?.value || 'mixto').toLowerCase();
+  const tareasFlujo = (r, f) => f==='demanda' ? (r.tareas_demanda||0) : f==='enhancement' ? (r.tareas_enhancement||0) : (r.total_tareas||0);
+  function promedioDiario(rows, f){
+    const den = rows.reduce((s,r)=> s + (r.dias_activos||0), 0);
+    const num = rows.reduce((s,r)=> s + tareasFlujo(r,f), 0);
+    return den ? num/den : 0;
+  }
+  function setColor(el, color){
+    el.classList.remove('text-red-600','text-yellow-500','text-green-600','text-orange-500');
+    if(color) el.classList.add(color);
+  }
+
   /**********************
-   * BUILD CONSOLIDADO (igual a Apps Script)
+   * BUILD CONSOLIDADO
    **********************/
   function buildWeeklyRows(prod, cal, base, lideres){
     const P = prod.map(r=>({
@@ -341,40 +295,35 @@
     base.forEach(r=>{
       const user = correoAUsuario(pick(r,['mail','email']));
       if(!user) return;
-      perfiles.set(user,{
-        ciudad:  pick(r,['ciudad','ubicación']) || '',
-        ingreso: parseDateAny(pick(r,['fecha ingreso','ingreso']))
-      });
+      perfiles.set(user,{ ciudad: pick(r,['ciudad','ubicación'])||'', ingreso: parseDateAny(pick(r,['fecha ingreso','ingreso'])) });
     });
 
     const liderPorUser = new Map();
     lideres.forEach(r=>{
-      const user  = correoAUsuario(pick(r,['usuario','user']));
-      let lider   = pick(r,['líder','lider']) || '';
+      const user = correoAUsuario(pick(r,['usuario','user']));
+      let lider  = pick(r,['líder','lider']) || '';
       if(String(lider||'').toLowerCase()==='sin líder') return;
       if(user) liderPorUser.set(user, lider);
     });
 
     const weeks = new Map();
     for(const r of P){
-      const y = r.fecha.getFullYear();
-      const m = r.fecha.getMonth();
-      const ym = `${y}-${String(m+1).padStart(2,'0')}`;
-      const key = `${r.user}|${r.week}|${ym}`;
+      const y=r.fecha.getFullYear(), m=r.fecha.getMonth();
+      const ym=`${y}-${String(m+1).padStart(2,'0')}`;
+      const key=`${r.user}|${r.week}|${ym}`;
       if(!weeks.has(key)){
-        const perf = perfiles.get(r.user) || {};
-        const ingreso = perf.ingreso;
-        const hoy = new Date();
-        const finAnt = (ingreso && ingreso<=hoy) ? hoy : ingreso || hoy;
+        const perf = perfiles.get(r.user)||{};
+        const ingreso = perf.ingreso, hoy=new Date();
+        const finAnt = (ingreso && ingreso<=hoy)? hoy : ingreso || hoy;
         const antig = ingreso ? Math.max(0,(finAnt.getFullYear()-ingreso.getFullYear())*12+(finAnt.getMonth()-ingreso.getMonth())) : '';
         weeks.set(key,{
-          week: r.week, mes: MONTHS_ES[m], mesIndex:m,
-          user:r.user, lider: liderPorUser.get(r.user)||'Sin líder',
-          ciudad: perf.ciudad||'', antig,
+          week:r.week, mes:MONTHS_ES[m], mesIndex:m,
+          user:r.user, lider:liderPorUser.get(r.user)||'Sin líder',
+          ciudad:perf.ciudad||'', antig,
           dias:new Set(), demand:0, enh:0, total:0, idsWork:0, idsCal:0, errCal:0
         });
       }
-      const o = weeks.get(key);
+      const o=weeks.get(key);
       o.demand+=r.dem; o.enh+=r.enh; o.total+=r.total; o.idsWork+=r.idsW;
       const dKey = `${r.fecha.getFullYear()}-${String(r.fecha.getMonth()+1).padStart(2,'0')}-${String(r.fecha.getDate()).padStart(2,'0')}`;
       o.dias.add(dKey);
@@ -391,71 +340,46 @@
       }
     }
 
-    const rows = Array.from(weeks.values())
-      .sort((a,b)=> a.week - b.week)
-      .map(o=>{
-        const prom = o.dias.size ? (o.total/o.dias.size) : '';
-        const tot  = o.demand + o.enh;
-        const pDem = tot ? o.demand/tot : '';
-        const pEnh = tot ? o.enh/tot    : '';
-        const pEf  = o.idsCal>0 ? (1 - (o.errCal/o.idsCal)) : '';
-        return {
-          week: o.week,
-          mes: o.mes,
-          mesIndex: o.mesIndex,
-          usuario: o.user,
-          líder: o.lider,
-          ciudad: o.ciudad,
-          antigüedad: o.antig,
-          promedio_diario: prom,
-          efectividad: pEf,
-          tareas_demanda: o.demand,
-          p_demanda: pDem,
-          tareas_enhancement: o.enh,
-          p_enhancement: pEnh,
-          total_tareas: o.total,
-          ids_trabajados: o.idsWork,
-          correcciones_auditadas: o.idsCal,
-          dias_activos: o.dias.size,
-          q: Q_OF_MONTH_INDEX(o.mesIndex)
-        };
-      });
-
+    const rows = Array.from(weeks.values()).sort((a,b)=>a.week-b.week).map(o=>{
+      const prom = o.dias.size ? (o.total/o.dias.size) : '';
+      const tot  = o.demand + o.enh;
+      const pEf  = o.idsCal>0 ? (1 - (o.errCal/o.idsCal)) : '';
+      return {
+        week:o.week, mes:o.mes, mesIndex:o.mesIndex, usuario:o.user, líder:o.lider, ciudad:o.ciudad, antigüedad:o.antig,
+        promedio_diario: prom, efectividad:pEf,
+        tareas_demanda:o.demand, tareas_enhancement:o.enh, total_tareas:o.total,
+        ids_trabajados:o.idsWork, correcciones_auditadas:o.idsCal, dias_activos:o.dias.size,
+        q: Q_OF_MONTH_INDEX(o.mesIndex)
+      };
+    });
     return rows;
   }
 
   /**********************
    * ESTADO GLOBAL
    **********************/
-  let originalData = [];       // filas consolidadas
-  let currentData  = [];       // filas filtradas
-  const charts = {};           // instancias Chart.js
+  let originalData = [];
+  let currentData  = [];
+  const charts = {};
 
   /**********************
    * FILTROS + NAV
    **********************/
   function setOptions(sel, values, placeholder){
     sel.innerHTML = '';
-    const opt = document.createElement('option');
-    opt.value = ''; opt.textContent = placeholder;
-    sel.appendChild(opt);
-    values.forEach(v=>{
-      const o = document.createElement('option');
-      o.value = v; o.textContent = v;
-      sel.appendChild(o);
-    });
+    const opt=document.createElement('option'); opt.value=''; opt.textContent=placeholder; sel.appendChild(opt);
+    values.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o); });
   }
-
   function uniqueSorted(arr){ return Array.from(new Set(arr)).sort(); }
   function uniqueSortedNum(arr){ return Array.from(new Set(arr)).sort((a,b)=>a-b); }
 
   function setupFilters(){
-    const meses = MONTHS_ES.filter(m => originalData.some(r=>r.mes===m)); // orden cronológico real
+    const meses   = MONTHS_ES.filter(m => originalData.some(r=>r.mes===m));
     const semanas = uniqueSortedNum(originalData.map(r=>r.week)).map(String);
-    const ubic = uniqueSorted(originalData.map(r=>r.ciudad).filter(Boolean));
-    const usuarios = uniqueSorted(originalData.map(r=>r.usuario));
-    const lideres = uniqueSorted(originalData.map(r=>r['líder']).filter(l => l && l.toLowerCase() !== 'sin líder'));
-    const qs = ['Q1','Q2','Q3','Q4'].filter(q => originalData.some(r=>r.q===q));
+    const ubic    = uniqueSorted(originalData.map(r=>r.ciudad).filter(Boolean));
+    const usuarios= uniqueSorted(originalData.map(r=>r.usuario));
+    const lideres = uniqueSorted(originalData.map(r=>r['líder']).filter(l => l && l.toLowerCase()!=='sin líder'));
+    const qs      = ['Q1','Q2','Q3','Q4'].filter(q => originalData.some(r=>r.q===q));
 
     setOptions(document.getElementById('filter-mes'), meses, 'Todos los meses');
     setOptions(document.getElementById('filter-semana'), semanas, 'Todas las semanas');
@@ -464,17 +388,17 @@
     setOptions(document.getElementById('filter-lider'), lideres, 'Todos los líderes');
     setOptions(document.getElementById('filter-q'), qs, 'Todos los trimestres');
 
-    // selector para detalle de usuario
+    // detalle usuario
     setOptions(document.getElementById('user-detail-select'), usuarios, 'Elegí un usuario');
 
-    // NUEVO: Flujo (para Evolución Semanal)
-    const flujoSel = document.getElementById('filter-flujo');
-    flujoSel.innerHTML = `
+    // Flujo
+    const flujoSelEl = document.getElementById('filter-flujo');
+    flujoSelEl.innerHTML = `
       <option value="mixto">Flujo mixto</option>
       <option value="demanda">Demanda</option>
       <option value="enhancement">Enhancement</option>
     `;
-    flujoSel.value = 'mixto';
+    flujoSelEl.value='mixto';
 
     // listeners
     ['filter-mes','filter-semana','filter-ubicacion','filter-usuario','filter-lider','filter-q','filter-flujo']
@@ -482,30 +406,28 @@
   }
 
   function setupNavigation(){
-    const links = [...document.querySelectorAll('#nav-menu a')];
-    const mobile = document.getElementById('mobile-nav-menu');
+    const links=[...document.querySelectorAll('#nav-menu a')];
+    const mobile=document.getElementById('mobile-nav-menu');
     mobile.innerHTML = links.map(a=>`<a href="${a.getAttribute('href')}" class="block p-3 rounded-lg hover:bg-sky-700">${a.textContent}</a>`).join('');
     links.forEach(a=>{
       a.addEventListener('click', e=>{
         e.preventDefault();
-        const target = a.getAttribute('href');
+        const target=a.getAttribute('href');
         document.querySelectorAll('.page-section').forEach(s=>s.classList.add('hidden'));
         document.querySelector(target).classList.remove('hidden');
-        links.forEach(x=>x.classList.remove('active'));
-        a.classList.add('active');
-        document.getElementById('page-title').textContent = a.textContent;
+        links.forEach(x=>x.classList.remove('active')); a.classList.add('active');
+        document.getElementById('page-title').textContent=a.textContent;
         if(target==='#productividad') renderTasksByUser();
         if(target==='#lideres')       renderTasksByLeader();
         if(target==='#evolucion')     renderWeeklyEvolution();
         if(target==='#ubicacion')     renderByLocation();
-        if(target==='#proyecciones')  renderProjections();
       });
     });
 
     // menú móvil
-    const mobBtn = document.getElementById('mobile-menu-button');
-    const mob    = document.getElementById('mobile-menu');
-    const mobClose = document.getElementById('close-mobile-menu');
+    const mobBtn=document.getElementById('mobile-menu-button');
+    const mob=document.getElementById('mobile-menu');
+    const mobClose=document.getElementById('close-mobile-menu');
     mobBtn.addEventListener('click', ()=>{ mob.classList.remove('hidden'); mob.querySelector('aside').classList.remove('-translate-x-full'); });
     mobClose.addEventListener('click', ()=>{ mob.querySelector('aside').classList.add('-translate-x-full'); setTimeout(()=>mob.classList.add('hidden'),200); });
     mobile.querySelectorAll('a').forEach(a=>{
@@ -515,12 +437,12 @@
 
   function applyFilters(){
     const f = {
-      mes: document.getElementById('filter-mes').value,
-      semana: document.getElementById('filter-semana').value,
-      ubic: document.getElementById('filter-ubicacion').value,
-      user: document.getElementById('filter-usuario').value,
-      lider: document.getElementById('filter-lider').value,
-      q: document.getElementById('filter-q').value
+      mes:document.getElementById('filter-mes').value,
+      semana:document.getElementById('filter-semana').value,
+      ubic:document.getElementById('filter-ubicacion').value,
+      user:document.getElementById('filter-usuario').value,
+      lider:document.getElementById('filter-lider').value,
+      q:document.getElementById('filter-q').value
     };
     currentData = originalData.filter(r =>
       (!f.mes   || r.mes === f.mes) &&
@@ -538,226 +460,225 @@
     renderTasksByLeader();
     renderWeeklyEvolution();
     renderByLocation();
-    renderProjections();
   }
 
   /**********************
    * KPI + RENDER
    **********************/
   function updateKPIs(){
-    const total = currentData.reduce((s,r)=> s + (r.total_tareas||0), 0);
-    const usuarios = new Set(currentData.map(r=>r.usuario)).size;
-    const correcc = currentData.reduce((s,r)=> s + (r.correcciones_auditadas||0), 0);
-    const promDiario = (() => {
-      const days = currentData.reduce((s,r)=> s + (r.dias_activos||0), 0);
-      return days ? total / days : 0;
-    })();
-    const ef = (() => {
-      const vals = currentData.map(r=>r.efectividad).filter(v => v !== '' && v !== null && v !== undefined);
-      if(!vals.length) return 0;
-      return vals.reduce((a,b)=>a+b,0) / vals.length;
-    })();
+    const f = flujoSel();
 
-    document.getElementById('kpi-total-tareas').textContent     = fmt.int(total);
+    // Total (según flujo)
+    const totalFlujo = currentData.reduce((s,r)=> s + tareasFlujo(r,f), 0);
+
+    // Usuarios activos
+    const usuarios = new Set(currentData.map(r=>r.usuario)).size;
+
+    // Correcciones
+    const correcc = currentData.reduce((s,r)=> s + (r.correcciones_auditadas||0), 0);
+
+    // Promedio Diario (según flujo)
+    const prom = promedioDiario(currentData, f);
+
+    // Efectividad (promedio simple de filas con dato)
+    const vals = currentData.map(r=>r.efectividad).filter(v => v!=='' && v!==null && v!==undefined);
+    const ef = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
+
+    // Colores por umbral
+    const promEl = document.getElementById('kpi-promedio-diario');
+    const efEl   = document.getElementById('kpi-efectividad-prom');
+
+    // Promedio Diario: Rojo <=70 ; Amarillo 71-79 ; Verde >=80
+    let promColor = (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500';
+    setColor(promEl, promColor);
+
+    // % Efectividad: Rojo <=75 ; Naranja >75-<87 ; Amarillo 87-<90 ; Verde >=90
+    const efPct = ef*100;
+    let efColor = (efPct<=75) ? 'text-red-600'
+                 : (efPct<87) ? 'text-orange-500'
+                 : (efPct<90) ? 'text-yellow-500'
+                 : 'text-green-600';
+    setColor(efEl, efColor);
+
+    // Render valores
+    document.getElementById('kpi-total-tareas').textContent     = fmt.int(totalFlujo);
     document.getElementById('kpi-usuarios').textContent         = fmt.int(usuarios);
     document.getElementById('kpi-correcciones').textContent     = fmt.int(correcc);
-    document.getElementById('kpi-promedio-diario').textContent  = fmt.dec(promDiario);
-    document.getElementById('kpi-efectividad-prom').textContent = fmt.pct(ef);
+    promEl.textContent = fmt.dec(prom);
+    efEl.textContent   = fmt.pct(ef);
   }
 
   function createOrUpdateChart(id, cfg){
-    if(charts[id]) { charts[id].data = cfg.data; charts[id].options = cfg.options || {}; charts[id].update(); return charts[id]; }
-    const ctx = document.getElementById(id).getContext('2d');
-    charts[id] = new Chart(ctx, cfg);
-    return charts[id];
+    if(charts[id]){ charts[id].data=cfg.data; charts[id].options=cfg.options||{}; charts[id].update(); return charts[id]; }
+    const ctx=document.getElementById(id).getContext('2d');
+    charts[id]=new Chart(ctx,cfg); return charts[id];
   }
 
   function renderTopUsers(){
-    const byUser = new Map();
+    const f = flujoSel();
+    const byUser = new Map(); // user -> promedio diario
     currentData.forEach(r=>{
-      byUser.set(r.usuario, (byUser.get(r.usuario)||0) + (r.total_tareas||0));
+      const u=r.usuario;
+      const o = byUser.get(u) || {num:0,den:0};
+      o.num += tareasFlujo(r,f);
+      o.den += (r.dias_activos||0);
+      byUser.set(u,o);
     });
-    const arr = Array.from(byUser.entries()).sort((a,b)=>b[1]-a[1]).slice(0,10);
-    const data = {
-      labels: arr.map(x=>x[0]),
-      datasets: [{ label:'Tareas', data: arr.map(x=>x[1]) }]
-    };
-    createOrUpdateChart('topUsersChart', { type:'bar', data, options:{ responsive:true, plugins:{legend:{display:false}} }});
+    const arr = Array.from(byUser.entries()).map(([u,o])=>[u, o.den? o.num/o.den : 0]).sort((a,b)=>b[1]-a[1]).slice(0,10);
+    createOrUpdateChart('topUsersChart',{
+      type:'bar',
+      data:{ labels:arr.map(x=>x[0]), datasets:[{label:'Prom. diario', data: arr.map(x=>x[1])}] },
+      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{y:{ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) }}}}
+    });
   }
 
   function renderDemandPie(){
+    // Siempre muestra % dentro del subset filtrado (sin importar valor de "flujo")
     const demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
     const enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
+    const tot = demand+enh;
+    const pctD = tot? (100*demand/tot) : 0;
+    const pctE = tot? (100*enh   /tot) : 0;
+
     createOrUpdateChart('demandPieChart',{
       type:'pie',
-      data:{ labels:['Demanda','Enhancement'], datasets:[{ data:[demand, enh] }] },
-      options:{ responsive:true, plugins:{legend:{position:'bottom'}} }
-    });
-  }
-
-  function renderTasksByUser(){
-    const byUser = new Map();
-    currentData.forEach(r=> byUser.set(r.usuario,(byUser.get(r.usuario)||0)+(r.total_tareas||0)));
-    const arr = Array.from(byUser.entries()).sort((a,b)=>b[1]-a[1]);
-    createOrUpdateChart('tasksByUserChart',{
-      type:'bar',
-      data:{ labels:arr.map(x=>x[0]), datasets:[{label:'Tareas', data: arr.map(x=>x[1])}] },
-      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{x:{ticks:{autoSkip:false,maxRotation:60,minRotation:45}}}}
-    });
-
-    // detalle de usuario
-    const select = document.getElementById('user-detail-select');
-    if(!select.value && arr.length) select.value = arr[0][0];
-    renderUserDetail(select.value);
-    select.onchange = () => renderUserDetail(select.value);
-  }
-
-  function renderUserDetail(user){
-    const rows = currentData.filter(r=>r.usuario===user).sort((a,b)=>a.week-b.week);
-    const labels = rows.map(r=>`W${r.week} ${r.mes}`);
-    const data = rows.map(r=>r.total_tareas||0);
-    createOrUpdateChart('userDetailChart',{
-      type:'line',
-      data:{ labels, datasets:[{label:`Tareas de ${user}`, data}] },
-      options:{ responsive:true, plugins:{legend:{display:false}}}
-    });
-  }
-
-  function renderTasksByLeader(){
-    const byLeader = new Map();
-    currentData.forEach(r=>{
-      if(!r['líder'] || r['líder'].toLowerCase()==='sin líder') return;
-      byLeader.set(r['líder'], (byLeader.get(r['líder'])||0)+(r.total_tareas||0));
-    });
-    const arr = Array.from(byLeader.entries()).sort((a,b)=>b[1]-a[1]);
-    createOrUpdateChart('tasksByLeaderChart',{
-      type:'bar',
-      data:{ labels:arr.map(x=>x[0]), datasets:[{label:'Tareas', data: arr.map(x=>x[1])}] },
-      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{x:{ticks:{autoSkip:false,maxRotation:45}}}}
-    });
-  }
-
-  /* =========================
-     Evolución Semanal (Promedio Diario + Filtro de Flujo)
-     ========================= */
-  function renderWeeklyEvolution(){
-    // flujo seleccionado
-    const flujo = (document.getElementById('filter-flujo')?.value || 'mixto').toLowerCase();
-
-    // agrego por semana: numerador (tareas del flujo) y denominador (días)
-    const agg = new Map(); // week -> { num, den }
-    currentData.forEach(r=>{
-      const w = Number(r.week);
-      if (!Number.isFinite(w)) return;
-
-      const dias = Number(r.dias_activos || 0);
-      let num = 0;
-      if (flujo === 'demanda')       num = Number(r.tareas_demanda || 0);
-      else if (flujo === 'enhancement') num = Number(r.tareas_enhancement || 0);
-      else                            num = Number(r.total_tareas || 0); // mixto
-
-      const o = agg.get(w) || { num:0, den:0 };
-      o.num += num;
-      o.den += dias;
-      agg.set(w, o);
-    });
-
-    const weeks = Array.from(agg.keys());
-    if (!weeks.length){
-      createOrUpdateChart('weeklyEvolutionChart',{type:'line',data:{labels:[],datasets:[]},options:{}});
-      return;
-    }
-
-    // serie continua Wmin..Wmax (completa faltantes con 0)
-    const minW = Math.min(...weeks);
-    const maxW = Math.max(...weeks);
-
-    const labels = [];
-    const values = [];
-    for (let w=minW; w<=maxW; w++){
-      labels.push('W' + String(w).padStart(2,'0'));
-      const o = agg.get(w);
-      const prom = (o && o.den) ? (o.num / o.den) : 0;
-      values.push(prom);
-    }
-
-    const labelSerie =
-      flujo === 'demanda' ? 'Promedio Diario (Demanda)' :
-      flujo === 'enhancement' ? 'Promedio Diario (Enhancement)' :
-      'Promedio Diario (Flujo Mixto)';
-
-    createOrUpdateChart('weeklyEvolutionChart', {
-      type: 'line',
-      data: { labels, datasets: [{ label: labelSerie, data: values, borderWidth: 2, tension: .2, pointRadius: 2 }] },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: { ticks: { autoSkip: false, maxRotation: 0, minRotation: 0 } },
-          y: { ticks: {
-            callback: (v)=> Number(v).toLocaleString('es-AR',{ minimumFractionDigits:2, maximumFractionDigits:2 })
-          }}
+      data:{ labels:['Demanda','Enhancement'], datasets:[{ data:[pctD, pctE] }] },
+      options:{
+        responsive:true,
+        plugins:{
+          legend:{ position:'bottom' },
+          tooltip:{ callbacks:{ label:(ctx)=> `${ctx.label}: ${ctx.parsed.toFixed(1)}%` } }
         }
       }
     });
   }
 
-  function renderByLocation(){
-    // barras por ubicación
-    const byLoc = new Map();
-    currentData.forEach(r=> byLoc.set(r.ciudad,(byLoc.get(r.ciudad)||0)+(r.total_tareas||0)));
-    const arr = Array.from(byLoc.entries()).sort((a,b)=>b[1]-a[1]);
-    createOrUpdateChart('tasksByLocationChart',{
+  function renderTasksByUser(){
+    const f = flujoSel();
+    // Promedio diario por usuario
+    const byUser = new Map();
+    currentData.forEach(r=>{
+      const u=r.usuario; const o=byUser.get(u)||{num:0,den:0};
+      o.num += tareasFlujo(r,f); o.den += (r.dias_activos||0); byUser.set(u,o);
+    });
+    const arr = Array.from(byUser.entries()).map(([u,o])=>[u, o.den? o.num/o.den : 0]).sort((a,b)=>b[1]-a[1]);
+    createOrUpdateChart('tasksByUserChart',{
       type:'bar',
-      data:{ labels:arr.map(x=>x[0]), datasets:[{label:'Tareas', data: arr.map(x=>x[1])}] },
-      options:{ responsive:true, plugins:{legend:{display:false}}}
+      data:{ labels:arr.map(x=>x[0]), datasets:[{label:'Prom. diario', data: arr.map(x=>x[1])}] },
+      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{x:{ticks:{autoSkip:false,maxRotation:60,minRotation:45}}, y:{ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) }}}}
     });
 
-    // antigüedad promedio por ubicación (meses)
-    const agg = {};
-    currentData.forEach(r=>{
-      if(!r.ciudad) return;
-      if(!agg[r.ciudad]) agg[r.ciudad] = {sum:0, n:0};
-      const a = Number(r.antigüedad||0);
-      if(Number.isFinite(a)){ agg[r.ciudad].sum += a; agg[r.ciudad].n++; }
-    });
-    const list = Object.entries(agg).map(([k,v])=>[k, v.n? v.sum/v.n : 0]).sort((a,b)=>b[1]-a[1]);
-    const ul = document.getElementById('avg-antiguedad-list');
-    ul.innerHTML = list.map(([loc,avg])=>`<li class="flex justify-between"><span>${loc}</span><span class="font-semibold">${fmt.dec(avg)}</span></li>`).join('');
+    // Detalle de usuario (mantengo serie de tareas semanales para el usuario seleccionado)
+    const select=document.getElementById('user-detail-select');
+    if(!select.value && arr.length) select.value=arr[0][0];
+    renderUserDetail(select.value);
+    select.onchange = ()=> renderUserDetail(select.value);
   }
 
-  function renderProjections(){
-    // regresión lineal sobre W -> total_tareas
-    const byW = new Map();
+  function renderUserDetail(user){
+    // Serie semanal del usuario (total tareas histórico)
+    const rows = currentData.filter(r=>r.usuario===user).sort((a,b)=>a.week-b.week);
+    const labels = rows.map(r=>`W${String(r.week).padStart(2,'0')} ${r.mes}`);
+    const data = rows.map(r=>r.total_tareas||0);
+    createOrUpdateChart('userDetailChart',{ type:'line', data:{ labels, datasets:[{label:`Tareas de ${user}`, data}] }, options:{ responsive:true, plugins:{legend:{display:false}} }});
+  }
+
+  function renderTasksByLeader(){
+    const f = flujoSel();
+    // Promedio diario y efectividad ponderada por líder
+    const agg = new Map(); // líder -> {num,den, effNum, effDen}
     currentData.forEach(r=>{
-      const w = Number(r.week);
-      byW.set(w, (byW.get(w)||0) + (r.total_tareas||0));
+      const l = r['líder']; if(!l || l.toLowerCase()==='sin líder') return;
+      const o = agg.get(l) || {num:0,den:0,effNum:0,effDen:0};
+      o.num += tareasFlujo(r,f);
+      o.den += (r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
+        const w = (r.correcciones_auditadas || 0) || 1; // ponderar por correcciones si hay, si no, peso 1
+        o.effNum += r.efectividad * w;
+        o.effDen += w;
+      }
+      agg.set(l,o);
     });
-    const weeks = Array.from(byW.keys()).sort((a,b)=>a-b);
-    if(weeks.length<2){
-      createOrUpdateChart('projectionsChart',{type:'line',data:{labels:[],datasets:[]},options:{}});
-      return;
+    const arr = Array.from(agg.entries()).map(([l,o])=>({
+      lider:l,
+      prom: o.den? o.num/o.den : 0,
+      eff:  o.effDen? o.effNum/o.effDen : 0
+    })).sort((a,b)=>b.prom-a.prom);
+
+    createOrUpdateChart('tasksByLeaderChart',{
+      type:'bar',
+      data:{
+        labels:arr.map(x=>x.lider),
+        datasets:[
+          {label:'Prom. diario', data: arr.map(x=>x.prom), yAxisID:'y'},
+          {label:'% Efectividad', data: arr.map(x=>x.eff*100), type:'line', yAxisID:'y1', borderWidth:2, tension:.2, pointRadius:2}
+        ]
+      },
+      options:{
+        responsive:true,
+        scales:{
+          y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
+          y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` } },
+          x:{ ticks:{ autoSkip:false, maxRotation:45 } }
+        }
+      }
+    });
+  }
+
+  function renderWeeklyEvolution(){
+    const f = flujoSel();
+    const agg = new Map(); // week -> {num,den}
+    currentData.forEach(r=>{
+      const w = Number(r.week); if(!Number.isFinite(w)) return;
+      const o = agg.get(w)||{num:0,den:0};
+      o.num += tareasFlujo(r,f); o.den += (r.dias_activos||0);
+      agg.set(w,o);
+    });
+    const weeks = Array.from(agg.keys());
+    if(!weeks.length){ createOrUpdateChart('weeklyEvolutionChart',{type:'line',data:{labels:[],datasets:[]},options:{}}); return; }
+    const minW=Math.min(...weeks), maxW=Math.max(...weeks);
+    const labels=[], values=[];
+    for(let w=minW; w<=maxW; w++){
+      labels.push('W'+String(w).padStart(2,'0'));
+      const o=agg.get(w); values.push((o&&o.den)? o.num/o.den : 0);
     }
-    const y = weeks.map(w=>byW.get(w)), x = weeks;
-    const n = x.length;
-    const sx = x.reduce((a,b)=>a+b,0), sy = y.reduce((a,b)=>a+b,0);
-    const sxx = x.reduce((a,b)=>a+b*b,0), sxy = x.reduce((a,i)=>a+i*y[x.indexOf(i)],0);
-    const m = (n*sxy - sx*sy)/(n*sxx - sx*sx);
-    const b = (sy - m*sx)/n;
-
-    const next = [];
-    const maxW = Math.max(...weeks);
-    for(let k=1;k<=6;k++) next.push(maxW+k);
-    const allW = weeks.concat(next);
-    const trend = allW.map(w => m*w + b);
-
-    createOrUpdateChart('projectionsChart',{
+    createOrUpdateChart('weeklyEvolutionChart',{
       type:'line',
-      data:{ labels: allW.map(w=>'W'+w), datasets:[
-        {label:'Histórico', data: weeks.map(w=>byW.get(w)), borderWidth:2, tension:.2},
-        {label:'Proyección', data: trend, borderDash:[6,4], borderWidth:2, tension:.2}
-      ]},
-      options:{ responsive:true }
+      data:{ labels, datasets:[{label:'Prom. diario', data:values, borderWidth:2, tension:.2, pointRadius:2}] },
+      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ x:{ticks:{autoSkip:false,maxRotation:0}}, y:{ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}}}}
+    });
+  }
+
+  function renderByLocation(){
+    const f = flujoSel();
+    // Promedio diario por ubicación
+    const byLoc = new Map(); // ciudad -> {num,den}
+    // Efectividad ponderada por ubicación
+    const effLoc = new Map(); // ciudad -> {num,den}
+    currentData.forEach(r=>{
+      const c=r.ciudad||'Sin ubicación';
+      const o=byLoc.get(c)||{num:0,den:0};
+      o.num += tareasFlujo(r,f); o.den += (r.dias_activos||0); byLoc.set(c,o);
+
+      if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
+        const w=(r.correcciones_auditadas||0)||1;
+        const e=effLoc.get(c)||{num:0,den:0};
+        e.num += r.efectividad*w; e.den += w; effLoc.set(c,e);
+      }
+    });
+
+    const arr = Array.from(byLoc.entries()).map(([c,o])=>[c, o.den? o.num/o.den : 0]).sort((a,b)=>b[1]-a[1]);
+    createOrUpdateChart('tasksByLocationChart',{
+      type:'bar',
+      data:{ labels:arr.map(x=>x[0]), datasets:[{label:'Prom. diario', data: arr.map(x=>x[1])}] },
+      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ y:{ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) }}, x:{ticks:{autoSkip:false}}}}
+    });
+
+    const arrEff = Array.from(effLoc.entries()).map(([c,e])=>[c, e.den? e.num/e.den : 0]).sort((a,b)=>b[1]-a[1]);
+    createOrUpdateChart('effByLocationChart',{
+      type:'bar',
+      data:{ labels:arrEff.map(x=>x[0]), datasets:[{label:'% Efectividad', data: arrEff.map(x=>x[1]*100)}] },
+      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ y:{ticks:{ callback:v=>`${v.toFixed(0)}%` }}, x:{ticks:{autoSkip:false}}}}
     });
   }
 
@@ -765,96 +686,69 @@
    * GEMINI (opcional)
    **********************/
   async function geminiRequest(prompt) {
-    if (!GEMINI_PROXY_URL) {
-      return "Configura la URL del proxy de Gemini (GEMINI_PROXY_URL) para usar esta función.";
-    }
-
-    const attempts = [
-      { prompt: String(prompt) }, // proxies simples
-      { contents: [{ parts: [{ text: String(prompt) }]}] }, // payload Google
-    ];
-
+    if (!GEMINI_PROXY_URL) return "Configura la URL del proxy de Gemini (GEMINI_PROXY_URL) para usar esta función.";
+    const attempts = [ {prompt:String(prompt)}, {contents:[{parts:[{text:String(prompt)}]}]} ];
     let lastErr;
-    for (const body of attempts) {
-      try {
-        const r = await fetch(GEMINI_PROXY_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        });
-
-        const raw = await r.text();
-        if (!r.ok) throw new Error(raw || `HTTP ${r.status}`);
-
-        let data;
-        try { data = JSON.parse(raw); } catch { return raw; }
-
-        const out =
-          data?.candidates?.[0]?.content?.parts?.[0]?.text ??
-          data?.text ?? data?.output ?? data;
-
-        return (typeof out === 'string') ? out : JSON.stringify(out);
-      } catch (e) {
-        lastErr = e;
-      }
+    for(const body of attempts){
+      try{
+        const r=await fetch(GEMINI_PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+        const raw=await r.text(); if(!r.ok) throw new Error(raw||`HTTP ${r.status}`);
+        let data; try{ data=JSON.parse(raw);}catch{ return raw;}
+        const out=data?.candidates?.[0]?.content?.parts?.[0]?.text ?? data?.text ?? data?.output ?? data;
+        return (typeof out==='string')? out : JSON.stringify(out);
+      }catch(e){ lastErr=e; }
     }
-    throw lastErr || new Error('Gemini request failed');
+    throw lastErr||new Error('Gemini request failed');
   }
 
   function setupGeminiFeatures(){
     document.getElementById('generate-summary-btn').addEventListener('click', async ()=>{
-      const block = document.getElementById('summary-output');
-      block.classList.remove('hidden');
-      block.textContent = 'Generando...';
+      const block=document.getElementById('summary-output');
+      block.classList.remove('hidden'); block.textContent='Generando...';
       try{
-        const total = currentData.reduce((s,r)=>s+(r.total_tareas||0),0);
-        const prom  = (()=>{
-          const d = currentData.reduce((s,r)=>s+(r.dias_activos||0),0);
-          return d? total/d : 0;
-        })();
+        const f=flujoSel();
+        const total = currentData.reduce((s,r)=> s + tareasFlujo(r,f), 0);
+        const prom  = promedioDiario(currentData, f);
         const top = (()=>{
-          const map = new Map();
-          currentData.forEach(r=>map.set(r.usuario,(map.get(r.usuario)||0)+(r.total_tareas||0)));
-          return Array.from(map.entries()).sort((a,b)=>b[1]-a[1]).slice(0,5).map(x=>`${x[0]} (${x[1]} tareas)`).join(', ');
+          const map=new Map();
+          currentData.forEach(r=>{
+            const u=r.usuario; map.set(u,(map.get(u)||0)+tareasFlujo(r,f));
+          });
+          return Array.from(map.entries()).sort((a,b)=>b[1]-a[1]).slice(0,5).map(x=>`${x[0]} (${x[1]} unidades)`).join(', ');
         })();
-        const prompt = `Actúa como analista. Resume hallazgos en 6 viñetas. Datos: total tareas=${total}, promedio diario ponderado=${prom.toFixed(2)}, top usuarios=${top}. Sugerí 3 acciones.`;
+        const prompt = `Actúa como analista. Filtros actuales aplicados (incluye flujo='${f}'). Resume hallazgos en 6 viñetas y sugiere 3 acciones. Datos: total=${total}, promedio_diario=${prom.toFixed(2)}, top usuarios=${top}.`;
         const resp = await geminiRequest(prompt);
-        block.textContent = resp;
-      }catch(e){
-        block.textContent = e.message;
-      }
+        block.textContent=resp;
+      }catch(e){ block.textContent=e.message; }
     });
 
     document.getElementById('generate-feedback-btn').addEventListener('click', async ()=>{
-      const user = document.getElementById('user-detail-select').value;
-      const out = document.getElementById('feedback-output');
-      out.classList.remove('hidden'); out.textContent = 'Analizando...';
+      const user=document.getElementById('user-detail-select').value;
+      const out=document.getElementById('feedback-output');
+      out.classList.remove('hidden'); out.textContent='Analizando...';
       try{
-        const rows = currentData.filter(r=>r.usuario===user).sort((a,b)=>a.week-b.week);
-        const prompt = `Feedback breve para ${user}. Evolución semanas: ${rows.map(r=>`W${r.week}:${r.total_tareas}`).join(', ')}. Porcentaje de efectividad promedio ${(rows.map(r=>r.efectividad).filter(v=>v!=='').reduce((a,b)=>a+b,0)/(rows.filter(r=>r.efectividad!=='').length||1)).toFixed(2)}. Señala 2 fortalezas y 2 oportunidades.`;
-        const resp = await geminiRequest(prompt);
-        out.textContent = resp;
-      }catch(e){
-        out.textContent = e.message;
-      }
+        const rows=currentData.filter(r=>r.usuario===user).sort((a,b)=>a.week-b.week);
+        const effAvg=(rows.map(r=>r.efectividad).filter(v=>v!=='').reduce((a,b)=>a+b,0)/(rows.filter(r=>r.efectividad!=='').length||1));
+        const prompt=`Feedback breve para ${user}. Evolución semanas: ${rows.map(r=>`W${r.week}:${r.total_tareas}`).join(', ')}. Efectividad promedio ${(effAvg).toFixed(2)}. Señala 2 fortalezas y 2 oportunidades.`;
+        const resp=await geminiRequest(prompt);
+        out.textContent=resp;
+      }catch(e){ out.textContent=e.message; }
     });
 
     document.getElementById('generate-insights-btn').addEventListener('click', async ()=>{
-      const out = document.getElementById('insights-output');
+      const out=document.getElementById('insights-output');
       out.classList.remove('hidden'); out.textContent='Pensando...';
       try{
-        const dmd = currentData.reduce((s,r)=>s+(r.tareas_demanda||0),0);
-        const enh = currentData.reduce((s,r)=>s+(r.tareas_enhancement||0),0);
-        const eff = (()=>{
-          const v=currentData.map(r=>r.efectividad).filter(v=>v!=='');
-          return v.length? v.reduce((a,b)=>a+b,0)/v.length : 0;
-        })();
-        const prompt = `Con los datos filtrados, genera 6 insights accionables y una conclusión: demanda=${dmd}, enhancement=${enh}, efectividad=${eff.toFixed(3)}.`;
-        const resp = await geminiRequest(prompt);
-        out.textContent = resp;
-      }catch(e){
-        out.textContent = e.message;
-      }
+        const f=flujoSel();
+        const num = currentData.reduce((s,r)=> s + tareasFlujo(r,f), 0);
+        const den = currentData.reduce((s,r)=> s + (r.dias_activos||0), 0);
+        const prom = den? num/den : 0;
+        const effVals=currentData.map(r=>r.efectividad).filter(v=>v!=='');
+        const effAvg=effVals.length? effVals.reduce((a,b)=>a+b,0)/effVals.length : 0;
+        const prompt=`Con los filtros vigentes (flujo='${f}'), genera 6 insights accionables y una conclusión. Resumen: promedio_diario=${prom.toFixed(2)}, efectividad=${(effAvg).toFixed(3)}.`;
+        const resp=await geminiRequest(prompt);
+        out.textContent=resp;
+      }catch(e){ out.textContent=e.message; }
     });
   }
 
@@ -869,17 +763,13 @@
         fetchCSVFile(FILES.base),
         fetchCSVFile(FILES.lideres)
       ]);
-      const prod = parseCSV(tProd);
-      const cal  = parseCSV(tCal);
-      const base = parseCSV(tBase);
-      const lids = parseCSV(tLid);
-
+      const prod=parseCSV(tProd), cal=parseCSV(tCal), base=parseCSV(tBase), lids=parseCSV(tLid);
       originalData = buildWeeklyRows(prod, cal, base, lids);
 
       setupFilters();
       setupNavigation();
       setupGeminiFeatures();
-      // render inicial
+
       currentData = originalData.slice();
       applyFilters();
     }catch(err){
