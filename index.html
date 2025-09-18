@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Métricas Catálogo | Grupo KELSOFT</title>
+  <title>Catálogo · Dashboard de Productividad</title>
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -38,7 +38,7 @@
     .nb-red{background:#fee2e2}
     /* Export dropdown */
     .dropdown{position:relative;display:inline-block;}
-    .dropdown-menu{position:absolute;right:0;top:100%;background:#fff;border:1px solid #e2e8f0;border-radius:.5rem;box-shadow:0 10px 20px rgba(0,0,0,.08);min-width:240px;z-index:50}
+    .dropdown-menu{position:absolute;right:0;top:100%;background:#fff;border:1px solid #e2e8f0;border-radius:.5rem;box-shadow:0 10px 20px rgba(0,0,0,.08);min-width:260px;z-index:50}
     .dropdown-menu a{display:block;padding:.6rem .8rem;font-size:.95rem;color:#334155}
     .dropdown-menu a:hover{background:#f1f5f9}
   </style>
@@ -106,7 +106,11 @@
           <select id="filter-lider" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
           <select id="filter-ubicacion" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
           <select id="filter-usuario" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
-          <select id="filter-flujo" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
+          <select id="filter-flujo" class="w-full p-2 border rounded-md bg-white shadow-sm">
+            <option value="mixto">Flujo mixto</option>
+            <option value="demanda">Demanda</option>
+            <option value="enhancement">Enhancement</option>
+          </select>
         </div>
 
         <!-- Secciones -->
@@ -241,6 +245,9 @@
    **********************/
   const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
   const FILES = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
+
+  // URL del Web App de Google Apps Script (reemplazar con tu deployment Publish > Deploy as web app)
+  const SHEETS_WEBHOOK_URL = "PEGÁ_ACÁ_TU_URL_DE_WEB_APP_DE_APPS_SCRIPT";
 
   /**********************
    * HELPERS
@@ -419,15 +426,6 @@
     setOptions(document.getElementById('filter-lider'), lideres, 'Todos los líderes');
     setOptions(document.getElementById('filter-q'), qs, 'Todos los trimestres');
 
-    // Flujo
-    const flujoSelEl = document.getElementById('filter-flujo');
-    flujoSelEl.innerHTML = `
-      <option value="mixto">Flujo mixto</option>
-      <option value="demanda">Demanda</option>
-      <option value="enhancement">Enhancement</option>
-    `;
-    flujoSelEl.value='mixto';
-
     // listeners
     ['filter-mes','filter-semana','filter-ubicacion','filter-usuario','filter-lider','filter-q','filter-flujo']
       .forEach(id => document.getElementById(id).addEventListener('change', applyFilters));
@@ -478,7 +476,7 @@
         if(type==='csv') exportSectionCSV();
         if(type==='png') exportSectionPNGs();
         if(type==='zip') exportSectionZIP();
-        if(type==='sheets') exportToGoogleSheets();
+        if(type==='sheets') exportToGoogleSheets(); // <-- via Apps Script webhook
       });
     });
 
@@ -490,6 +488,20 @@
       const f=document.getElementById('filter-flujo'); if(f) f.value='mixto';
       applyFilters();
     });
+  }
+
+  function filtersSummary() {
+    const grab = id => document.getElementById(id)?.value || '';
+    const flujo = (document.getElementById('filter-flujo')?.value || 'mixto');
+    return {
+      Mes: grab('filter-mes'),
+      Semana: grab('filter-semana'),
+      Trimestre: grab('filter-q'),
+      Lider: grab('filter-lider'),
+      Ubicacion: grab('filter-ubicacion'),
+      Usuario: grab('filter-usuario'),
+      Flujo: flujo
+    };
   }
 
   function applyFilters(){
@@ -866,21 +878,144 @@
   }
 
   /**********************
-   * EXPORTS
+   * BUILDERS para exportación
+   **********************/
+  function buildNineboxData(f) {
+    const map = new Map(); // user -> {num,den, effSum, effN}
+    currentData.forEach(r=>{
+      const u=r.usuario;
+      const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
+      const t = (f==='demanda') ? (r.tareas_demanda||0) : (f==='enhancement') ? (r.tareas_enhancement||0) : (r.total_tareas||0);
+      o.num += t; o.den += (r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!=null){ o.effSum+=r.efectividad; o.effN++; }
+      map.set(u,o);
+    });
+
+    const prodBand = p => (p>=80 ? 'Alta' : p>=70 ? 'Media' : 'Baja');
+    const calBand  = e => (e>=0.90 ? 'Alta' : e>=0.75 ? 'Media' : 'Baja');
+
+    const buckets = {
+      "Prod Alta / Cal Alta":[], "Prod Alta / Cal Media":[], "Prod Alta / Cal Baja":[],
+      "Prod Media / Cal Alta":[], "Prod Media / Cal Media":[], "Prod Media / Cal Baja":[],
+      "Prod Baja / Cal Alta":[], "Prod Baja / Cal Media":[], "Prod Baja / Cal Baja":[]
+    };
+    const missing = [];
+
+    Array.from(map.entries()).forEach(([u,o])=>{
+      const prom = o.den? o.num/o.den : null;
+      const eff  = o.effN? o.effSum/o.effN : null;
+      if(prom==null || eff==null){ missing.push({u, prom, eff}); return; }
+      const caja = `Prod ${prodBand(prom)} / Cal ${calBand(eff)}`;
+      buckets[caja].push(u);
+    });
+
+    return { buckets, missing };
+  }
+
+  function buildUsersPromEff(f){
+    const agg = new Map(); // user -> {num,den, effNum, effDen}
+    currentData.forEach(r=>{
+      const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
+      const t = (f==='demanda') ? (r.tareas_demanda||0) : (f==='enhancement') ? (r.tareas_enhancement||0) : (r.total_tareas||0);
+      o.num += t; o.den += (r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!=null){
+        const w=(r.correcciones_auditadas||0)||1;
+        o.effNum += r.efectividad*w; o.effDen += w;
+      }
+      agg.set(u,o);
+    });
+    return Array.from(agg.entries()).map(([user,o])=>({
+      user, prom: (o.den? o.num/o.den : 0), eff: (o.effDen? o.effNum/o.effDen : 0)
+    })).sort((a,b)=>b.prom-a.prom);
+  }
+
+  function buildLideresData(f){
+    const agg = new Map(); // líder -> {num,den, effNum, effDen}
+    currentData.forEach(r=>{
+      const l=r['líder']; if(!l || l.toLowerCase()==='sin líder') return;
+      const o=agg.get(l)||{num:0,den:0,effNum:0,effDen:0};
+      const t = (f==='demanda') ? (r.tareas_demanda||0) : (f==='enhancement') ? (r.tareas_enhancement||0) : (r.total_tareas||0);
+      o.num += t; o.den += (r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!=null){
+        const w=(r.correcciones_auditadas||0)||1;
+        o.effNum += r.efectividad*w; o.effDen += w;
+      }
+      agg.set(l,o);
+    });
+    return Array.from(agg.entries()).map(([lider,o])=>({
+      lider, prom:(o.den? o.num/o.den : 0), eff:(o.effDen? o.effNum/o.effDen : 0)
+    })).sort((a,b)=>b.prom-a.prom);
+  }
+
+  function buildEvolucionData(f){
+    const agg = new Map(); // week -> {num,den, effNum, effDen}
+    currentData.forEach(r=>{
+      const w=Number(r.week); if(!Number.isFinite(w)) return;
+      const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
+      const t = (f==='demanda') ? (r.tareas_demanda||0) : (f==='enhancement') ? (r.tareas_enhancement||0) : (r.total_tareas||0);
+      o.num+=t; o.den+=(r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!=null){
+        const wgt=(r.correcciones_auditadas||0)||1;
+        o.effNum+=r.efectividad*wgt; o.effDen+=wgt;
+      }
+      agg.set(w,o);
+    });
+    const weeks=Array.from(agg.keys());
+    const minW=Math.min(...weeks), maxW=Math.max(...weeks);
+    const labels=[], values=[], eff=[];
+    for(let w=minW; w<=maxW; w++){
+      const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
+      labels.push('W'+String(w).padStart(2,'0'));
+      values.push(o.den? o.num/o.den : 0);
+      eff.push(o.effDen? 100*o.effNum/o.effDen : 0);
+    }
+    return { labels, values, eff };
+  }
+
+  function buildUbicacionData(f){
+    const byLoc = new Map(); // ciudad -> {num,den}
+    const effLoc = new Map(); // ciudad -> {num,den}
+    const antig = {}; // ciudad -> {sum, n}
+
+    currentData.forEach(r=>{
+      const c=r.ciudad||'Sin ubicación';
+      const o=byLoc.get(c)||{num:0,den:0};
+      const t=(f==='demanda') ? (r.tareas_demanda||0) : (f==='enhancement') ? (r.tareas_enhancement||0) : (r.total_tareas||0);
+      o.num+=t; o.den+=(r.dias_activos||0); byLoc.set(c,o);
+
+      if(r.efectividad!=='' && r.efectividad!=null){
+        const w=(r.correcciones_auditadas||0)||1;
+        const e=effLoc.get(c)||{num:0,den:0};
+        e.num+=r.efectividad*w; e.den+=w; effLoc.set(c,e);
+      }
+
+      const a = Number(r.antigüedad||0);
+      if(!antig[c]) antig[c]={sum:0,n:0};
+      if(Number.isFinite(a)){ antig[c].sum+=a; antig[c].n++; }
+    });
+
+    const labels = Array.from(byLoc.keys()).sort();
+    const prom = labels.map(c=>{ const o=byLoc.get(c)||{num:0,den:0}; return o.den? o.num/o.den : 0; });
+    const eff = labels.map(c=>{ const e=effLoc.get(c)||{num:0,den:0}; return e.den? 100*e.num/e.den : 0; });
+    const antigList = labels.map(c=>{ const v=antig[c]||{sum:0,n:0}; return [c, v.n? v.sum/v.n : 0]; });
+    return { labels, prom, eff, antig: antigList };
+  }
+
+  /**********************
+   * EXPORTS (CSV, PNG, ZIP, Google Sheets Webhook)
    **********************/
   function getActiveSectionId(){
     const sec=[...document.querySelectorAll('.page-section')].find(s=>!s.classList.contains('hidden'));
     return sec ? sec.id : 'resumen';
-    }
-  function download(filename, blob){
-    saveAs(blob, filename);
   }
+  function download(filename, blob){ saveAs(blob, filename); }
   function toCSV(headers, rows){
     const esc=v=> `"${String(v??'').replace(/"/g,'""')}"`;
     const head = headers.map(esc).join(',');
     const body = rows.map(r=> headers.map(h=>esc(r[h])).join(',')).join('\n');
     return head + '\n' + body;
   }
+
   async function exportSectionPNGs(){
     const id=getActiveSectionId();
     const canvases=[];
@@ -904,6 +1039,7 @@
       fetch(url).then(r=>r.blob()).then(b=>download(`${id}-chart${i+1}.png`, b));
     });
   }
+
   async function exportSectionCSV(){
     const id=getActiveSectionId();
     const f=flujoSel();
@@ -916,7 +1052,7 @@
         { Flujo:'Demanda', Total:demand, Porcentaje: tot? (demand/tot) : 0 },
         { Flujo:'Enhancement', Total:enh, Porcentaje: tot? (enh/tot) : 0 }
       ];
-      const csv1 = toCSV(['Flujo','Total','Porcentaje'], rows1.map(r=>({Flujo:r.Flujo, Total:r.Total, Porcentaje:(r.Porcentaje)})));
+      const csv1 = toCSV(['Flujo','Total','Porcentaje'], rows1);
       download('resumen_demanda_enhancement.csv', new Blob([csv1],{type:'text/csv;charset=utf-8'}));
 
       const nb = buildNineboxData(f);
@@ -962,6 +1098,7 @@
       download('ubicacion_antiguedad.csv', new Blob([csv2],{type:'text/csv;charset=utf-8'}));
     }
   }
+
   async function exportSectionZIP(){
     const id=getActiveSectionId();
     const f=flujoSel();
@@ -1028,131 +1165,136 @@
       zip.file('ubicacion.png', b);
     }
 
-    const blob=await zip.generateAsync({type:'blob'});
-    download(`${id}_export.zip`, blob);
+    const blob = await zip.generateAsync({type:'blob'});
+    download(`export_${id}.zip`, blob);
   }
-  function buildUsersPromEff(f){
-    const agg=new Map();
-    currentData.forEach(r=>{
-      const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
-      o.num+=tareasFlujo(r,f); o.den+=(r.dias_activos||0);
-      if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
-        const w=(r.correcciones_auditadas||0)||1; o.effNum+=r.efectividad*w; o.effDen+=w;
-      }
-      agg.set(u,o);
-    });
-    return [...agg.entries()].map(([u,o])=>({user:u, prom:o.den?o.num/o.den:0, eff:o.effDen?o.effNum/o.effDen:0}));
-  }
-  function buildNineboxData(f){
-    const map = new Map();
-    currentData.forEach(r=>{
-      const u=r.usuario; const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
-      o.num+=tareasFlujo(r,f); o.den+=(r.dias_activos||0);
-      if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){ o.effSum+=r.efectividad; o.effN++; }
-      map.set(u,o);
-    });
-    const users=[...map.entries()].map(([u,o])=>({u, prom:o.den?o.num/o.den:null, eff:o.effN?o.effSum/o.effN:null}));
-    const prodBand = p => (p>=80 ? 'alta' : p>=70 ? 'media' : 'baja');
-    const calBand  = e => (e>=0.90 ? 'alta' : e>=0.75 ? 'media' : 'baja');
-    const rows=['alta','media','baja'], cols=['alta','media','baja'];
-    const buckets={}; rows.forEach(r=>cols.forEach(c=>buckets[`${r}-${c}`]=[]));
-    const missing=[];
-    users.forEach(x=>{
-      if(x.prom===null || x.eff===null) missing.push(x);
-      else buckets[`${prodBand(x.prom)}-${calBand(x.eff)}`].push(x.u);
-    });
-    return {buckets, missing};
-  }
-  function buildLideresData(f){
-    const agg=new Map();
-    currentData.forEach(r=>{
-      const l=r['líder']; if(!l||l.toLowerCase()==='sin líder') return;
-      const o=agg.get(l)||{num:0,den:0,effNum:0,effDen:0};
-      o.num+=tareasFlujo(r,f); o.den+=(r.dias_activos||0);
-      if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
-        const w=(r.correcciones_auditadas||0)||1; o.effNum+=r.efectividad*w; o.effDen+=w;
-      }
-      agg.set(l,o);
-    });
-    return [...agg.entries()].map(([l,o])=>({lider:l, prom:o.den?o.num/o.den:0, eff:o.effDen?o.effNum/o.effDen:0}));
-  }
-  function buildEvolucionData(f){
-    const agg=new Map();
-    currentData.forEach(r=>{
-      const w=Number(r.week); if(!Number.isFinite(w)) return;
-      const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
-      o.num+=tareasFlujo(r,f); o.den+=(r.dias_activos||0);
-      if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
-        const weight=(r.correcciones_auditadas||0)||1; o.effNum+=r.efectividad*weight; o.effDen+=weight;
-      }
-      agg.set(w,o);
-    });
-    const weeks=[...agg.keys()]; if(!weeks.length) return {labels:[],values:[],eff:[]};
-    const minW=Math.min(...weeks), maxW=Math.max(...weeks);
-    const labels=[], values=[], eff=[];
-    for(let w=minW; w<=maxW; w++){
-      labels.push('W'+String(w).padStart(2,'0'));
-      const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
-      values.push((o&&o.den)?o.num/o.den:0);
-      eff.push((o&&o.effDen)? (o.effNum/o.effDen) : 0);
-    }
-    return {labels, values, eff};
-  }
-  function buildUbicacionData(f){
-    const byLoc=new Map(), effLoc=new Map(), antig={};
-    currentData.forEach(r=>{
-      const c=r.ciudad||'Sin ubicación';
-      const o=byLoc.get(c)||{num:0,den:0}; o.num+=tareasFlujo(r,f); o.den+=(r.dias_activos||0); byLoc.set(c,o);
-      if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
-        const w=(r.correcciones_auditadas||0)||1; const e=effLoc.get(c)||{num:0,den:0}; e.num+=r.efectividad*w; e.den+=w; effLoc.set(c,e);
-      }
-      const a=Number(r.antigüedad||0); if(!antig[c]) antig[c]={sum:0,n:0}; if(Number.isFinite(a)){antig[c].sum+=a; antig[c].n++;}
-    });
-    const labels=[...byLoc.keys()].sort((a,b)=>{
-      const va=(byLoc.get(a).den?byLoc.get(a).num/byLoc.get(a).den:0);
-      const vb=(byLoc.get(b).den?byLoc.get(b).num/byLoc.get(b).den:0);
-      return vb-va;
-    });
-    const prom=labels.map(c=>{const o=byLoc.get(c); return (o.den?o.num/o.den:0);});
-    const eff =labels.map(c=>{const e=effLoc.get(c)||{num:0,den:0}; return (e.den?e.num/e.den:0);});
-    const ant =labels.map(loc=>{const v=antig[loc]||{sum:0,n:0}; return [loc, v.n? v.sum/v.n : 0];}).sort((a,b)=>b[1]-a[1]);
-    return {labels, prom, eff, antig:ant};
-  }
+
   async function exportToGoogleSheets(){
+    if(!SHEETS_WEBHOOK_URL || !SHEETS_WEBHOOK_URL.startsWith('https://script.google.com')) {
+      alert('Configurá SHEETS_WEBHOOK_URL con la URL de tu Web App de Google Apps Script.');
+      return;
+    }
     const id=getActiveSectionId();
     const f=flujoSel();
-    let headers=[], rows=[];
+    const payload = {
+      section: id,
+      generatedAt: new Date().toISOString(),
+      filters: filtersSummary(),
+      tables: []
+    };
+
+    // Siempre agrego tabla de KPIs
+    const totalFlujo = currentData.reduce((s,r)=> s + tareasFlujo(r,f), 0);
+    const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
+    const usuarios = new Set(currentData.map(r=>r.usuario)).size;
+    const correcc = currentData.reduce((s,r)=> s + (r.correcciones_auditadas||0), 0);
+    const prom = promedioDiario(currentData, f);
+    const efVals = currentData.map(r=>r.efectividad).filter(v=>v!=='' && v!=null);
+    const ef = efVals.length ? efVals.reduce((a,b)=>a+b,0)/efVals.length : 0;
+
+    payload.tables.push({
+      title: 'KPIs',
+      headers: ['Métrica','Valor'],
+      rows: [
+        ['Total tareas', totalFlujo],
+        ['IDs trabajados', idsTrab],
+        ['Promedio Diario', prom],
+        ['% Efectividad', ef],
+        ['Correcciones auditadas', correcc],
+        ['Usuarios activos', usuarios]
+      ]
+    });
+
     if(id==='resumen'){
       const demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
       const enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
       const tot = demand+enh;
-      headers=['Flujo','Total','Porcentaje'];
-      rows=[{Flujo:'Demanda',Total:demand,Porcentaje:tot?demand/tot:0},{Flujo:'Enhancement',Total:enh,Porcentaje:tot?enh/tot:0}];
-    }else if(id==='detalle'){
-      const data=buildUsersPromEff(f);
-      headers=['Usuario','Promedio_Diario','Efectividad'];
-      rows=data.map(d=>({Usuario:d.user, Promedio_Diario:d.prom, Efectividad:d.eff}));
-    }else if(id==='lideres'){
-      const data=buildLideresData(f);
-      headers=['Lider','Promedio_Diario','Efectividad'];
-      rows=data.map(d=>({Lider:d.lider, Promedio_Diario:d.prom, Efectividad:d.eff}));
-    }else if(id==='evolucion'){
-      const series=buildEvolucionData(f);
-      headers=['Semana','Promedio_Diario','Efectividad'];
-      rows=series.labels.map((lab,i)=>({Semana:lab, Promedio_Diario:series.values[i], Efectividad:series.eff[i]}));
-    }else if(id==='ubicacion'){
-      const data=buildUbicacionData(f);
-      headers=['Ubicacion','Promedio_Diario','Efectividad'];
-      rows=data.labels.map((lab,i)=>({Ubicacion:lab, Promedio_Diario:data.prom[i], Efectividad:data.eff[i]}));
+      payload.tables.push({
+        title: 'Demanda_vs_Enhancement',
+        headers: ['Flujo','Total','Porcentaje'],
+        rows: [
+          ['Demanda', demand, tot? demand/tot : 0],
+          ['Enhancement', enh, tot? enh/tot : 0]
+        ]
+      });
+      const nb=buildNineboxData(f);
+      payload.tables.push({
+        title: 'Ninebox_Conteo',
+        headers:['Caja','Conteo'],
+        rows:Object.entries(nb.buckets).map(([k,arr])=>[k, arr.length])
+      });
+      payload.tables.push({
+        title: 'Ninebox_Usuarios',
+        headers:['Caja','Usuarios'],
+        rows:Object.entries(nb.buckets).map(([k,arr])=>[k, arr.join(' | ')])
+      });
+      if(nb.missing.length){
+        payload.tables.push({
+          title: 'Ninebox_Faltantes',
+          headers:['Usuario','Promedio_Diario','Efectividad'],
+          rows: nb.missing.map(m=>[m.u, (m.prom==null?'':m.prom), (m.eff==null?'':m.eff)])
+        });
+      }
     }
-    const csv=toCSV(headers, rows);
+    if(id==='detalle'){
+      const data=buildUsersPromEff(f);
+      payload.tables.push({
+        title:'Usuarios_Promedio_y_Efectividad',
+        headers:['Usuario','Promedio_Diario','Efectividad'],
+        rows:data.map(d=>[d.user,d.prom,d.eff])
+      });
+    }
+    if(id==='lideres'){
+      const data=buildLideresData(f);
+      payload.tables.push({
+        title:'Equipos_Promedio_y_Efectividad',
+        headers:['Lider','Promedio_Diario','Efectividad'],
+        rows:data.map(d=>[d.lider,d.prom,d.eff])
+      });
+    }
+    if(id==='evolucion'){
+      const s=buildEvolucionData(f);
+      payload.tables.push({
+        title:'Evolucion_Semanal',
+        headers:['Semana','Promedio_Diario','Efectividad'],
+        rows:s.labels.map((lab,i)=>[lab, s.values[i], s.eff[i]/100])
+      });
+    }
+    if(id==='ubicacion'){
+      const d=buildUbicacionData(f);
+      payload.tables.push({
+        title:'Ubicacion_Promedio_y_Efectividad',
+        headers:['Ubicacion','Promedio_Diario','Efectividad'],
+        rows:d.labels.map((lab,i)=>[lab, d.prom[i], d.eff[i]/100])
+      });
+      payload.tables.push({
+        title:'Ubicacion_Antiguedad',
+        headers:['Ubicacion','Antiguedad_Promedio_meses'],
+        rows:d.antig.map(([loc,avg])=>[loc, avg])
+      });
+    }
+
+    // Agrego hoja de filtros
+    const filt=filtersSummary();
+    payload.tables.push({
+      title:'Filtros',
+      headers:['Filtro','Valor'],
+      rows:Object.entries(filt)
+    });
+
     try{
-      await navigator.clipboard.writeText(csv);
-      window.open('https://sheets.new','_blank');
-      alert('CSV copiado al portapapeles. Pegalo en la celda A1 de la nueva hoja de Google Sheets.');
-    }catch{
-      download(`${id}.csv`, new Blob([csv],{type:'text/csv;charset=utf-8'}));
-      alert('No se pudo copiar al portapapeles. Te descargué el CSV para subirlo a Google Sheets.');
+      const r = await fetch(SHEETS_WEBHOOK_URL, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+      const text = await r.text();
+      let data; try{ data=JSON.parse(text) }catch{ throw new Error(text || 'Respuesta inválida'); }
+      if(!r.ok) throw new Error(data.error || 'Error creando la hoja');
+      const url = data.url;
+      window.open(url, '_blank');
+    }catch(e){
+      alert('No se pudo exportar a Google Sheets: '+e.message);
     }
   }
 
@@ -1160,61 +1302,38 @@
    * GEMINI (opcional)
    **********************/
   async function geminiRequest(prompt) {
-    if (!GEMINI_PROXY_URL) return "Configura la URL del proxy de Gemini (GEMINI_PROXY_URL) para usar esta función.";
-    const attempts = [ {prompt:String(prompt)}, {contents:[{parts:[{text:String(prompt)}]}]} ];
+    if (!GEMINI_PROXY_URL) return "Configura GEMINI_PROXY_URL.";
+    const attempts = [{ prompt: String(prompt) }, { contents: [{ parts: [{ text: String(prompt) }]}] }];
     let lastErr;
-    for(const body of attempts){
-      try{
-        const r=await fetch(GEMINI_PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-        const raw=await r.text(); if(!r.ok) throw new Error(raw||`HTTP ${r.status}`);
-        let data; try{ data=JSON.parse(raw);}catch{ return raw;}
-        const out=data?.candidates?.[0]?.content?.parts?.[0]?.text ?? data?.text ?? data?.output ?? data;
-        return (typeof out==='string')? out : JSON.stringify(out);
-      }catch(e){ lastErr=e; }
+    for (const body of attempts) {
+      try {
+        const r = await fetch(GEMINI_PROXY_URL, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) });
+        const raw = await r.text();
+        if (!r.ok) throw new Error(raw || `HTTP ${r.status}`);
+        let data; try { data = JSON.parse(raw); } catch { return raw; }
+        const out = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? data?.text ?? data?.output ?? data;
+        return (typeof out === 'string') ? out : JSON.stringify(out);
+      } catch (e) { lastErr = e; }
     }
-    throw lastErr||new Error('Gemini request failed');
+    throw lastErr || new Error('Gemini request failed');
   }
 
   function setupGeminiFeatures(){
     document.getElementById('generate-summary-btn').addEventListener('click', async ()=>{
-      const old=document.getElementById('summary-output'); if(old) old.remove();
-      const cont = document.createElement('div');
-      cont.id='summary-output';
-      cont.className='mt-4 p-4 bg-slate-50 rounded-md border border-slate-200';
-      cont.textContent='Generando...';
-      document.getElementById('ninebox-card').appendChild(cont);
+      const block = document.getElementById('ninebox-missing');
+      const f=flujoSel();
+      block.classList.remove('hidden');
+      const total = currentData.reduce((s,r)=>s+tareasFlujo(r,f),0);
+      const prom  = promedioDiario(currentData,f);
+      const effVals = currentData.map(r=>r.efectividad).filter(v=>v!==''&&v!=null);
+      const eff = effVals.length? effVals.reduce((a,b)=>a+b,0)/effVals.length : 0;
 
+      block.textContent='Generando…';
       try{
-        const f=flujoSel();
-        const total = currentData.reduce((s,r)=> s + tareasFlujo(r,f), 0);
-        const prom  = promedioDiario(currentData, f);
-        const top = (()=>{
-          const map=new Map();
-          currentData.forEach(r=>{
-            const u=r.usuario; map.set(u,(map.get(u)||0)+tareasFlujo(r,f));
-          });
-          return Array.from(map.entries()).sort((a,b)=>b[1]-a[1]).slice(0,5).map(x=>`${x[0]} (${x[1]} unidades)`).join(', ');
-        })();
-        const prompt = `Actúa como analista. Filtros actuales aplicados (flujo='${f}'). Resume hallazgos en 6 viñetas y sugiere 3 acciones. Datos: total=${total}, promedio_diario=${prom.toFixed(2)}, top usuarios=${top}.`;
+        const prompt = `Sos analista. Con los filtros actuales, resume 6 hallazgos y 3 acciones rápidas. Datos: total=${total}, prom_diario=${prom.toFixed(2)}, efectividad=${(eff*100).toFixed(2)}%.`;
         const resp = await geminiRequest(prompt);
-        cont.textContent=resp;
-      }catch(e){ cont.textContent=e.message; }
-    });
-
-    document.getElementById('generate-insights-btn').addEventListener('click', async ()=>{
-      const out=document.getElementById('insights-output');
-      out.classList.remove('hidden'); out.textContent='Pensando...';
-      try{
-        const f=flujoSel();
-        const num = currentData.reduce((s,r)=> s + tareasFlujo(r,f), 0);
-        const den = currentData.reduce((s,r)=> s + (r.dias_activos||0), 0);
-        const prom = den? num/den : 0;
-        const effVals=currentData.map(r=>r.efectividad).filter(v=>v!=='');
-        const effAvg=effVals.length? effVals.reduce((a,b)=>a+b,0)/effVals.length : 0;
-        const prompt=`Con los filtros vigentes (flujo='${f}'), genera 6 insights accionables y una conclusión. Resumen: promedio_diario=${prom.toFixed(2)}, efectividad=${(effAvg).toFixed(3)}.`;
-        const resp=await geminiRequest(prompt);
-        out.textContent=resp;
-      }catch(e){ out.textContent=e.message; }
+        block.textContent = resp;
+      }catch(e){ block.textContent = e.message; }
     });
   }
 
@@ -1229,13 +1348,17 @@
         fetchCSVFile(FILES.base),
         fetchCSVFile(FILES.lideres)
       ]);
-      const prod=parseCSV(tProd), cal=parseCSV(tCal), base=parseCSV(tBase), lids=parseCSV(tLid);
-      originalData = buildWeeklyRows(prod, cal, base, lids);
+      const prod = parseCSV(tProd);
+      const cal  = parseCSV(tCal);
+      const base = parseCSV(tBase);
+      const lids = parseCSV(tLid);
 
+      originalData = buildWeeklyRows(prod, cal, base, lids);
       setupFilters();
       setupNavigation();
       setupGeminiFeatures();
 
+      // render inicial
       currentData = originalData.slice();
       applyFilters();
     }catch(err){
@@ -1246,4 +1369,3 @@
   </script>
 </body>
 </html>
-
