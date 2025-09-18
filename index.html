@@ -66,6 +66,9 @@
           <h2 id="page-title" class="text-3xl font-bold text-slate-700">Resumen General</h2>
         </div>
 
+        <!-- Aviso mapping -->
+        <div id="mapping-warning" class="hidden mb-6 p-4 rounded-lg border border-amber-300 bg-amber-50 text-amber-800"></div>
+
         <!-- Filters -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <select id="filter-mes" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
@@ -98,9 +101,7 @@
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div class="kpi-card">
-                <div class="flex justify-between items-center mb-4">
-                  <h3 class="text-xl font-semibold">Top 10 Usuarios por Tareas</h3>
-                </div>
+                <h3 class="text-xl font-semibold mb-4">Top 10 Usuarios por Tareas</h3>
                 <div class="chart-container"><canvas id="tasksByUserChart"></canvas></div>
               </div>
               <div class="kpi-card">
@@ -112,56 +113,44 @@
             </div>
           </section>
 
-          <!-- Productividad por Usuario -->
+          <!-- Otras secciones (placeholders por ahora) -->
           <section id="productividad" class="page-section hidden">
-            <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-4">Detalle de Productividad (selección futura)</h3>
+            <div class="kpi-card"><h3 class="text-xl font-semibold mb-4">Detalle por Usuario</h3>
               <div class="chart-container"><canvas id="userDetailChart"></canvas></div>
             </div>
           </section>
 
-          <!-- Comparativa de Líderes -->
           <section id="lideres" class="page-section hidden">
-            <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-4">Comparativa por Líder (placeholder)</h3>
+            <div class="kpi-card"><h3 class="text-xl font-semibold mb-4">Comparativa por Líder</h3>
               <div class="chart-container"><canvas id="tasksByLeaderChart"></canvas></div>
             </div>
           </section>
 
-          <!-- Evolución Semanal -->
           <section id="evolucion" class="page-section hidden">
-            <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-4">Evolución Semanal (placeholder)</h3>
+            <div class="kpi-card"><h3 class="text-xl font-semibold mb-4">Evolución Semanal</h3>
               <div class="chart-container"><canvas id="weeklyEvolutionChart"></canvas></div>
             </div>
           </section>
 
-          <!-- Análisis por Ubicación -->
           <section id="ubicacion" class="page-section hidden">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div class="kpi-card">
-                <h3 class="text-xl font-semibold mb-4">Total de Tareas por Ubicación</h3>
+              <div class="kpi-card"><h3 class="text-xl font-semibold mb-4">Total por Ubicación</h3>
                 <div class="chart-container"><canvas id="tasksByLocationChart"></canvas></div>
               </div>
-              <div class="kpi-card">
-                <h3 class="text-xl font-semibold mb-4">Antigüedad Promedio por Ubicación (meses)</h3>
+              <div class="kpi-card"><h3 class="text-xl font-semibold mb-4">Antigüedad Promedio (meses)</h3>
                 <div id="avg-antiguedad-list"></div>
               </div>
             </div>
           </section>
 
-          <!-- Proyecciones -->
           <section id="proyecciones" class="page-section hidden">
-            <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-4">Proyección de Tareas Totales (placeholder)</h3>
+            <div class="kpi-card"><h3 class="text-xl font-semibold mb-4">Proyección</h3>
               <div class="chart-container"><canvas id="projectionsChart"></canvas></div>
             </div>
           </section>
 
-          <!-- Análisis Inteligente -->
           <section id="analisis" class="page-section hidden">
-            <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-2">Análisis Inteligente (placeholder)</h3>
+            <div class="kpi-card"><h3 class="text-xl font-semibold mb-2">Análisis Inteligente</h3>
               <p class="text-slate-600">Acá se engancha Gemini luego.</p>
             </div>
           </section>
@@ -188,15 +177,16 @@
   <!-- PapaParse para CSV -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
-  <!-- App script: carga CSV + dashboard -->
+  <!-- App script -->
   <script>
     // ====== Estado global ======
     let originalData = [];
     let charts = {};
+    let COL = {};
 
     // ====== Normalización ======
-    const removeAccents = s => s.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-    const normKey = s => removeAccents(String(s).toLowerCase().trim().replace(/\s+/g,' ').replace(/[^\w %/()-]/g,''));
+    const removeAccents = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    const normKey = s => removeAccents(String(s||'').toLowerCase().trim().replace(/\s+/g,' ').replace(/[^\w %/()-]/g,''));
 
     function normalizeValue(v) {
       if (v === null || v === undefined) return v;
@@ -209,11 +199,16 @@
       return t;
     }
 
+    // ====== CSV: autodetecta separador y limpia BOM ======
     function parseCSV(text) {
-      const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
+      if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1); // BOM
+      const semi = (text.match(/;/g)||[]).length;
+      const coma = (text.match(/,/g)||[]).length;
+      const delimiter = semi > coma ? ';' : ',';
+      const parsed = Papa.parse(text, { header: true, skipEmptyLines: true, delimiter });
       return parsed.data.map(row => {
         const out = {};
-        for (const [k, v] of Object.entries(row)) out[k] = normalizeValue(v);
+        for (const [k, v] of Object.entries(row)) out[String(k).trim()] = normalizeValue(v);
         return out;
       });
     }
@@ -221,7 +216,9 @@
     // ====== Detección flexible de columnas ======
     function buildColumnMap(rows) {
       const headers = Object.keys(rows[0] || {});
-      const map = {};
+      const idx = {};
+      headers.forEach(h => idx[normKey(h)] = h);
+
       const want = {
         mes: ['mes'],
         semana: ['semana'],
@@ -229,9 +226,9 @@
         efectividad: ['% de efectividad','efectividad','porcentaje efectividad','efectividad %'],
         prom_diario: ['promedio diario','promedio','promedio_diario'],
         tareas_demanda: ['tareas demanda','demanda','cantidad demanda'],
-        tareas_enh: ['tareas enhancement','enhancement','cantidad enhancement','enhanced'],
+        tareas_enh: ['tareas enhancement','enhancement','cantidad enhancement','mejoras','enhanced'],
         pct_demanda: ['% demanda','porcentaje demanda'],
-        pct_enh: ['% enhancement','porcentaje enhancement'],
+        pct_enh: ['% enhancement','porcentaje enhancement','% mejoras'],
         total_tareas: ['total tareas','tareas totales','total'],
         ids_trab: ['ids trabajados','ids','ids_trabajados'],
         correcciones: ['correcciones auditadas','correcciones','auditorias','auditadas'],
@@ -239,41 +236,31 @@
         antiguedad: ['antigüedad (meses)','antiguedad','antiguedad meses'],
         ubicacion: ['ubicación','ubicacion','site','sede','location']
       };
-      // índice normalizado
-      const idx = {};
-      headers.forEach(h => idx[normKey(h)] = h);
 
       const findCol = candidates => {
         for (const c of candidates) {
           const nk = normKey(c);
-          // match exacto de la lista
-          if (idx[nk]) return idx[nk];
-          // búsqueda laxa: contiene palabra clave
-          const hit = headers.find(h => normKey(h).includes(nk));
+          if (idx[nk]) return idx[nk]; // match exacto normalizado
+          const hit = headers.find(h => normKey(h).includes(nk)); // match laxo
           if (hit) return hit;
         }
         return null;
       };
 
-      for (const key of Object.keys(want)) {
-        map[key] = findCol(want[key]);
-      }
-      return map;
+      const map = {};
+      for (const key of Object.keys(want)) map[key] = findCol(want[key]);
+      return { map, headers };
     }
 
     // ====== Helpers ======
     const uniq = arr => Array.from(new Set(arr.filter(x => x !== '' && x != null)));
     const sum = arr => arr.reduce((a,b) => a + (Number(b)||0), 0);
     const avg = arr => arr.length ? sum(arr)/arr.length : 0;
+    const q = id => document.getElementById(id);
+    const getValue = (row, colName) => colName ? row[colName] : undefined;
 
-    function getValue(row, colName) {
-      return colName ? row[colName] : undefined;
-    }
-
-    // ====== Filtros ======
+    // ====== UI de filtros ======
     function setupFilters(data, col) {
-      const q = (id) => document.getElementById(id);
-
       const mes = uniq(data.map(r => getValue(r, col.mes))).sort();
       const semana = uniq(data.map(r => getValue(r, col.semana))).sort((a,b)=> (a||0)-(b||0));
       const lider = uniq(data.map(r => getValue(r, col.lider))).sort();
@@ -302,7 +289,7 @@
     }
 
     function getActiveFilters() {
-      const v = id => document.getElementById(id).value;
+      const v = id => q(id) ? q(id).value : '';
       return {
         mes: v('filter-mes') || null,
         semana: v('filter-semana') || null,
@@ -313,21 +300,17 @@
 
     // ====== Charts ======
     function createOrUpdateChart(id, type, data, options) {
-      const ctx = document.getElementById(id);
+      const ctx = q(id);
       if (!ctx) return;
       if (charts[id]) charts[id].destroy();
       charts[id] = new Chart(ctx, { type, data, options });
     }
 
     // ====== Render principal ======
-    let COL = {};
-
     function applyFilters() {
       if (!originalData.length) return;
-      if (!COL.total_tareas && !(COL.tareas_demanda || COL.tareas_enh)) {
-        console.warn('No se detectó columna de Total Tareas ni Demanda/Enhancement. KPIs limitados.');
-      }
 
+      // Filtros activos
       const f = getActiveFilters();
       const rows = originalData.filter(r => {
         const okMes = !f.mes || getValue(r, COL.mes) == f.mes;
@@ -346,10 +329,23 @@
       const correcciones = COL.correcciones ? sum(rows.map(r => getValue(r, COL.correcciones))) : 0;
       const usuariosActivos = COL.usuario ? uniq(rows.map(r => getValue(r, COL.usuario))).length : 0;
 
-      document.getElementById('kpi-total-tareas').textContent = totalTareas.toLocaleString('es-AR');
-      document.getElementById('kpi-efectividad-prom').textContent = (efectProm != null) ? (efectProm.toFixed(2) + '%') : '—';
-      document.getElementById('kpi-correcciones').textContent = correcciones.toLocaleString('es-AR');
-      document.getElementById('kpi-usuarios').textContent = usuariosActivos.toLocaleString('es-AR');
+      q('kpi-total-tareas').textContent = totalTareas.toLocaleString('es-AR');
+      q('kpi-efectividad-prom').textContent = (efectProm != null) ? (efectProm.toFixed(2) + '%') : '—';
+      q('kpi-correcciones').textContent = correcciones.toLocaleString('es-AR');
+      q('kpi-usuarios').textContent = usuariosActivos.toLocaleString('es-AR');
+
+      // Avisos de mapping si faltan columnas
+      const missing = [];
+      if (!COL.usuario)        missing.push('Usuario');
+      if (!COL.total_tareas && !COL.tareas_demanda && !COL.tareas_enh) missing.push('Total Tareas o Demanda/Enhancement');
+      const warn = q('mapping-warning');
+      if (missing.length) {
+        warn.classList.remove('hidden');
+        warn.innerHTML = `<strong>Atención:</strong> no se detectaron columnas: ${missing.join(', ')}. Revisá encabezados del CSV.`;
+      } else {
+        warn.classList.add('hidden');
+        warn.textContent = '';
+      }
 
       // Pie Demanda vs Enhancement
       const totDem = sum(rows.map(r => getValue(r, COL.tareas_demanda)));
@@ -379,7 +375,7 @@
       });
     }
 
-    // ====== Navegación simple (mostrar/ocultar secciones) ======
+    // ====== Navegación simple ======
     function setupNavigation() {
       const links = document.querySelectorAll('#nav-menu a');
       const sections = document.querySelectorAll('.page-section');
@@ -391,7 +387,7 @@
           sections.forEach(s => s.classList.add('hidden'));
           const target = document.querySelector(link.getAttribute('href'));
           if (target) target.classList.remove('hidden');
-          document.getElementById('page-title').textContent = link.textContent.trim();
+          q('page-title').textContent = link.textContent.trim();
         });
       });
     }
@@ -412,20 +408,21 @@
     // ====== INIT ÚNICO ======
     document.addEventListener('DOMContentLoaded', async () => {
       try {
-        setupNavigation(); // nav listo
+        setupNavigation();
 
         const csvText = await fetchCSV();
         originalData = parseCSV(csvText);
-
         if (!originalData.length) throw new Error('El CSV está vacío o sin encabezados.');
-        COL = buildColumnMap(originalData);
 
-        // Debug en consola para ver mapeo de columnas
-        console.log('Column map:', COL);
-        console.log('Primer registro:', originalData[0]);
+        const { map, headers } = buildColumnMap(originalData);
+        COL = map;
+
+        console.log('Encabezados detectados:', headers);
+        console.log('Column mapping:', COL);
+        console.log('Ejemplo de fila:', originalData[0]);
 
         setupFilters(originalData, COL);
-        applyFilters(); // primer render
+        applyFilters();
       } catch (err) {
         console.error(err);
         document.body.innerHTML = `<div class="p-8 text-center text-red-600 bg-red-100">${err.message}</div>`;
