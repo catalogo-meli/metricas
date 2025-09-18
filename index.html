@@ -12,6 +12,11 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
   <!-- PapaParse -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <!-- Export helpers -->
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
   <!-- Inter font -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -31,6 +36,11 @@
     .nb-yellow{background:#fef9c3}
     .nb-orange{background:#ffedd5}
     .nb-red{background:#fee2e2}
+    /* Export dropdown */
+    .dropdown{position:relative;display:inline-block;}
+    .dropdown-menu{position:absolute;right:0;top:100%;background:#fff;border:1px solid #e2e8f0;border-radius:.5rem;box-shadow:0 10px 20px rgba(0,0,0,.08);min-width:240px;z-index:50}
+    .dropdown-menu a{display:block;padding:.6rem .8rem;font-size:.95rem;color:#334155}
+    .dropdown-menu a:hover{background:#f1f5f9}
   </style>
 </head>
 
@@ -58,13 +68,34 @@
     <main class="flex-1 overflow-x-hidden overflow-y-auto">
       <div class="container mx-auto px-6 py-8">
         <!-- Header -->
-        <div class="flex justify-between items-center mb-6">
-          <button id="mobile-menu-button" class="md:hidden text-slate-600">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-            </svg>
-          </button>
-          <h2 id="page-title" class="text-3xl font-bold text-slate-700">Resumen General</h2>
+        <div class="flex flex-wrap justify-between items-center mb-6 gap-3">
+          <div class="flex items-center gap-3">
+            <button id="mobile-menu-button" class="md:hidden text-slate-600">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+              </svg>
+            </button>
+            <h2 id="page-title" class="text-3xl font-bold text-slate-700">Resumen General</h2>
+          </div>
+
+          <!-- Toolbar global: limpiar + exportar -->
+          <div class="flex items-center gap-2">
+            <button id="btn-clear-filters" class="px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-sm">
+              Limpiar filtros
+            </button>
+
+            <div class="dropdown">
+              <button id="btn-export" class="px-3 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-sm">
+                Exportar
+              </button>
+              <div id="export-menu" class="dropdown-menu hidden">
+                <a href="#" data-exp="csv">Exportar datos (CSV)</a>
+                <a href="#" data-exp="sheets">Exportar a Google Sheets</a>
+                <a href="#" data-exp="png">Exportar gráficos (PNG)</a>
+                <a href="#" data-exp="zip">Exportar sección (ZIP)</a>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Filtros -->
@@ -83,28 +114,33 @@
         <div id="dashboard-content">
           <!-- Resumen -->
           <section id="resumen" class="page-section">
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 mb-6">
-              <!-- 1) Total Tareas (ajustado por flujo) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-6 mb-6">
+              <!-- 1) Total Tareas -->
               <div class="kpi-card text-center">
                 <h3 class="text-slate-500 font-medium">Total Tareas</h3>
                 <p id="kpi-total-tareas" class="text-4xl font-bold mt-2"></p>
               </div>
-              <!-- 2) Promedio Diario -->
+              <!-- 2) IDs trabajados -->
+              <div class="kpi-card text-center">
+                <h3 class="text-slate-500 font-medium">IDs trabajados</h3>
+                <p id="kpi-ids" class="text-4xl font-bold mt-2"></p>
+              </div>
+              <!-- 3) Promedio Diario -->
               <div class="kpi-card text-center">
                 <h3 class="text-slate-500 font-medium">Promedio Diario</h3>
                 <p id="kpi-promedio-diario" class="text-4xl font-bold mt-2"></p>
               </div>
-              <!-- 3) % Efectividad -->
+              <!-- 4) % Efectividad -->
               <div class="kpi-card text-center">
                 <h3 class="text-slate-500 font-medium">% Efectividad</h3>
                 <p id="kpi-efectividad-prom" class="text-4xl font-bold mt-2"></p>
               </div>
-              <!-- 4) Correcciones -->
+              <!-- 5) Correcciones -->
               <div class="kpi-card text-center">
                 <h3 class="text-slate-500 font-medium">Correcciones auditadas</h3>
                 <p id="kpi-correcciones" class="text-4xl font-bold mt-2"></p>
               </div>
-              <!-- 5) Usuarios activos -->
+              <!-- 6) Usuarios activos -->
               <div class="kpi-card text-center">
                 <h3 class="text-slate-500 font-medium">Usuarios Activos</h3>
                 <p id="kpi-usuarios" class="text-4xl font-bold mt-2"></p>
@@ -113,9 +149,9 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <!-- Nine-box -->
-              <div class="kpi-card">
+              <div id="ninebox-card" class="kpi-card">
                 <div class="flex justify-between items-center mb-4">
-                  <h3 class="text-xl font-semibold">Nine-Box: Productividad × Calidad</h3>
+                  <h3 class="text-xl font-semibold">Productividad - Calidad</h3>
                   <button id="generate-summary-btn" class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition-colors text-sm font-medium">✨ Generar Resumen</button>
                 </div>
                 <div id="ninebox-grid" class="grid grid-cols-4 gap-2"></div>
@@ -123,6 +159,7 @@
                   Productividad: Alta ≥80; Media 70–&lt;80; Baja &lt;70. &nbsp;|&nbsp;
                   Calidad: Alta ≥90%; Media 75%–&lt;90%; Baja &lt;75%.
                 </p>
+                <div id="ninebox-missing" class="mt-4 text-sm text-slate-600"></div>
               </div>
 
               <!-- Demanda vs Enhancement -->
@@ -270,7 +307,7 @@
     dec: x => (x ?? 0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})
   };
 
-  // === helpers de flujo/promedio ===
+  // Flujo helpers
   const flujoSel = ()=> (document.getElementById('filter-flujo')?.value || 'mixto').toLowerCase();
   const tareasFlujo = (r, f) => f==='demanda' ? (r.tareas_demanda||0) : f==='enhancement' ? (r.tareas_enhancement||0) : (r.total_tareas||0);
   function promedioDiario(rows, f){
@@ -445,6 +482,36 @@
     mobile.querySelectorAll('a').forEach(a=>{
       a.addEventListener('click', ()=>{ mob.querySelector('aside').classList.add('-translate-x-full'); setTimeout(()=>mob.classList.add('hidden'),200); });
     });
+
+    // Export dropdown
+    document.getElementById('btn-export').addEventListener('click', ()=>{
+      document.getElementById('export-menu').classList.toggle('hidden');
+    });
+    document.addEventListener('click', (e)=>{
+      const dd = document.getElementById('export-menu');
+      if(!dd.contains(e.target) && !document.getElementById('btn-export').contains(e.target)) dd.classList.add('hidden');
+    });
+    document.querySelectorAll('#export-menu a').forEach(a=>{
+      a.addEventListener('click', (e)=>{
+        e.preventDefault();
+        document.getElementById('export-menu').classList.add('hidden');
+        const type = a.getAttribute('data-exp');
+        if(type==='csv') exportSectionCSV();
+        if(type==='png') exportSectionPNGs();
+        if(type==='zip') exportSectionZIP();
+        if(type==='sheets') exportToGoogleSheets();
+      });
+    });
+
+    // Limpiar filtros
+    document.getElementById('btn-clear-filters').addEventListener('click', ()=>{
+      ['filter-mes','filter-semana','filter-ubicacion','filter-usuario','filter-lider','filter-q'].forEach(id=>{
+        const el=document.getElementById(id); if(el) el.value='';
+      });
+      const f=document.getElementById('filter-flujo'); if(f) f.value='mixto';
+      const u=document.getElementById('user-detail-select'); if(u) u.value='';
+      applyFilters();
+    });
   }
 
   function applyFilters(){
@@ -482,17 +549,15 @@
 
     // Total (según flujo)
     const totalFlujo = currentData.reduce((s,r)=> s + tareasFlujo(r,f), 0);
-
+    // IDs trabajados (no está por flujo en origen -> suma simple)
+    const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
     // Usuarios activos
     const usuarios = new Set(currentData.map(r=>r.usuario)).size;
-
     // Correcciones
     const correcc = currentData.reduce((s,r)=> s + (r.correcciones_auditadas||0), 0);
-
     // Promedio Diario (según flujo)
     const prom = promedioDiario(currentData, f);
-
-    // Efectividad (promedio simple de filas con dato)
+    // Efectividad (promedio simple filas con dato)
     const vals = currentData.map(r=>r.efectividad).filter(v => v!=='' && v!==null && v!==undefined);
     const ef = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
 
@@ -514,6 +579,7 @@
 
     // Render valores
     document.getElementById('kpi-total-tareas').textContent     = fmt.int(totalFlujo);
+    document.getElementById('kpi-ids').textContent              = fmt.int(idsTrab);
     document.getElementById('kpi-usuarios').textContent         = fmt.int(usuarios);
     document.getElementById('kpi-correcciones').textContent     = fmt.int(correcc);
     promEl.textContent = fmt.dec(prom);
@@ -541,8 +607,8 @@
     });
 
     const users = Array.from(map.entries()).map(([u,o])=>{
-      const prom = o.den? o.num/o.den : 0;
-      const eff  = o.effN? o.effSum/o.effN : 0;
+      const prom = o.den? o.num/o.den : null;         // null si falta den
+      const eff  = o.effN? o.effSum/o.effN : null;    // null si no hubo dato
       return {u, prom, eff};
     });
 
@@ -554,13 +620,18 @@
 
     const buckets = {};
     rows.forEach(r=>cols.forEach(c=>{ buckets[`${r}-${c}`]=[]; }));
+
+    const missing = []; // usuarios con algún dato faltante
     users.forEach(x=>{
-      buckets[`${prodBand(x.prom)}-${calBand(x.eff)}`].push(x.u);
+      if(x.prom===null || x.eff===null){
+        missing.push(x);
+      }else{
+        buckets[`${prodBand(x.prom)}-${calBand(x.eff)}`].push(x.u);
+      }
     });
 
     // grid 4x4: headers + 9 cells
     const grid = document.getElementById('ninebox-grid');
-    const cellTitle = (r,c)=>`Prod ${r} / Calidad ${c}`;
     const label = s=> s.charAt(0).toUpperCase()+s.slice(1);
 
     const cellClass = (r,c)=>{
@@ -575,7 +646,7 @@
       return 'nb-red';
     };
 
-    const hdrCell = (txt, extra='')=>`<div class="nb-cell nb-hdr ${extra}" style="height:42px">${txt}</div>`;
+    const hdrCell = (txt)=>`<div class="nb-cell nb-hdr" style="height:42px">${txt}</div>`;
 
     let html = '';
     html += hdrCell('&nbsp;'); // esquina
@@ -584,17 +655,32 @@
       html += hdrCell('Prod. '+label(r));
       cols.forEach(c=>{
         const arr = buckets[`${r}-${c}`]||[];
-        html += `<div class="nb-cell ${cellClass(r,c)}" title="${cellTitle(label(r),label(c))}\n${arr.join(', ')}">
+        html += `<div class="nb-cell ${cellClass(r,c)}" title="Prod ${label(r)} / Calidad ${label(c)}">
                   <span class="nb-badge">${arr.length}</span>
                 </div>`;
       });
     });
     grid.innerHTML = html;
+
+    // Detalle de faltantes
+    const missDiv = document.getElementById('ninebox-missing');
+    if(missing.length){
+      const lines = missing
+        .sort((a,b)=> (a.u>b.u?1:-1))
+        .map(m=>{
+          const parts = [];
+          if(m.prom!==null) parts.push(`Promedio Diario: ${m.prom.toFixed(2)}`);
+          if(m.eff!==null)  parts.push(`% Efectividad: ${(m.eff*100).toFixed(2)}%`);
+          return `• ${m.u} — ${parts.join(' | ') || 'sin datos'}`;
+        });
+      missDiv.innerHTML = `<div class="font-medium mb-1">Perfiles no incluidos por datos faltantes</div><div class="whitespace-pre-line">${lines.join('\n')}</div>`;
+    }else{
+      missDiv.innerHTML = '';
+    }
   }
 
   /* ---------- Demanda vs Enhancement (percent + totales) ---------- */
   function renderDemandPie(){
-    // composición dentro del subset filtrado
     const demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
     const enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
     const tot = demand+enh;
@@ -776,6 +862,305 @@
   }
 
   /**********************
+   * EXPORTS
+   **********************/
+  function getActiveSectionId(){
+    const sec=[...document.querySelectorAll('.page-section')].find(s=>!s.classList.contains('hidden'));
+    return sec ? sec.id : 'resumen';
+    }
+  function download(filename, blob){
+    saveAs(blob, filename);
+  }
+  function toCSV(headers, rows){
+    const esc=v=> `"${String(v??'').replace(/"/g,'""')}"`;
+    const head = headers.map(esc).join(',');
+    const body = rows.map(r=> headers.map(h=>esc(r[h])).join(',')).join('\n');
+    return head + '\n' + body;
+  }
+  async function exportSectionPNGs(){
+    const id=getActiveSectionId();
+    const canvases=[];
+    if(id==='resumen'){
+      canvases.push(document.getElementById('demandPieChart'));
+      // ninebox: capturamos la tarjeta completa
+      const el=document.getElementById('ninebox-card');
+      const canvas = await html2canvas(el,{scale:2});
+      canvas.toBlob(b=>download('ninebox.png',b));
+    }else if(id==='productividad'){
+      canvases.push(document.getElementById('tasksByUserChart'));
+      canvases.push(document.getElementById('userDetailChart'));
+    }else if(id==='lideres'){
+      canvases.push(document.getElementById('tasksByLeaderChart'));
+    }else if(id==='evolucion'){
+      canvases.push(document.getElementById('weeklyEvolutionChart'));
+    }else if(id==='ubicacion'){
+      canvases.push(document.getElementById('locCombinedChart'));
+    }
+    canvases.forEach((c,i)=>{
+      if(!c) return;
+      const url=c.toDataURL('image/png');
+      fetch(url).then(r=>r.blob()).then(b=>download(`${id}-chart${i+1}.png`, b));
+    });
+  }
+  async function exportSectionCSV(){
+    const id=getActiveSectionId();
+    const f=flujoSel();
+
+    if(id==='resumen'){
+      // Demand/Enhancement
+      const demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
+      const enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
+      const tot = demand+enh;
+      const rows1 = [
+        { Flujo:'Demanda', Total:demand, Porcentaje: tot? (demand/tot) : 0 },
+        { Flujo:'Enhancement', Total:enh, Porcentaje: tot? (enh/tot) : 0 }
+      ];
+      const csv1 = toCSV(['Flujo','Total','Porcentaje'], rows1.map(r=>({Flujo:r.Flujo, Total:r.Total, Porcentaje:(r.Porcentaje)})));
+      download('resumen_demanda_enhancement.csv', new Blob([csv1],{type:'text/csv;charset=utf-8'}));
+
+      // Ninebox: buckets y faltantes
+      const nb = buildNineboxData(f);
+      const headers=['Caja','Usuarios','Conteo'];
+      const rows=[];
+      Object.entries(nb.buckets).forEach(([k,arr])=>{
+        rows.push({Caja:k,Usuarios:arr.join(' | '),Conteo:arr.length});
+      });
+      const csv2 = toCSV(headers, rows);
+      download('resumen_ninebox.csv', new Blob([csv2],{type:'text/csv;charset=utf-8'}));
+      if(nb.missing.length){
+        const csv3 = toCSV(['Usuario','Promedio_Diario','Efectividad'],
+          nb.missing.map(m=>({Usuario:m.u, Promedio_Diario: (m.prom==null?'':m.prom), Efectividad:(m.eff==null?'':m.eff)})));
+        download('resumen_ninebox_faltantes.csv', new Blob([csv3],{type:'text/csv;charset=utf-8'}));
+      }
+
+    }else if(id==='productividad'){
+      // Promedio diario por usuario
+      const byUser=new Map();
+      currentData.forEach(r=>{ const u=r.usuario; const o=byUser.get(u)||{num:0,den:0}; o.num+=tareasFlujo(r,f); o.den+=(r.dias_activos||0); byUser.set(u,o); });
+      const rows=[...byUser.entries()].map(([u,o])=>({Usuario:u, Promedio_Diario: o.den? o.num/o.den : 0}));
+      const csv=toCSV(['Usuario','Promedio_Diario'], rows);
+      download('productividad_por_usuario.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
+
+      // Detalle usuario seleccionado
+      const sel=document.getElementById('user-detail-select').value;
+      if(sel){
+        const rows2=currentData.filter(r=>r.usuario===sel).sort((a,b)=>a.week-b.week)
+          .map(r=>({Semana:r.week, Mes:r.mes, Total_Tareas:r.total_tareas}));
+        const csv2=toCSV(['Semana','Mes','Total_Tareas'], rows2);
+        download(`detalle_${sel}.csv`, new Blob([csv2],{type:'text/csv;charset=utf-8'}));
+      }
+
+    }else if(id==='lideres'){
+      const data = buildLideresData(f);
+      const rows = data.map(d=>({Lider:d.lider, Promedio_Diario:d.prom, Efectividad:d.eff}));
+      const csv = toCSV(['Lider','Promedio_Diario','Efectividad'], rows);
+      download('lideres_prom_y_efectividad.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
+
+    }else if(id==='evolucion'){
+      const series = buildEvolucionData(f);
+      const rows = series.labels.map((lab,i)=>({Semana:lab, Promedio_Diario:series.values[i]}));
+      const csv = toCSV(['Semana','Promedio_Diario'], rows);
+      download('evolucion_promedio_diario.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
+
+    }else if(id==='ubicacion'){
+      const data = buildUbicacionData(f);
+      const rows = data.labels.map((lab,i)=>({Ubicacion:lab, Promedio_Diario:data.prom[i], Efectividad:data.eff[i]}));
+      const csv = toCSV(['Ubicacion','Promedio_Diario','Efectividad'], rows);
+      download('ubicacion_prom_y_efectividad.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
+
+      // Antigüedad
+      const rows2 = data.antig.map(([loc,avg])=>({Ubicacion:loc, Antiguedad_Promedio:avg}));
+      const csv2=toCSV(['Ubicacion','Antiguedad_Promedio'], rows2);
+      download('ubicacion_antiguedad.csv', new Blob([csv2],{type:'text/csv;charset=utf-8'}));
+    }
+  }
+  async function exportSectionZIP(){
+    const id=getActiveSectionId();
+    const f=flujoSel();
+    const zip=new JSZip();
+
+    // CSVs
+    function addCSV(name, headers, rows){
+      zip.file(name, toCSV(headers, rows));
+    }
+    if(id==='resumen'){
+      const demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
+      const enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
+      const tot = demand+enh;
+      addCSV('resumen_demanda_enhancement.csv',
+        ['Flujo','Total','Porcentaje'],
+        [{Flujo:'Demanda',Total:demand,Porcentaje:tot?demand/tot:0},{Flujo:'Enhancement',Total:enh,Porcentaje:tot?enh/tot:0}]
+      );
+      const nb = buildNineboxData(f);
+      const rows=[]; Object.entries(nb.buckets).forEach(([k,arr])=> rows.push({Caja:k,Usuarios:arr.join(' | '),Conteo:arr.length}));
+      addCSV('resumen_ninebox.csv', ['Caja','Usuarios','Conteo'], rows);
+      if(nb.missing.length){
+        addCSV('resumen_ninebox_faltantes.csv', ['Usuario','Promedio_Diario','Efectividad'],
+          nb.missing.map(m=>({Usuario:m.u,Promedio_Diario:(m.prom==null?'':m.prom),Efectividad:(m.eff==null?'':m.eff)})));
+      }
+      // PNGs
+      const el=document.getElementById('ninebox-card');
+      const canvas = await html2canvas(el,{scale:2});
+      const blobNb = await new Promise(res=>canvas.toBlob(res));
+      zip.file('ninebox.png', blobNb);
+      const c1=document.getElementById('demandPieChart');
+      const blob1 = await (await fetch(c1.toDataURL('image/png'))).blob();
+      zip.file('demanda_enhancement.png', blob1);
+
+    }else if(id==='productividad'){
+      const byUser=new Map();
+      currentData.forEach(r=>{ const u=r.usuario; const o=byUser.get(u)||{num:0,den:0}; o.num+=tareasFlujo(r,f); o.den+=(r.dias_activos||0); byUser.set(u,o); });
+      const rows=[...byUser.entries()].map(([u,o])=>({Usuario:u, Promedio_Diario: o.den? o.num/o.den : 0}));
+      addCSV('productividad_por_usuario.csv', ['Usuario','Promedio_Diario'], rows);
+      const sel=document.getElementById('user-detail-select').value;
+      if(sel){
+        const rows2=currentData.filter(r=>r.usuario===sel).sort((a,b)=>a.week-b.week)
+          .map(r=>({Semana:r.week, Mes:r.mes, Total_Tareas:r.total_tareas}));
+        addCSV(`detalle_${sel}.csv`, ['Semana','Mes','Total_Tareas'], rows2);
+      }
+      const c1=document.getElementById('tasksByUserChart');
+      const c2=document.getElementById('userDetailChart');
+      const b1=await (await fetch(c1.toDataURL('image/png'))).blob();
+      const b2=await (await fetch(c2.toDataURL('image/png'))).blob();
+      zip.file('promedio_usuario.png', b1); zip.file('detalle_usuario.png', b2);
+
+    }else if(id==='lideres'){
+      const data = buildLideresData(f);
+      addCSV('lideres_prom_y_efectividad.csv', ['Lider','Promedio_Diario','Efectividad'],
+             data.map(d=>({Lider:d.lider,Promedio_Diario:d.prom,Efectividad:d.eff})));
+      const c=document.getElementById('tasksByLeaderChart');
+      const b=await (await fetch(c.toDataURL('image/png'))).blob();
+      zip.file('lideres.png', b);
+
+    }else if(id==='evolucion'){
+      const series=buildEvolucionData(f);
+      addCSV('evolucion_promedio_diario.csv', ['Semana','Promedio_Diario'],
+             series.labels.map((lab,i)=>({Semana:lab,Promedio_Diario:series.values[i]})));
+      const c=document.getElementById('weeklyEvolutionChart');
+      const b=await (await fetch(c.toDataURL('image/png'))).blob();
+      zip.file('evolucion.png', b);
+
+    }else if(id==='ubicacion'){
+      const data=buildUbicacionData(f);
+      addCSV('ubicacion_prom_y_efectividad.csv',['Ubicacion','Promedio_Diario','Efectividad'],
+             data.labels.map((lab,i)=>({Ubicacion:lab,Promedio_Diario:data.prom[i],Efectividad:data.eff[i]})));
+      addCSV('ubicacion_antiguedad.csv',['Ubicacion','Antiguedad_Promedio'],
+             data.antig.map(([loc,avg])=>({Ubicacion:loc,Antiguedad_Promedio:avg})));
+      const c=document.getElementById('locCombinedChart');
+      const b=await (await fetch(c.toDataURL('image/png'))).blob();
+      zip.file('ubicacion.png', b);
+    }
+
+    const blob=await zip.generateAsync({type:'blob'});
+    download(`${id}_export.zip`, blob);
+  }
+  function buildNineboxData(f){
+    const map = new Map();
+    currentData.forEach(r=>{
+      const u=r.usuario; const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
+      o.num+=tareasFlujo(r,f); o.den+=(r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){ o.effSum+=r.efectividad; o.effN++; }
+      map.set(u,o);
+    });
+    const users=[...map.entries()].map(([u,o])=>({u, prom:o.den?o.num/o.den:null, eff:o.effN?o.effSum/o.effN:null}));
+    const prodBand = p => (p>=80 ? 'alta' : p>=70 ? 'media' : 'baja');
+    const calBand  = e => (e>=0.90 ? 'alta' : e>=0.75 ? 'media' : 'baja');
+    const rows=['alta','media','baja'], cols=['alta','media','baja'];
+    const buckets={}; rows.forEach(r=>cols.forEach(c=>buckets[`${r}-${c}`]=[]));
+    const missing=[];
+    users.forEach(x=>{
+      if(x.prom===null || x.eff===null) missing.push(x);
+      else buckets[`${prodBand(x.prom)}-${calBand(x.eff)}`].push(x.u);
+    });
+    return {buckets, missing};
+  }
+  function buildLideresData(f){
+    const agg=new Map();
+    currentData.forEach(r=>{
+      const l=r['líder']; if(!l||l.toLowerCase()==='sin líder') return;
+      const o=agg.get(l)||{num:0,den:0,effNum:0,effDen:0};
+      o.num+=tareasFlujo(r,f); o.den+=(r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
+        const w=(r.correcciones_auditadas||0)||1; o.effNum+=r.efectividad*w; o.effDen+=w;
+      }
+      agg.set(l,o);
+    });
+    return [...agg.entries()].map(([l,o])=>({lider:l, prom:o.den?o.num/o.den:0, eff:o.effDen?o.effNum/o.effDen:0}));
+  }
+  function buildEvolucionData(f){
+    const agg=new Map();
+    currentData.forEach(r=>{
+      const w=Number(r.week); if(!Number.isFinite(w)) return;
+      const o=agg.get(w)||{num:0,den:0}; o.num+=tareasFlujo(r,f); o.den+=(r.dias_activos||0); agg.set(w,o);
+    });
+    const weeks=[...agg.keys()]; if(!weeks.length) return {labels:[],values:[]};
+    const minW=Math.min(...weeks), maxW=Math.max(...weeks);
+    const labels=[], values=[];
+    for(let w=minW; w<=maxW; w++){ labels.push('W'+String(w).padStart(2,'0')); const o=agg.get(w); values.push((o&&o.den)?o.num/o.den:0); }
+    return {labels, values};
+  }
+  function buildUbicacionData(f){
+    const byLoc=new Map(), effLoc=new Map(), antig={};
+    currentData.forEach(r=>{
+      const c=r.ciudad||'Sin ubicación';
+      const o=byLoc.get(c)||{num:0,den:0}; o.num+=tareasFlujo(r,f); o.den+=(r.dias_activos||0); byLoc.set(c,o);
+      if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
+        const w=(r.correcciones_auditadas||0)||1; const e=effLoc.get(c)||{num:0,den:0}; e.num+=r.efectividad*w; e.den+=w; effLoc.set(c,e);
+      }
+      const a=Number(r.antigüedad||0); if(!antig[c]) antig[c]={sum:0,n:0}; if(Number.isFinite(a)){antig[c].sum+=a; antig[c].n++;}
+    });
+    const labels=[...byLoc.keys()].sort((a,b)=>{
+      const va=(byLoc.get(a).den?byLoc.get(a).num/byLoc.get(a).den:0);
+      const vb=(byLoc.get(b).den?byLoc.get(b).num/byLoc.get(b).den:0);
+      return vb-va;
+    });
+    const prom=labels.map(c=>{const o=byLoc.get(c); return (o.den?o.num/o.den:0);});
+    const eff =labels.map(c=>{const e=effLoc.get(c)||{num:0,den:0}; return (e.den?e.num/e.den:0);});
+    const ant =labels.map(loc=>{const v=antig[loc]||{sum:0,n:0}; return [loc, v.n? v.sum/v.n : 0];}).sort((a,b)=>b[1]-a[1]);
+    return {labels, prom, eff, antig:ant};
+  }
+  async function exportToGoogleSheets(){
+    // Tomamos el CSV principal de la sección y lo copiamos al portapapeles + abrimos sheets.new
+    const id=getActiveSectionId();
+    const f=flujoSel();
+    let headers=[], rows=[];
+    if(id==='resumen'){
+      const demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
+      const enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
+      const tot = demand+enh;
+      headers=['Flujo','Total','Porcentaje'];
+      rows=[{Flujo:'Demanda',Total:demand,Porcentaje:tot?demand/tot:0},{Flujo:'Enhancement',Total:enh,Porcentaje:tot?enh/tot:0}];
+    }else if(id==='productividad'){
+      const byUser=new Map();
+      currentData.forEach(r=>{ const u=r.usuario; const o=byUser.get(u)||{num:0,den:0}; o.num+=tareasFlujo(r,f); o.den+=(r.dias_activos||0); byUser.set(u,o); });
+      headers=['Usuario','Promedio_Diario'];
+      rows=[...byUser.entries()].map(([u,o])=>({Usuario:u, Promedio_Diario:o.den?o.num/o.den:0}));
+    }else if(id==='lideres'){
+      const data=buildLideresData(f);
+      headers=['Lider','Promedio_Diario','Efectividad'];
+      rows=data.map(d=>({Lider:d.lider, Promedio_Diario:d.prom, Efectividad:d.eff}));
+    }else if(id==='evolucion'){
+      const series=buildEvolucionData(f);
+      headers=['Semana','Promedio_Diario'];
+      rows=series.labels.map((lab,i)=>({Semana:lab, Promedio_Diario:series.values[i]}));
+    }else if(id==='ubicacion'){
+      const data=buildUbicacionData(f);
+      headers=['Ubicacion','Promedio_Diario','Efectividad'];
+      rows=data.labels.map((lab,i)=>({Ubicacion:lab, Promedio_Diario:data.prom[i], Efectividad:data.eff[i]}));
+    }
+    const csv=toCSV(headers, rows);
+    try{
+      await navigator.clipboard.writeText(csv);
+      window.open('https://sheets.new','_blank');
+      alert('CSV copiado al portapapeles. Pegalo en la celda A1 de la nueva hoja de Google Sheets.');
+    }catch{
+      // fallback: descarga csv
+      download(`${id}.csv`, new Blob([csv],{type:'text/csv;charset=utf-8'}));
+      alert('No se pudo copiar al portapapeles. Te descargué el CSV para subirlo a Google Sheets.');
+    }
+  }
+
+  /**********************
    * GEMINI (opcional)
    **********************/
   async function geminiRequest(prompt) {
@@ -797,7 +1182,13 @@
   function setupGeminiFeatures(){
     document.getElementById('generate-summary-btn').addEventListener('click', async ()=>{
       const block=document.getElementById('summary-output');
-      block.classList.remove('hidden'); block.textContent='Generando...';
+      if(block){ block.remove(); } // limpiar si existía de otra versión
+      const cont = document.createElement('div');
+      cont.id='summary-output';
+      cont.className='mt-4 p-4 bg-slate-50 rounded-md border border-slate-200';
+      cont.textContent='Generando...';
+      document.getElementById('ninebox-card').appendChild(cont);
+
       try{
         const f=flujoSel();
         const total = currentData.reduce((s,r)=> s + tareasFlujo(r,f), 0);
@@ -811,13 +1202,13 @@
         })();
         const prompt = `Actúa como analista. Filtros actuales aplicados (flujo='${f}'). Resume hallazgos en 6 viñetas y sugiere 3 acciones. Datos: total=${total}, promedio_diario=${prom.toFixed(2)}, top usuarios=${top}.`;
         const resp = await geminiRequest(prompt);
-        block.textContent=resp;
-      }catch(e){ block.textContent=e.message; }
+        cont.textContent=resp;
+      }catch(e){ cont.textContent=e.message; }
     });
 
     document.getElementById('generate-feedback-btn').addEventListener('click', async ()=>{
       const user=document.getElementById('user-detail-select').value;
-      const out=document.getElementById('feedback-output');
+      let out=document.getElementById('feedback-output');
       out.classList.remove('hidden'); out.textContent='Analizando...';
       try{
         const rows=currentData.filter(r=>r.usuario===user).sort((a,b)=>a.week-b.week);
