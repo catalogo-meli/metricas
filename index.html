@@ -246,8 +246,8 @@
   const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
   const FILES = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
 
-  // Tu Web App de Google Apps Script
-  const SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxqTzxdY090fV2JWIFxiqAVnkre_dtUw1M09ZMv9mNKYz3GQW-d1ONSP_FIJTswZ9t2qA/exec";
+  // URL del Web App de Google Apps Script (la que pasaste)
+  const SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbz4AFgopuJR1iFgLZRgIb5jQzAtKplfS1tkMDfoSs0774340hQqBXPtBNJc16S9mzGgig/exec";
 
   /**********************
    * HELPERS
@@ -426,9 +426,18 @@
     setOptions(document.getElementById('filter-lider'), lideres, 'Todos los líderes');
     setOptions(document.getElementById('filter-q'), qs, 'Todos los trimestres');
 
-    // listeners
-    ['filter-mes','filter-semana','filter-ubicacion','filter-usuario','filter-lider','filter-q','filter-flujo']
+    // listeners generales
+    ['filter-mes','filter-semana','filter-ubicacion','filter-usuario','filter-q','filter-flujo']
       .forEach(id => document.getElementById(id).addEventListener('change', applyFilters));
+
+    // cuando cambia líder, limitamos el combo de usuarios a los de ese líder
+    document.getElementById('filter-lider').addEventListener('change', ()=>{
+      const liderSel = document.getElementById('filter-lider').value;
+      const base = liderSel ? originalData.filter(r=>r['líder']===liderSel) : originalData;
+      const usuarios = uniqueSorted(base.map(r=>r.usuario));
+      setOptions(document.getElementById('filter-usuario'), usuarios, liderSel ? 'Usuarios del líder' : 'Todos los usuarios');
+      applyFilters();
+    });
   }
 
   function setupNavigation(){
@@ -476,7 +485,7 @@
         if(type==='csv') exportSectionCSV();
         if(type==='png') exportSectionPNGs();
         if(type==='zip') exportSectionZIP();
-        if(type==='sheets') exportToGoogleSheets();
+        if(type==='sheets') exportToGoogleSheets(); // Webhook Apps Script
       });
     });
 
@@ -684,7 +693,6 @@
   function renderTasksByUser(){
     const f = flujoSel();
 
-    // Promedio diario + efectividad por usuario
     const agg = new Map(); // user -> {num,den, effNum, effDen}
     currentData.forEach(r=>{
       const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
@@ -1169,42 +1177,27 @@
     download(`export_${id}.zip`, blob);
   }
 
-async function exportToGoogleSheets(){
-  if(!SHEETS_WEBHOOK_URL || !SHEETS_WEBHOOK_URL.startsWith('https://script.google.com')) {
-    alert('Configurá SHEETS_WEBHOOK_URL con la URL de tu Web App de Google Apps Script.');
-    return;
-  }
+  /**********************
+   * EXPORT A GOOGLE SHEETS (Apps Script Web App)
+   **********************/
+  async function exportToGoogleSheets(){
+    if(!SHEETS_WEBHOOK_URL || !SHEETS_WEBHOOK_URL.startsWith('https://script.google.com')) {
+      alert('Configurá SHEETS_WEBHOOK_URL con la URL de tu Web App de Google Apps Script.');
+      return;
+    }
 
-  const id=getActiveSectionId();
-  const f=flujoSel();
-  const payload = {
-    section: id,
-    generatedAt: new Date().toISOString(),
-    filters: filtersSummary(),
-    tables: []
-  };
+    const id=getActiveSectionId();
+    const f=flujoSel();
 
-  // ... (todo el armado de payload tal como lo tenés) ...
+    // ----- Armado de payload completo -----
+    const payload = {
+      section: id,
+      generatedAt: new Date().toISOString(),
+      filters: filtersSummary(),
+      tables: []
+    };
 
-  try{
-    const r = await fetch(SHEETS_WEBHOOK_URL, {
-      method:'POST',
-      // 👇 esto evita el preflight CORS
-      headers:{ 'Content-Type':'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload)
-    });
-
-    const txt = await r.text();
-    let data; try{ data = JSON.parse(txt) }catch{ throw new Error(txt || 'Respuesta inválida'); }
-    if(!r.ok) throw new Error(data.error || 'Error creando la hoja');
-
-    window.open(data.url, '_blank');
-  }catch(e){
-    alert('No se pudo exportar a Google Sheets: ' + e.message);
-  }
-}
-
-    // KPIs
+    // KPIs (ajustados a filtros)
     const totalFlujo = currentData.reduce((s,r)=> s + tareasFlujo(r,f), 0);
     const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
     const usuarios = new Set(currentData.map(r=>r.usuario)).size;
@@ -1296,29 +1289,41 @@ async function exportToGoogleSheets(){
     }
 
     // Hoja con filtros aplicados
-    const filt=filtersSummary();
     payload.tables.push({
       title:'Filtros',
       headers:['Filtro','Valor'],
-      rows:Object.entries(filt)
+      rows:Object.entries(filtersSummary())
     });
 
-    try{
+    // ----- Envío: primero text/plain (evita preflight). Si falla, reintenta con application/json -----
+    const send = async (headers) => {
       const r = await fetch(SHEETS_WEBHOOK_URL, {
         method:'POST',
-        headers:{'Content-Type':'application/json'},
+        headers,
         body: JSON.stringify(payload),
         redirect:'follow',
         credentials:'omit',
-        referrerPolicy:'no-referrer'
+        referrerPolicy:'no-referrer',
+        keepalive: true
       });
-      const text = await r.text();
-      let data; try{ data=JSON.parse(text) }catch{ throw new Error(text || 'Respuesta inválida'); }
+      const txt = await r.text();
+      let data; try { data = JSON.parse(txt); } catch { throw new Error(txt || 'Respuesta inválida'); }
       if(!r.ok) throw new Error(data.error || 'Error creando la hoja');
-      const url = data.url;
-      window.open(url, '_blank');
+      return data;
+    };
+
+    try{
+      let data;
+      try {
+        // 1) sin preflight
+        data = await send({ 'Content-Type':'text/plain;charset=utf-8' });
+      } catch(e1){
+        // 2) fallback
+        data = await send({ 'Content-Type':'application/json' });
+      }
+      if(data?.url) window.open(data.url, '_blank');
     }catch(e){
-      alert('No se pudo exportar a Google Sheets: '+e.message);
+      alert('No se pudo exportar a Google Sheets: ' + e.message);
     }
   }
 
@@ -1393,5 +1398,3 @@ async function exportToGoogleSheets(){
   </script>
 </body>
 </html>
-
-
