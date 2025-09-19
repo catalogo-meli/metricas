@@ -8,8 +8,8 @@
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js + adapter fechas -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
   <!-- PapaParse -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <!-- Export helpers -->
@@ -41,10 +41,6 @@
     .dropdown-menu{position:absolute;right:0;top:100%;background:#fff;border:1px solid #e2e8f0;border-radius:.5rem;box-shadow:0 10px 20px rgba(0,0,0,.08);min-width:260px;z-index:50}
     .dropdown-menu a{display:block;padding:.6rem .8rem;font-size:.95rem;color:#334155}
     .dropdown-menu a:hover{background:#f1f5f9}
-    /* KPIs de ubicación (mini tiles) */
-    .mini-kpi{background:#fff;border-radius:.75rem;padding:1rem;box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1),0 2px 4px -2px rgb(0 0 0 / 0.1);}
-    .mini-kpi .val{font-size:1.75rem;font-weight:800;color:#0f172a;}
-    .mini-kpi .lbl{font-size:.9rem;color:#64748b;font-weight:600}
   </style>
 </head>
 
@@ -207,8 +203,7 @@
               </div>
               <div class="kpi-card">
                 <h3 class="text-xl font-semibold mb-4">Antigüedad Promedio (meses)</h3>
-                <!-- KPIs por ubicación -->
-                <div id="avg-antiguedad-kpis" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3"></div>
+                <div id="avg-antiguedad-cards" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
               </div>
             </div>
           </section>
@@ -251,17 +246,28 @@
   const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
   const FILES = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
 
-  // Tu Web App de Google Apps Script (reemplazá si es otro deployment)
+  // Tu Web App de Google Apps Script
   const SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxqTzxdY090fV2JWIFxiqAVnkre_dtUw1M09ZMv9mNKYz3GQW-d1ONSP_FIJTswZ9t2qA/exec";
 
   // Paleta solicitada
-  const PALETTE = ["#86eae9","#3edad8","#37c9ef","#37c9ef","#2c92d5","#13538a"];
-  const COLOR_EFECTIVIDAD = "#3edad8"; // fijo para la línea
+  const PALETTE = {
+    c0: '#86eae9',
+    c1: '#3edad8', // % Efectividad (línea)
+    c2: '#37c9ef',
+    c3: '#37c9ef',
+    c4: '#2c92d5',
+    c5: '#13538a'
+  };
+  const BAR_BG = 'rgba(55,201,239,0.65)'; // c2 con alpha
+  const LINE_ACC = PALETTE.c1;
 
-  // Defaults Chart.js
-  Chart.defaults.elements.bar.backgroundColor = PALETTE[2];
-  Chart.defaults.elements.bar.borderColor = PALETTE[4];
-  Chart.defaults.plugins.legend.labels.boxWidth = 18;
+  // Defaults para que la línea resalte
+  Chart.defaults.elements.bar.borderRadius = 6;
+  Chart.defaults.elements.line.borderWidth = 4;
+  Chart.defaults.elements.point.radius = 3;
+  Chart.defaults.elements.point.hoverRadius = 5;
+  Chart.defaults.elements.point.borderWidth = 2;
+  Chart.defaults.plugins.legend.labels.usePointStyle = true;
 
   /**********************
    * HELPERS
@@ -395,7 +401,7 @@
 
     const rows = Array.from(weeks.values()).sort((a,b)=>a.week-b.week).map(o=>{
       const prom = o.dias.size ? (o.total/o.dias.size) : '';
-      const pEf  = o.idsCal>0 ? (1 - (o.errCal/o.idsCal)) : ''; // si no hay calidad => sin dato (no 0)
+      const pEf  = o.idsCal>0 ? (1 - (o.errCal/o.idsCal)) : '';
       return {
         week:o.week, mes:o.mes, mesIndex:o.mesIndex, usuario:o.user, líder:o.lider, ciudad:o.ciudad, antigüedad:o.antig,
         promedio_diario: prom, efectividad:pEf,
@@ -490,7 +496,7 @@
         if(type==='csv') exportSectionCSV();
         if(type==='png') exportSectionPNGs();
         if(type==='zip') exportSectionZIP();
-        if(type==='sheets') exportToGoogleSheets(); // via Apps Script webhook
+        if(type==='sheets') exportToGoogleSheets(); // webhook a Apps Script
       });
     });
 
@@ -588,6 +594,40 @@
     charts[id]=new Chart(ctx,cfg); return charts[id];
   }
 
+  // Helpers para datasets de barras + línea (orden y estilos consistentes)
+  function barDataset(label, data){
+    return {
+      type:'bar',
+      label,
+      data,
+      yAxisID:'y',
+      backgroundColor: BAR_BG,
+      borderColor: 'rgba(0,0,0,0)',
+      order: 1,                    // primero las barras
+      barPercentage: 0.8,
+      categoryPercentage: 0.8
+    };
+  }
+  function lineEffDataset(label, data){
+    return {
+      type:'line',
+      label,
+      data,
+      yAxisID:'y1',
+      borderColor: LINE_ACC,
+      backgroundColor: LINE_ACC,
+      order: 2,                    // luego la línea (encima)
+      fill: false,
+      tension: 0.25,
+      pointRadius: 3,
+      pointHoverRadius: 5,
+      pointBackgroundColor: '#ffffff',
+      pointBorderColor: LINE_ACC,
+      borderWidth: 3,
+      spanGaps: true               // evita cortar por pequeños gaps
+    };
+  }
+
   /* ---------- Nine-box ---------- */
   function renderNineBox(){
     const f = flujoSel();
@@ -680,10 +720,7 @@
 
     createOrUpdateChart('demandPieChart',{
       type:'pie',
-      data:{ 
-        labels:['Demanda','Enhancement'],
-        datasets:[{ data:[pctD, pctE], backgroundColor:[PALETTE[0],PALETTE[1]] }] 
-      },
+      data:{ labels:['Demanda','Enhancement'], datasets:[{ data:[pctD, pctE], backgroundColor:[PALETTE.c0, PALETTE.c4] }] },
       options:{
         responsive:true,
         plugins:{
@@ -701,6 +738,7 @@
   function renderTasksByUser(){
     const f = flujoSel();
 
+    // Promedio diario + efectividad por usuario
     const agg = new Map(); // user -> {num,den, effNum, effDen}
     currentData.forEach(r=>{
       const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
@@ -713,28 +751,25 @@
       agg.set(u,o);
     });
 
-    const arr = Array.from(agg.entries()).map(([u,o])=>({
-      user:u,
-      prom: o.den? o.num/o.den : 0,
-      eff:  o.effDen? o.effNum/o.effDen : null // null => no dibuja 0%
-    })).sort((a,b)=>b.prom-a.prom);
+    const arr = Array.from(agg.entries()).map(([u,o])=>{
+      const prom = o.den? o.num/o.den : 0;
+      const effPct = o.effDen? (100*o.effNum/o.effDen) : null; // null si no hay calidad
+      return { user:u, prom, effPct };
+    }).sort((a,b)=>b.prom-a.prom);
 
     createOrUpdateChart('tasksByUserChart',{
-      type:'bar',
       data:{
         labels:arr.map(x=>x.user),
         datasets:[
-          {label:'Prom. diario', data: arr.map(x=>x.prom), yAxisID:'y', order:1},
-          {label:'% Efectividad', data: arr.map(x=> x.eff==null ? null : x.eff*100),
-            type:'line', yAxisID:'y1', borderWidth:2, tension:.2, pointRadius:2,
-            borderColor: COLOR_EFECTIVIDAD, backgroundColor: COLOR_EFECTIVIDAD, order:99 }
+          barDataset('Prom. diario', arr.map(x=>x.prom)),
+          lineEffDataset('% Efectividad', arr.map(x=>x.effPct))
         ]
       },
       options:{
         responsive:true,
         scales:{
           y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
-          y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` } },
+          y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 },
           x:{ ticks:{ autoSkip:false, maxRotation:60, minRotation:45 } }
         }
       }
@@ -757,28 +792,25 @@
       }
       agg.set(l,o);
     });
-    const arr = Array.from(agg.entries()).map(([l,o])=>({
-      lider:l,
-      prom: o.den? o.num/o.den : 0,
-      eff:  o.effDen? o.effNum/o.effDen : null
-    })).sort((a,b)=>b.prom-a.prom);
+    const arr = Array.from(agg.entries()).map(([l,o])=>{
+      const prom = o.den? o.num/o.den : 0;
+      const effPct = o.effDen? (100*o.effNum/o.effDen) : null;
+      return { lider:l, prom, effPct };
+    }).sort((a,b)=>b.prom-a.prom);
 
     createOrUpdateChart('tasksByLeaderChart',{
-      type:'bar',
       data:{
         labels:arr.map(x=>x.lider),
         datasets:[
-          {label:'Prom. diario', data: arr.map(x=>x.prom), yAxisID:'y', order:1},
-          {label:'% Efectividad', data: arr.map(x=> x.eff==null ? null : x.eff*100),
-            type:'line', yAxisID:'y1', borderWidth:2, tension:.2, pointRadius:2,
-            borderColor: COLOR_EFECTIVIDAD, backgroundColor: COLOR_EFECTIVIDAD, order:99 }
+          barDataset('Prom. diario', arr.map(x=>x.prom)),
+          lineEffDataset('% Efectividad', arr.map(x=>x.effPct))
         ]
       },
       options:{
         responsive:true,
         scales:{
           y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
-          y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` } },
+          y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 },
           x:{ ticks:{ autoSkip:false, maxRotation:45 } }
         }
       }
@@ -813,17 +845,14 @@
       labels.push('W'+String(w).padStart(2,'0'));
       const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
       promValues.push((o.den? o.num/o.den : 0));
-      effValues.push((o.effDen? 100*o.effNum/o.effDen : null));
+      effValues.push(o.effDen? 100*o.effNum/o.effDen : null); // null si no hay calidad
     }
     createOrUpdateChart('weeklyEvolutionChart',{
-      type:'bar',
       data:{
         labels,
         datasets:[
-          {label:'Prom. diario', data:promValues, yAxisID:'y', order:1},
-          {label:'% Efectividad', data:effValues, type:'line', yAxisID:'y1',
-            borderWidth:2, tension:.2, pointRadius:2,
-            borderColor: COLOR_EFECTIVIDAD, backgroundColor: COLOR_EFECTIVIDAD, order:99 }
+          barDataset('Prom. diario', promValues),
+          lineEffDataset('% Efectividad', effValues)
         ]
       },
       options:{
@@ -832,13 +861,13 @@
         scales:{
           x:{ ticks:{autoSkip:false,maxRotation:0} },
           y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
-          y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` } }
+          y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 }
         }
       }
     });
   }
 
-  /* ---------- Ubicación: combinado + antigüedad (KPIs) ---------- */
+  /* ---------- Ubicación ---------- */
   function renderByLocation(){
     const f = flujoSel();
     const byLoc = new Map(); // ciudad -> {num,den}
@@ -868,41 +897,40 @@
     });
 
     const promData = labels.map(c=>{ const o=byLoc.get(c); return (o.den? o.num/o.den : 0); });
-    const effData  = labels.map(c=>{ const e=effLoc.get(c)||{num:0,den:0}; return (e.den? 100*e.num/e.den : null); });
+    const effData  = labels.map(c=>{ const e=effLoc.get(c)||{num:0,den:0}; return e.den? 100*e.num/e.den : null; });
 
     createOrUpdateChart('locCombinedChart',{
-      type:'bar',
       data:{
         labels,
         datasets:[
-          {label:'Prom. diario', data:promData, yAxisID:'y', order:1},
-          {label:'% Efectividad', data:effData, type:'line', yAxisID:'y1',
-            borderWidth:2, tension:.2, pointRadius:2,
-            borderColor: COLOR_EFECTIVIDAD, backgroundColor: COLOR_EFECTIVIDAD, order:99 }
+          barDataset('Prom. diario', promData),
+          lineEffDataset('% Efectividad', effData)
         ]
       },
       options:{
         responsive:true,
         scales:{
           y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
-          y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` } },
+          y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 },
           x:{ ticks:{ autoSkip:false } }
         },
         plugins:{ legend:{display:true} }
       }
     });
 
-    // KPIs de antigüedad como tarjetas
+    // Antigüedad tarjetas (estilo KPI)
     const list = labels.map(loc=>{
       const v=antig[loc]||{sum:0,n:0}; const avg=v.n? v.sum/v.n : 0;
       return [loc, avg];
     }).sort((a,b)=>b[1]-a[1]);
 
-    const wrap = document.getElementById('avg-antiguedad-kpis');
-    wrap.innerHTML = list.map(([loc,avg]) => `
-      <div class="mini-kpi">
-        <div class="lbl">${loc}</div>
-        <div class="val">${fmt.dec(avg)}</div>
+    const grid = document.getElementById('avg-antiguedad-cards');
+    grid.innerHTML = list.map(([loc,avg])=>`
+      <div class="kpi-card">
+        <div class="flex items-baseline justify-between">
+          <div class="text-slate-500 font-medium">${loc}</div>
+          <div class="text-3xl font-bold">${fmt.dec(avg)}</div>
+        </div>
       </div>
     `).join('');
   }
@@ -1032,7 +1060,7 @@
   }
 
   /**********************
-   * EXPORTS
+   * EXPORTS (CSV, PNG, ZIP, Google Sheets Webhook)
    **********************/
   function getActiveSectionId(){
     const sec=[...document.querySelectorAll('.page-section')].find(s=>!s.classList.contains('hidden'));
@@ -1287,7 +1315,7 @@
       payload.tables.push({
         title:'Evolucion_Semanal',
         headers:['Semana','Promedio_Diario','Efectividad'],
-        rows:s.labels.map((lab,i)=>[lab, s.values[i], s.eff[i]==null? '': (s.eff[i]/100)])
+        rows:s.labels.map((lab,i)=>[lab, s.values[i], s.eff[i]/100])
       });
     }
     if(id==='ubicacion'){
@@ -1295,7 +1323,7 @@
       payload.tables.push({
         title:'Ubicacion_Promedio_y_Efectividad',
         headers:['Ubicacion','Promedio_Diario','Efectividad'],
-        rows:d.labels.map((lab,i)=>[lab, d.prom[i], d.eff[i]==null ? '' : (d.eff[i]/100)])
+        rows:d.labels.map((lab,i)=>[lab, d.prom[i], (d.eff[i]==null? '' : d.eff[i]/100)])
       });
       payload.tables.push({
         title:'Ubicacion_Antiguedad',
@@ -1304,7 +1332,7 @@
       });
     }
 
-    // Filtros
+    // Hoja con filtros aplicados
     const filt=filtersSummary();
     payload.tables.push({
       title:'Filtros',
@@ -1315,13 +1343,17 @@
     try{
       const r = await fetch(SHEETS_WEBHOOK_URL, {
         method:'POST',
-        headers:{ 'Content-Type':'text/plain;charset=utf-8' }, // evita preflight
-        body: JSON.stringify(payload)
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload),
+        redirect:'follow',
+        credentials:'omit',
+        referrerPolicy:'no-referrer'
       });
-      const txt = await r.text();
-      let data; try{ data = JSON.parse(txt) }catch{ throw new Error(txt || 'Respuesta inválida'); }
+      const text = await r.text();
+      let data; try{ data=JSON.parse(text) }catch{ throw new Error(text || 'Respuesta inválida'); }
       if(!r.ok) throw new Error(data.error || 'Error creando la hoja');
-      window.open(data.url, '_blank');
+      const url = data.url;
+      window.open(url, '_blank');
     }catch(e){
       alert('No se pudo exportar a Google Sheets: '+e.message);
     }
