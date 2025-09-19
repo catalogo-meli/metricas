@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Catálogo · Dashboard de Productividad</title>
+  <title>Catálogo · Dashboard de Métricas</title>
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -41,6 +41,10 @@
     .dropdown-menu{position:absolute;right:0;top:100%;background:#fff;border:1px solid #e2e8f0;border-radius:.5rem;box-shadow:0 10px 20px rgba(0,0,0,.08);min-width:260px;z-index:50}
     .dropdown-menu a{display:block;padding:.6rem .8rem;font-size:.95rem;color:#334155}
     .dropdown-menu a:hover{background:#f1f5f9}
+    /* KPIs de ubicación (mini tiles) */
+    .mini-kpi{background:#fff;border-radius:.75rem;padding:1rem;box-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1),0 2px 4px -2px rgb(0 0 0 / 0.1);}
+    .mini-kpi .val{font-size:1.75rem;font-weight:800;color:#0f172a;}
+    .mini-kpi .lbl{font-size:.9rem;color:#64748b;font-weight:600}
   </style>
 </head>
 
@@ -203,8 +207,8 @@
               </div>
               <div class="kpi-card">
                 <h3 class="text-xl font-semibold mb-4">Antigüedad Promedio (meses)</h3>
-                <!-- KPI-style grid por ubicación -->
-                <div id="avg-antiguedad-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+                <!-- KPIs por ubicación -->
+                <div id="avg-antiguedad-kpis" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3"></div>
               </div>
             </div>
           </section>
@@ -247,13 +251,17 @@
   const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
   const FILES = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
 
-  // Tu Web App de Google Apps Script (la tuya)
+  // Tu Web App de Google Apps Script (reemplazá si es otro deployment)
   const SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxqTzxdY090fV2JWIFxiqAVnkre_dtUw1M09ZMv9mNKYz3GQW-d1ONSP_FIJTswZ9t2qA/exec";
 
-  // Paleta pedida
-  const PALETTE = ['#86eae9','#3edad8','#37c9ef','#37c9ef','#2c92d5','#13538a'];
-  const COLOR_BAR_PRIMARY = PALETTE[2];  // barras principales
-  const COLOR_LINE_EF     = PALETTE[4];  // línea de % efectividad
+  // Paleta solicitada
+  const PALETTE = ["#86eae9","#3edad8","#37c9ef","#37c9ef","#2c92d5","#13538a"];
+  const COLOR_EFECTIVIDAD = "#3edad8"; // fijo para la línea
+
+  // Defaults Chart.js
+  Chart.defaults.elements.bar.backgroundColor = PALETTE[2];
+  Chart.defaults.elements.bar.borderColor = PALETTE[4];
+  Chart.defaults.plugins.legend.labels.boxWidth = 18;
 
   /**********************
    * HELPERS
@@ -387,7 +395,7 @@
 
     const rows = Array.from(weeks.values()).sort((a,b)=>a.week-b.week).map(o=>{
       const prom = o.dias.size ? (o.total/o.dias.size) : '';
-      const pEf  = o.idsCal>0 ? (1 - (o.errCal/o.idsCal)) : '';
+      const pEf  = o.idsCal>0 ? (1 - (o.errCal/o.idsCal)) : ''; // si no hay calidad => sin dato (no 0)
       return {
         week:o.week, mes:o.mes, mesIndex:o.mesIndex, usuario:o.user, líder:o.lider, ciudad:o.ciudad, antigüedad:o.antig,
         promedio_diario: prom, efectividad:pEf,
@@ -482,7 +490,7 @@
         if(type==='csv') exportSectionCSV();
         if(type==='png') exportSectionPNGs();
         if(type==='zip') exportSectionZIP();
-        if(type==='sheets') exportToGoogleSheets();
+        if(type==='sheets') exportToGoogleSheets(); // via Apps Script webhook
       });
     });
 
@@ -662,7 +670,7 @@
     }
   }
 
-  /* ---------- Demanda vs Enhancement (percent + totales) ---------- */
+  /* ---------- Demanda vs Enhancement ---------- */
   function renderDemandPie(){
     const demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
     const enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
@@ -672,8 +680,10 @@
 
     createOrUpdateChart('demandPieChart',{
       type:'pie',
-      data:{ labels:['Demanda','Enhancement'],
-        datasets:[{ data:[pctD, pctE], backgroundColor:[PALETTE[0], PALETTE[4]] }] },
+      data:{ 
+        labels:['Demanda','Enhancement'],
+        datasets:[{ data:[pctD, pctE], backgroundColor:[PALETTE[0],PALETTE[1]] }] 
+      },
       options:{
         responsive:true,
         plugins:{
@@ -687,7 +697,7 @@
       `Total Demanda: ${fmt.int(demand)} — Total Enhancement: ${fmt.int(enh)}`;
   }
 
-  /* ---------- Detalle por usuario: Promedio + Efectividad ---------- */
+  /* ---------- Detalle por usuario ---------- */
   function renderTasksByUser(){
     const f = flujoSel();
 
@@ -706,7 +716,7 @@
     const arr = Array.from(agg.entries()).map(([u,o])=>({
       user:u,
       prom: o.den? o.num/o.den : 0,
-      eff:  o.effDen? o.effNum/o.effDen : null  // null si no hay dato
+      eff:  o.effDen? o.effNum/o.effDen : null // null => no dibuja 0%
     })).sort((a,b)=>b.prom-a.prom);
 
     createOrUpdateChart('tasksByUserChart',{
@@ -714,12 +724,10 @@
       data:{
         labels:arr.map(x=>x.user),
         datasets:[
-          {label:'Prom. diario', data: arr.map(x=>x.prom), yAxisID:'y',
-           backgroundColor: COLOR_BAR_PRIMARY, borderColor: COLOR_BAR_PRIMARY},
-          {label:'% Efectividad', data: arr.map(x=> x.eff!=null ? x.eff*100 : null),
-           type:'line', yAxisID:'y1', borderWidth:2, tension:.2, pointRadius:2,
-           borderColor: COLOR_LINE_EF, pointBackgroundColor: COLOR_LINE_EF, pointBorderColor: COLOR_LINE_EF,
-           spanGaps:false}
+          {label:'Prom. diario', data: arr.map(x=>x.prom), yAxisID:'y', order:1},
+          {label:'% Efectividad', data: arr.map(x=> x.eff==null ? null : x.eff*100),
+            type:'line', yAxisID:'y1', borderWidth:2, tension:.2, pointRadius:2,
+            borderColor: COLOR_EFECTIVIDAD, backgroundColor: COLOR_EFECTIVIDAD, order:99 }
         ]
       },
       options:{
@@ -760,12 +768,10 @@
       data:{
         labels:arr.map(x=>x.lider),
         datasets:[
-          {label:'Prom. diario', data: arr.map(x=>x.prom), yAxisID:'y',
-           backgroundColor: COLOR_BAR_PRIMARY, borderColor: COLOR_BAR_PRIMARY},
-          {label:'% Efectividad', data: arr.map(x=> x.eff!=null ? x.eff*100 : null),
-           type:'line', yAxisID:'y1', borderWidth:2, tension:.2, pointRadius:2,
-           borderColor: COLOR_LINE_EF, pointBackgroundColor: COLOR_LINE_EF, pointBorderColor: COLOR_LINE_EF,
-           spanGaps:false}
+          {label:'Prom. diario', data: arr.map(x=>x.prom), yAxisID:'y', order:1},
+          {label:'% Efectividad', data: arr.map(x=> x.eff==null ? null : x.eff*100),
+            type:'line', yAxisID:'y1', borderWidth:2, tension:.2, pointRadius:2,
+            borderColor: COLOR_EFECTIVIDAD, backgroundColor: COLOR_EFECTIVIDAD, order:99 }
         ]
       },
       options:{
@@ -779,7 +785,7 @@
     });
   }
 
-  /* ---------- Evolución semanal: Promedio + Efectividad ---------- */
+  /* ---------- Evolución semanal ---------- */
   function renderWeeklyEvolution(){
     const f = flujoSel();
     const agg = new Map(); // week -> {num,den, effNum, effDen}
@@ -807,18 +813,17 @@
       labels.push('W'+String(w).padStart(2,'0'));
       const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
       promValues.push((o.den? o.num/o.den : 0));
-      effValues.push((o.effDen? 100*o.effNum/o.effDen : null)); // null si no hay dato
+      effValues.push((o.effDen? 100*o.effNum/o.effDen : null));
     }
     createOrUpdateChart('weeklyEvolutionChart',{
       type:'bar',
       data:{
         labels,
         datasets:[
-          {label:'Prom. diario', data:promValues, yAxisID:'y',
-           backgroundColor: COLOR_BAR_PRIMARY, borderColor: COLOR_BAR_PRIMARY},
-          {label:'% Efectividad', data:effValues, type:'line', yAxisID:'y1', borderWidth:2, tension:.2, pointRadius:2,
-           borderColor: COLOR_LINE_EF, pointBackgroundColor: COLOR_LINE_EF, pointBorderColor: COLOR_LINE_EF,
-           spanGaps:false}
+          {label:'Prom. diario', data:promValues, yAxisID:'y', order:1},
+          {label:'% Efectividad', data:effValues, type:'line', yAxisID:'y1',
+            borderWidth:2, tension:.2, pointRadius:2,
+            borderColor: COLOR_EFECTIVIDAD, backgroundColor: COLOR_EFECTIVIDAD, order:99 }
         ]
       },
       options:{
@@ -833,7 +838,7 @@
     });
   }
 
-  /* ---------- Ubicación: combinado + antigüedad ---------- */
+  /* ---------- Ubicación: combinado + antigüedad (KPIs) ---------- */
   function renderByLocation(){
     const f = flujoSel();
     const byLoc = new Map(); // ciudad -> {num,den}
@@ -870,11 +875,10 @@
       data:{
         labels,
         datasets:[
-          {label:'Prom. diario', data:promData, yAxisID:'y',
-           backgroundColor: COLOR_BAR_PRIMARY, borderColor: COLOR_BAR_PRIMARY},
-          {label:'% Efectividad', data:effData, type:'line', yAxisID:'y1', borderWidth:2, tension:.2, pointRadius:2,
-           borderColor: COLOR_LINE_EF, pointBackgroundColor: COLOR_LINE_EF, pointBorderColor: COLOR_LINE_EF,
-           spanGaps:false}
+          {label:'Prom. diario', data:promData, yAxisID:'y', order:1},
+          {label:'% Efectividad', data:effData, type:'line', yAxisID:'y1',
+            borderWidth:2, tension:.2, pointRadius:2,
+            borderColor: COLOR_EFECTIVIDAD, backgroundColor: COLOR_EFECTIVIDAD, order:99 }
         ]
       },
       options:{
@@ -888,17 +892,17 @@
       }
     });
 
-    // Antigüedad: KPIs por ubicación
+    // KPIs de antigüedad como tarjetas
     const list = labels.map(loc=>{
       const v=antig[loc]||{sum:0,n:0}; const avg=v.n? v.sum/v.n : 0;
       return [loc, avg];
     }).sort((a,b)=>b[1]-a[1]);
 
-    const grid=document.getElementById('avg-antiguedad-grid');
-    grid.innerHTML = list.map(([loc,avg])=>`
-      <div class="kpi-card text-center">
-        <h4 class="text-slate-500 font-medium">${loc}</h4>
-        <p class="text-3xl md:text-4xl font-bold mt-2">${fmt.dec(avg)}</p>
+    const wrap = document.getElementById('avg-antiguedad-kpis');
+    wrap.innerHTML = list.map(([loc,avg]) => `
+      <div class="mini-kpi">
+        <div class="lbl">${loc}</div>
+        <div class="val">${fmt.dec(avg)}</div>
       </div>
     `).join('');
   }
@@ -1267,7 +1271,7 @@
       payload.tables.push({
         title:'Usuarios_Promedio_y_Efectividad',
         headers:['Usuario','Promedio_Diario','Efectividad'],
-        rows:data.map(d=>[d.user,d.prom, d.eff==null ? '' : d.eff])
+        rows:data.map(d=>[d.user,d.prom,d.eff])
       });
     }
     if(id==='lideres'){
@@ -1275,7 +1279,7 @@
       payload.tables.push({
         title:'Equipos_Promedio_y_Efectividad',
         headers:['Lider','Promedio_Diario','Efectividad'],
-        rows:data.map(d=>[d.lider,d.prom, d.eff==null ? '' : d.eff])
+        rows:data.map(d=>[d.lider,d.prom,d.eff])
       });
     }
     if(id==='evolucion'){
@@ -1283,7 +1287,7 @@
       payload.tables.push({
         title:'Evolucion_Semanal',
         headers:['Semana','Promedio_Diario','Efectividad'],
-        rows:s.labels.map((lab,i)=>[lab, s.values[i], s.eff[i]==null ? '' : s.eff[i]/100])
+        rows:s.labels.map((lab,i)=>[lab, s.values[i], s.eff[i]==null? '': (s.eff[i]/100)])
       });
     }
     if(id==='ubicacion'){
@@ -1291,7 +1295,7 @@
       payload.tables.push({
         title:'Ubicacion_Promedio_y_Efectividad',
         headers:['Ubicacion','Promedio_Diario','Efectividad'],
-        rows:d.labels.map((lab,i)=>[lab, d.prom[i], d.eff[i]==null ? '' : d.eff[i]/100])
+        rows:d.labels.map((lab,i)=>[lab, d.prom[i], d.eff[i]==null ? '' : (d.eff[i]/100)])
       });
       payload.tables.push({
         title:'Ubicacion_Antiguedad',
@@ -1301,10 +1305,11 @@
     }
 
     // Filtros
+    const filt=filtersSummary();
     payload.tables.push({
       title:'Filtros',
       headers:['Filtro','Valor'],
-      rows:Object.entries(filtersSummary())
+      rows:Object.entries(filt)
     });
 
     try{
@@ -1393,6 +1398,3 @@
   </script>
 </body>
 </html>
-
-
-
