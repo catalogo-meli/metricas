@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Catálogo · Dashboard de Métricas</title>
+  <title>Catálogo · Dashboard de Productividad</title>
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -203,7 +203,8 @@
               </div>
               <div class="kpi-card">
                 <h3 class="text-xl font-semibold mb-4">Antigüedad Promedio (meses)</h3>
-                <ul id="avg-antiguedad-list" class="space-y-2 text-slate-700"></ul>
+                <!-- KPI-style grid por ubicación -->
+                <div id="avg-antiguedad-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4"></div>
               </div>
             </div>
           </section>
@@ -246,8 +247,13 @@
   const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
   const FILES = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
 
-  // URL del Web App de Google Apps Script (la que pasaste)
-  const SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbz4AFgopuJR1iFgLZRgIb5jQzAtKplfS1tkMDfoSs0774340hQqBXPtBNJc16S9mzGgig/exec";
+  // Tu Web App de Google Apps Script (la tuya)
+  const SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxqTzxdY090fV2JWIFxiqAVnkre_dtUw1M09ZMv9mNKYz3GQW-d1ONSP_FIJTswZ9t2qA/exec";
+
+  // Paleta pedida
+  const PALETTE = ['#86eae9','#3edad8','#37c9ef','#37c9ef','#2c92d5','#13538a'];
+  const COLOR_BAR_PRIMARY = PALETTE[4];  // barras principales
+  const COLOR_LINE_EF     = PALETTE[5];  // línea de % efectividad
 
   /**********************
    * HELPERS
@@ -426,18 +432,9 @@
     setOptions(document.getElementById('filter-lider'), lideres, 'Todos los líderes');
     setOptions(document.getElementById('filter-q'), qs, 'Todos los trimestres');
 
-    // listeners generales
-    ['filter-mes','filter-semana','filter-ubicacion','filter-usuario','filter-q','filter-flujo']
+    // listeners
+    ['filter-mes','filter-semana','filter-ubicacion','filter-usuario','filter-lider','filter-q','filter-flujo']
       .forEach(id => document.getElementById(id).addEventListener('change', applyFilters));
-
-    // cuando cambia líder, limitamos el combo de usuarios a los de ese líder
-    document.getElementById('filter-lider').addEventListener('change', ()=>{
-      const liderSel = document.getElementById('filter-lider').value;
-      const base = liderSel ? originalData.filter(r=>r['líder']===liderSel) : originalData;
-      const usuarios = uniqueSorted(base.map(r=>r.usuario));
-      setOptions(document.getElementById('filter-usuario'), usuarios, liderSel ? 'Usuarios del líder' : 'Todos los usuarios');
-      applyFilters();
-    });
   }
 
   function setupNavigation(){
@@ -485,7 +482,7 @@
         if(type==='csv') exportSectionCSV();
         if(type==='png') exportSectionPNGs();
         if(type==='zip') exportSectionZIP();
-        if(type==='sheets') exportToGoogleSheets(); // Webhook Apps Script
+        if(type==='sheets') exportToGoogleSheets();
       });
     });
 
@@ -675,7 +672,8 @@
 
     createOrUpdateChart('demandPieChart',{
       type:'pie',
-      data:{ labels:['Demanda','Enhancement'], datasets:[{ data:[pctD, pctE] }] },
+      data:{ labels:['Demanda','Enhancement'],
+        datasets:[{ data:[pctD, pctE], backgroundColor:[PALETTE[0], PALETTE[4]] }] },
       options:{
         responsive:true,
         plugins:{
@@ -708,7 +706,7 @@
     const arr = Array.from(agg.entries()).map(([u,o])=>({
       user:u,
       prom: o.den? o.num/o.den : 0,
-      eff:  o.effDen? o.effNum/o.effDen : 0
+      eff:  o.effDen? o.effNum/o.effDen : null  // null si no hay dato
     })).sort((a,b)=>b.prom-a.prom);
 
     createOrUpdateChart('tasksByUserChart',{
@@ -716,8 +714,12 @@
       data:{
         labels:arr.map(x=>x.user),
         datasets:[
-          {label:'Prom. diario', data: arr.map(x=>x.prom), yAxisID:'y'},
-          {label:'% Efectividad', data: arr.map(x=>x.eff*100), type:'line', yAxisID:'y1', borderWidth:2, tension:.2, pointRadius:2}
+          {label:'Prom. diario', data: arr.map(x=>x.prom), yAxisID:'y',
+           backgroundColor: COLOR_BAR_PRIMARY, borderColor: COLOR_BAR_PRIMARY},
+          {label:'% Efectividad', data: arr.map(x=> x.eff!=null ? x.eff*100 : null),
+           type:'line', yAxisID:'y1', borderWidth:2, tension:.2, pointRadius:2,
+           borderColor: COLOR_LINE_EF, pointBackgroundColor: COLOR_LINE_EF, pointBorderColor: COLOR_LINE_EF,
+           spanGaps:false}
         ]
       },
       options:{
@@ -750,7 +752,7 @@
     const arr = Array.from(agg.entries()).map(([l,o])=>({
       lider:l,
       prom: o.den? o.num/o.den : 0,
-      eff:  o.effDen? o.effNum/o.effDen : 0
+      eff:  o.effDen? o.effNum/o.effDen : null
     })).sort((a,b)=>b.prom-a.prom);
 
     createOrUpdateChart('tasksByLeaderChart',{
@@ -758,8 +760,12 @@
       data:{
         labels:arr.map(x=>x.lider),
         datasets:[
-          {label:'Prom. diario', data: arr.map(x=>x.prom), yAxisID:'y'},
-          {label:'% Efectividad', data: arr.map(x=>x.eff*100), type:'line', yAxisID:'y1', borderWidth:2, tension:.2, pointRadius:2}
+          {label:'Prom. diario', data: arr.map(x=>x.prom), yAxisID:'y',
+           backgroundColor: COLOR_BAR_PRIMARY, borderColor: COLOR_BAR_PRIMARY},
+          {label:'% Efectividad', data: arr.map(x=> x.eff!=null ? x.eff*100 : null),
+           type:'line', yAxisID:'y1', borderWidth:2, tension:.2, pointRadius:2,
+           borderColor: COLOR_LINE_EF, pointBackgroundColor: COLOR_LINE_EF, pointBorderColor: COLOR_LINE_EF,
+           spanGaps:false}
         ]
       },
       options:{
@@ -801,15 +807,18 @@
       labels.push('W'+String(w).padStart(2,'0'));
       const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
       promValues.push((o.den? o.num/o.den : 0));
-      effValues.push((o.effDen? 100*o.effNum/o.effDen : 0));
+      effValues.push((o.effDen? 100*o.effNum/o.effDen : null)); // null si no hay dato
     }
     createOrUpdateChart('weeklyEvolutionChart',{
       type:'bar',
       data:{
         labels,
         datasets:[
-          {label:'Prom. diario', data:promValues, yAxisID:'y'},
-          {label:'% Efectividad', data:effValues, type:'line', yAxisID:'y1', borderWidth:2, tension:.2, pointRadius:2}
+          {label:'Prom. diario', data:promValues, yAxisID:'y',
+           backgroundColor: COLOR_BAR_PRIMARY, borderColor: COLOR_BAR_PRIMARY},
+          {label:'% Efectividad', data:effValues, type:'line', yAxisID:'y1', borderWidth:2, tension:.2, pointRadius:2,
+           borderColor: COLOR_LINE_EF, pointBackgroundColor: COLOR_LINE_EF, pointBorderColor: COLOR_LINE_EF,
+           spanGaps:false}
         ]
       },
       options:{
@@ -854,15 +863,18 @@
     });
 
     const promData = labels.map(c=>{ const o=byLoc.get(c); return (o.den? o.num/o.den : 0); });
-    const effData  = labels.map(c=>{ const e=effLoc.get(c)||{num:0,den:0}; return (e.den? 100*e.num/e.den : 0); });
+    const effData  = labels.map(c=>{ const e=effLoc.get(c)||{num:0,den:0}; return (e.den? 100*e.num/e.den : null); });
 
     createOrUpdateChart('locCombinedChart',{
       type:'bar',
       data:{
         labels,
         datasets:[
-          {label:'Prom. diario', data:promData, yAxisID:'y'},
-          {label:'% Efectividad', data:effData, type:'line', yAxisID:'y1', borderWidth:2, tension:.2, pointRadius:2}
+          {label:'Prom. diario', data:promData, yAxisID:'y',
+           backgroundColor: COLOR_BAR_PRIMARY, borderColor: COLOR_BAR_PRIMARY},
+          {label:'% Efectividad', data:effData, type:'line', yAxisID:'y1', borderWidth:2, tension:.2, pointRadius:2,
+           borderColor: COLOR_LINE_EF, pointBackgroundColor: COLOR_LINE_EF, pointBorderColor: COLOR_LINE_EF,
+           spanGaps:false}
         ]
       },
       options:{
@@ -876,13 +888,19 @@
       }
     });
 
-    // Antigüedad lista
+    // Antigüedad: KPIs por ubicación
     const list = labels.map(loc=>{
       const v=antig[loc]||{sum:0,n:0}; const avg=v.n? v.sum/v.n : 0;
       return [loc, avg];
     }).sort((a,b)=>b[1]-a[1]);
-    const ul=document.getElementById('avg-antiguedad-list');
-    ul.innerHTML = list.map(([loc,avg])=>`<li class="flex justify-between"><span>${loc}</span><span class="font-semibold">${fmt.dec(avg)}</span></li>`).join('');
+
+    const grid=document.getElementById('avg-antiguedad-grid');
+    grid.innerHTML = list.map(([loc,avg])=>`
+      <div class="kpi-card text-center">
+        <h4 class="text-slate-500 font-medium">${loc}</h4>
+        <p class="text-3xl md:text-4xl font-bold mt-2">${fmt.dec(avg)}</p>
+      </div>
+    `).join('');
   }
 
   /**********************
@@ -933,7 +951,7 @@
       agg.set(u,o);
     });
     return Array.from(agg.entries()).map(([user,o])=>({
-      user, prom: (o.den? o.num/o.den : 0), eff: (o.effDen? o.effNum/o.effDen : 0)
+      user, prom: (o.den? o.num/o.den : 0), eff: (o.effDen? o.effNum/o.effDen : null)
     })).sort((a,b)=>b.prom-a.prom);
   }
 
@@ -951,7 +969,7 @@
       agg.set(l,o);
     });
     return Array.from(agg.entries()).map(([lider,o])=>({
-      lider, prom:(o.den? o.num/o.den : 0), eff:(o.effDen? o.effNum/o.effDen : 0)
+      lider, prom:(o.den? o.num/o.den : 0), eff:(o.effDen? o.effNum/o.effDen : null)
     })).sort((a,b)=>b.prom-a.prom);
   }
 
@@ -975,7 +993,7 @@
       const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
       labels.push('W'+String(w).padStart(2,'0'));
       values.push(o.den? o.num/o.den : 0);
-      eff.push(o.effDen? 100*o.effNum/o.effDen : 0);
+      eff.push(o.effDen? 100*o.effNum/o.effDen : null);
     }
     return { labels, values, eff };
   }
@@ -1004,13 +1022,13 @@
 
     const labels = Array.from(byLoc.keys()).sort();
     const prom = labels.map(c=>{ const o=byLoc.get(c)||{num:0,den:0}; return o.den? o.num/o.den : 0; });
-    const eff = labels.map(c=>{ const e=effLoc.get(c)||{num:0,den:0}; return e.den? 100*e.num/e.den : 0; });
+    const eff = labels.map(c=>{ const e=effLoc.get(c)||{num:0,den:0}; return e.den? 100*e.num/e.den : null; });
     const antigList = labels.map(c=>{ const v=antig[c]||{sum:0,n:0}; return [c, v.n? v.sum/v.n : 0]; });
     return { labels, prom, eff, antig: antigList };
   }
 
   /**********************
-   * EXPORTS (CSV, PNG, ZIP, Google Sheets Webhook)
+   * EXPORTS
    **********************/
   function getActiveSectionId(){
     const sec=[...document.querySelectorAll('.page-section')].find(s=>!s.classList.contains('hidden'));
@@ -1177,19 +1195,13 @@
     download(`export_${id}.zip`, blob);
   }
 
-  /**********************
-   * EXPORT A GOOGLE SHEETS (Apps Script Web App)
-   **********************/
   async function exportToGoogleSheets(){
     if(!SHEETS_WEBHOOK_URL || !SHEETS_WEBHOOK_URL.startsWith('https://script.google.com')) {
       alert('Configurá SHEETS_WEBHOOK_URL con la URL de tu Web App de Google Apps Script.');
       return;
     }
-
     const id=getActiveSectionId();
     const f=flujoSel();
-
-    // ----- Armado de payload completo -----
     const payload = {
       section: id,
       generatedAt: new Date().toISOString(),
@@ -1197,7 +1209,7 @@
       tables: []
     };
 
-    // KPIs (ajustados a filtros)
+    // KPIs
     const totalFlujo = currentData.reduce((s,r)=> s + tareasFlujo(r,f), 0);
     const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
     const usuarios = new Set(currentData.map(r=>r.usuario)).size;
@@ -1255,7 +1267,7 @@
       payload.tables.push({
         title:'Usuarios_Promedio_y_Efectividad',
         headers:['Usuario','Promedio_Diario','Efectividad'],
-        rows:data.map(d=>[d.user,d.prom,d.eff])
+        rows:data.map(d=>[d.user,d.prom, d.eff==null ? '' : d.eff])
       });
     }
     if(id==='lideres'){
@@ -1263,7 +1275,7 @@
       payload.tables.push({
         title:'Equipos_Promedio_y_Efectividad',
         headers:['Lider','Promedio_Diario','Efectividad'],
-        rows:data.map(d=>[d.lider,d.prom,d.eff])
+        rows:data.map(d=>[d.lider,d.prom, d.eff==null ? '' : d.eff])
       });
     }
     if(id==='evolucion'){
@@ -1271,7 +1283,7 @@
       payload.tables.push({
         title:'Evolucion_Semanal',
         headers:['Semana','Promedio_Diario','Efectividad'],
-        rows:s.labels.map((lab,i)=>[lab, s.values[i], s.eff[i]/100])
+        rows:s.labels.map((lab,i)=>[lab, s.values[i], s.eff[i]==null ? '' : s.eff[i]/100])
       });
     }
     if(id==='ubicacion'){
@@ -1279,7 +1291,7 @@
       payload.tables.push({
         title:'Ubicacion_Promedio_y_Efectividad',
         headers:['Ubicacion','Promedio_Diario','Efectividad'],
-        rows:d.labels.map((lab,i)=>[lab, d.prom[i], d.eff[i]/100])
+        rows:d.labels.map((lab,i)=>[lab, d.prom[i], d.eff[i]==null ? '' : d.eff[i]/100])
       });
       payload.tables.push({
         title:'Ubicacion_Antiguedad',
@@ -1288,51 +1300,25 @@
       });
     }
 
-    // Hoja con filtros aplicados
+    // Filtros
     payload.tables.push({
       title:'Filtros',
       headers:['Filtro','Valor'],
       rows:Object.entries(filtersSummary())
     });
 
-    // Compat con el Apps Script (por si alguna vez usás otro script)
-payload.sheets = payload.tables;
-
-// Guardas rápidas
-if (!payload.tables.length) {
-  alert('No hay datos para exportar con los filtros actuales.');
-  return;
-}
-
-    // ----- Envío: primero text/plain (evita preflight). Si falla, reintenta con application/json -----
-    const send = async (headers) => {
+    try{
       const r = await fetch(SHEETS_WEBHOOK_URL, {
         method:'POST',
-        headers,
-        body: JSON.stringify(payload),
-        redirect:'follow',
-        credentials:'omit',
-        referrerPolicy:'no-referrer',
-        keepalive: true
+        headers:{ 'Content-Type':'text/plain;charset=utf-8' }, // evita preflight
+        body: JSON.stringify(payload)
       });
       const txt = await r.text();
-      let data; try { data = JSON.parse(txt); } catch { throw new Error(txt || 'Respuesta inválida'); }
+      let data; try{ data = JSON.parse(txt) }catch{ throw new Error(txt || 'Respuesta inválida'); }
       if(!r.ok) throw new Error(data.error || 'Error creando la hoja');
-      return data;
-    };
-
-    try{
-      let data;
-      try {
-        // 1) sin preflight
-        data = await send({ 'Content-Type':'text/plain;charset=utf-8' });
-      } catch(e1){
-        // 2) fallback
-        data = await send({ 'Content-Type':'application/json' });
-      }
-      if(data?.url) window.open(data.url, '_blank');
+      window.open(data.url, '_blank');
     }catch(e){
-      alert('No se pudo exportar a Google Sheets: ' + e.message);
+      alert('No se pudo exportar a Google Sheets: '+e.message);
     }
   }
 
@@ -1407,4 +1393,3 @@ if (!payload.tables.length) {
   </script>
 </body>
 </html>
-
