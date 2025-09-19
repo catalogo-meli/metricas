@@ -246,8 +246,8 @@
   const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
   const FILES = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
 
-  // URL del Web App de Google Apps Script (reemplazar con tu deployment Publish > Deploy as web app)
-  const SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxzRzl46tdl4I1SzEG_Wk-Eg56K_iWdM5yXkB7N4CsKhTH8UXmsxGRjIcQ3Y4yxc-vI4g/exec";
+  // Tu Web App de Google Apps Script
+  const SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbz4AFgopuJR1iFgLZRgIb5jQzAtKplfS1tkMDfoSs0774340hQqBXPtBNJc16S9mzGgig/exec";
 
   /**********************
    * HELPERS
@@ -476,7 +476,7 @@
         if(type==='csv') exportSectionCSV();
         if(type==='png') exportSectionPNGs();
         if(type==='zip') exportSectionZIP();
-        if(type==='sheets') exportToGoogleSheets(); // <-- via Apps Script webhook
+        if(type==='sheets') exportToGoogleSheets();
       });
     });
 
@@ -1183,7 +1183,7 @@
       tables: []
     };
 
-    // Siempre agrego tabla de KPIs
+    // KPIs
     const totalFlujo = currentData.reduce((s,r)=> s + tareasFlujo(r,f), 0);
     const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
     const usuarios = new Set(currentData.map(r=>r.usuario)).size;
@@ -1274,7 +1274,7 @@
       });
     }
 
-    // Agrego hoja de filtros
+    // Hoja con filtros aplicados
     const filt=filtersSummary();
     payload.tables.push({
       title:'Filtros',
@@ -1286,7 +1286,10 @@
       const r = await fetch(SHEETS_WEBHOOK_URL, {
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        redirect:'follow',
+        credentials:'omit',
+        referrerPolicy:'no-referrer'
       });
       const text = await r.text();
       let data; try{ data=JSON.parse(text) }catch{ throw new Error(text || 'Respuesta inválida'); }
@@ -1369,4 +1372,3 @@
   </script>
 </body>
 </html>
-
