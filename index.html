@@ -1295,6 +1295,15 @@
       rows:Object.entries(filtersSummary())
     });
 
+    // Compat con el Apps Script (por si alguna vez usás otro script)
+payload.sheets = payload.tables;
+
+// Guardas rápidas
+if (!payload.tables.length) {
+  alert('No hay datos para exportar con los filtros actuales.');
+  return;
+}
+
     // ----- Envío: primero text/plain (evita preflight). Si falla, reintenta con application/json -----
     const send = async (headers) => {
       const r = await fetch(SHEETS_WEBHOOK_URL, {
@@ -1398,3 +1407,4 @@
   </script>
 </body>
 </html>
+
