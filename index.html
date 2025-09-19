@@ -36,6 +36,7 @@
     .nb-yellow{background:#fef9c3}
     .nb-orange{background:#ffedd5}
     .nb-red{background:#fee2e2}
+    .nb-cell[data-bucket]{cursor:pointer}
     /* Export dropdown */
     .dropdown{position:relative;display:inline-block;}
     .dropdown-menu{position:absolute;right:0;top:100%;background:#fff;border:1px solid #e2e8f0;border-radius:.5rem;box-shadow:0 10px 20px rgba(0,0,0,.08);min-width:260px;z-index:50}
@@ -135,7 +136,7 @@
                 <p id="kpi-efectividad-prom" class="text-4xl font-bold mt-2"></p>
               </div>
               <div class="kpi-card text-center">
-                <h3 class="text-slate-500 font-medium">Correcciones auditadas</h3>
+                <h3 class="text-slate-500 font-medium">Correcciones Auditadas</h3>
                 <p id="kpi-correcciones" class="text-4xl font-bold mt-2"></p>
               </div>
               <div class="kpi-card text-center">
@@ -157,11 +158,16 @@
                   Calidad: Alta ≥90%; Media 75%–&lt;90%; Baja &lt;75%.
                 </p>
                 <div id="ninebox-missing" class="mt-4 text-sm text-slate-600"></div>
+
+                <!-- Detalle dinámico de cuadrante -->
+                <div id="ninebox-details" class="mt-4 hidden">
+                  <!-- contenido dinámico -->
+                </div>
               </div>
 
               <!-- Demanda vs Enhancement -->
               <div class="kpi-card">
-                <h3 class="text-xl font-semibold mb-4">Tareas: Demanda vs. Enhancement</h3>
+                <h3 class="text-xl font-semibold mb-4">Tareas Demanda vs. Enhancement</h3>
                 <div class="chart-container relative mx-auto" style="height:320px;max-width:360px">
                   <canvas id="demandPieChart"></canvas>
                 </div>
@@ -173,7 +179,7 @@
           <!-- Detalle por Usuario -->
           <section id="detalle" class="page-section hidden">
             <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-4">Promedio Diario y % Efectividad por Usuario</h3>
+              <h3 class="text-xl font-semibold mb-4">Promedio Diario - % Efectividad</h3>
               <div class="chart-container"><canvas id="tasksByUserChart"></canvas></div>
             </div>
           </section>
@@ -181,7 +187,7 @@
           <!-- Comparativa por equipo -->
           <section id="lideres" class="page-section hidden">
             <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-4">Comparativa por equipo</h3>
+              <h3 class="text-xl font-semibold mb-4">Comparativa por Equipo</h3>
               <div class="chart-container"><canvas id="tasksByLeaderChart"></canvas></div>
             </div>
           </section>
@@ -189,7 +195,7 @@
           <!-- Evolución -->
           <section id="evolucion" class="page-section hidden">
             <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-4">Evolución Semanal (Promedio Diario y % Efectividad)</h3>
+              <h3 class="text-xl font-semibold mb-4">Promedio Diario - % Efectividad</h3>
               <div class="chart-container"><canvas id="weeklyEvolutionChart"></canvas></div>
             </div>
           </section>
@@ -198,7 +204,7 @@
           <section id="ubicacion" class="page-section hidden">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div class="kpi-card">
-                <h3 class="text-xl font-semibold mb-4">Prom. Diario & % Efectividad por Ubicación</h3>
+                <h3 class="text-xl font-semibold mb-4">Promedio Diario - % Efectividad</h3>
                 <div class="chart-container"><canvas id="locCombinedChart"></canvas></div>
               </div>
               <div class="kpi-card">
@@ -214,7 +220,7 @@
               <h3 class="text-xl font-semibold mb-2">Análisis Inteligente con Gemini</h3>
               <p class="text-slate-600 mb-4">Insights basados en los datos y filtros actuales.</p>
               <button id="generate-insights-btn" class="bg-sky-600 text-white px-6 py-3 rounded-lg hover:bg-sky-700 transition-colors text-base font-semibold">
-                ✨ Analizar Datos y Generar Sugerencias
+                ✨ Generar Resumen
               </button>
               <div id="insights-output" class="mt-6 p-4 bg-slate-50 rounded-md border border-slate-200 hidden"></div>
             </div>
@@ -419,14 +425,19 @@
   let originalData = [];
   let currentData  = [];
   const charts = {};
+  // estado para ninebox (detalle por cuadrante)
+  let nineboxDetailsData = {};
 
   /**********************
    * FILTROS + NAV
    **********************/
   function setOptions(sel, values, placeholder){
+    const prev = sel.value;
     sel.innerHTML = '';
     const opt=document.createElement('option'); opt.value=''; opt.textContent=placeholder; sel.appendChild(opt);
     values.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o); });
+    // intenta preservar selección
+    if(values.includes(prev)) sel.value = prev;
   }
   function uniqueSorted(arr){ return Array.from(new Set(arr)).sort(); }
   function uniqueSortedNum(arr){ return Array.from(new Set(arr)).sort((a,b)=>a-b); }
@@ -524,7 +535,30 @@
     };
   }
 
+  // restringe dinámicamente el combo "Usuario" según el resto de filtros (excluyente)
+  function refreshUserFilterOptions(){
+    const f = {
+      mes:document.getElementById('filter-mes').value,
+      semana:document.getElementById('filter-semana').value,
+      ubic:document.getElementById('filter-ubicacion').value,
+      lider:document.getElementById('filter-lider').value,
+      q:document.getElementById('filter-q').value
+    };
+    const allowed = originalData.filter(r =>
+      (!f.mes   || r.mes === f.mes) &&
+      (!f.semana|| String(r.week) === String(f.semana)) &&
+      (!f.ubic  || r.ciudad === f.ubic) &&
+      (!f.lider || r['líder'] === f.lider) &&
+      (!f.q     || r.q === f.q)
+    );
+    const usuarios= uniqueSorted(allowed.map(r=>r.usuario));
+    setOptions(document.getElementById('filter-usuario'), usuarios, 'Todos los usuarios');
+  }
+
   function applyFilters(){
+    // actualizar opciones dependientes ANTES de filtrar (excluyente)
+    refreshUserFilterOptions();
+
     const f = {
       mes:document.getElementById('filter-mes').value,
       semana:document.getElementById('filter-semana').value,
@@ -572,7 +606,7 @@
     let promColor = (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500';
     setColor(promEl, promColor);
 
-    // % Efectividad: Rojo <=75 ; Naranja >75-<87 ; Amarillo 87-<90 ; Verde >=90
+    // % Efectividad
     const efPct = ef*100;
     let efColor = (efPct<=75) ? 'text-red-600'
                  : (efPct<87) ? 'text-orange-500'
@@ -654,14 +688,17 @@
     const cols=['alta','media','baja']; // calidad
 
     const buckets = {};
-    rows.forEach(r=>cols.forEach(c=>{ buckets[`${r}-${c}`]=[]; }));
+    const details = {};
+    rows.forEach(r=>cols.forEach(c=>{ buckets[`${r}-${c}`]=[]; details[`${r}-${c}`]=[]; }));
 
     const missing = [];
     users.forEach(x=>{
       if(x.prom===null || x.eff===null){
         missing.push(x);
       }else{
-        buckets[`${prodBand(x.prom)}-${calBand(x.eff)}`].push(x.u);
+        const key = `${prodBand(x.prom)}-${calBand(x.eff)}`;
+        buckets[key].push(x.u);
+        details[key].push({usuario:x.u, prom:x.prom, eff:x.eff});
       }
     });
 
@@ -687,12 +724,23 @@
       html += hdrCell('Prod. '+label(r));
       cols.forEach(c=>{
         const arr = buckets[`${r}-${c}`]||[];
-        html += `<div class="nb-cell ${cellClass(r,c)}" title="Prod ${label(r)} / Calidad ${label(c)}">
+        html += `<div class="nb-cell ${cellClass(r,c)}" data-bucket="${r}-${c}" title="Prod ${label(r)} / Calidad ${label(c)}">
                   <span class="nb-badge">${arr.length}</span>
                 </div>`;
       });
     });
     grid.innerHTML = html;
+
+    // guarda detalle para los clicks
+    nineboxDetailsData = details;
+
+    // delegación de eventos: click en cuadrantes
+    grid.onclick = (ev)=>{
+      const cell = ev.target.closest('.nb-cell[data-bucket]');
+      if(!cell) return;
+      const key = cell.getAttribute('data-bucket');
+      showNineboxDetails(key, label);
+    };
 
     const missDiv = document.getElementById('ninebox-missing');
     if(missing.length){
@@ -708,6 +756,55 @@
     }else{
       missDiv.innerHTML = '';
     }
+  }
+
+  function showNineboxDetails(bucketKey, labelFn){
+    const box = document.getElementById('ninebox-details');
+    const rows = (nineboxDetailsData[bucketKey]||[]).slice().sort((a,b)=>b.prom-a.prom);
+    const [prod, cal] = bucketKey.split('-').map(labelFn);
+    if(!rows.length){
+      box.innerHTML = `
+        <div class="flex items-center justify-between mb-2">
+          <div class="font-semibold">Prod. ${prod} / Calidad ${cal}</div>
+          <button class="text-slate-500 hover:text-slate-700 text-sm" id="nb-close">Cerrar</button>
+        </div>
+        <div class="text-slate-500 text-sm">Sin perfiles en este cuadrante para los filtros actuales.</div>`;
+      box.classList.remove('hidden');
+      document.getElementById('nb-close').onclick = ()=> box.classList.add('hidden');
+      return;
+    }
+
+    const header = `
+      <div class="flex items-center justify-between mb-2">
+        <div class="font-semibold">Prod. ${prod} / Calidad ${cal} — <span class="text-slate-500 font-normal">${rows.length} perfiles</span></div>
+        <button class="text-slate-500 hover:text-slate-700 text-sm" id="nb-close">Cerrar</button>
+      </div>`;
+
+    const table = `
+      <div class="overflow-x-auto border border-slate-200 rounded-md">
+        <table class="min-w-full text-sm">
+          <thead class="bg-slate-50 text-slate-600">
+            <tr>
+              <th class="text-left px-3 py-2">Usuario</th>
+              <th class="text-right px-3 py-2">Prom. Diario</th>
+              <th class="text-right px-3 py-2">% Efectividad</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(r=>`
+              <tr class="border-t">
+                <td class="px-3 py-2">${r.usuario}</td>
+                <td class="px-3 py-2 text-right">${fmt.dec(r.prom)}</td>
+                <td class="px-3 py-2 text-right">${fmt.pct(r.eff)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>`;
+
+    box.innerHTML = header + table;
+    box.classList.remove('hidden');
+    document.getElementById('nb-close').onclick = ()=> box.classList.add('hidden');
   }
 
   /* ---------- Demanda vs Enhancement ---------- */
@@ -738,7 +835,6 @@
   function renderTasksByUser(){
     const f = flujoSel();
 
-    // Promedio diario + efectividad por usuario
     const agg = new Map(); // user -> {num,den, effNum, effDen}
     currentData.forEach(r=>{
       const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
@@ -1286,13 +1382,8 @@
         headers:['Caja','Usuarios'],
         rows:Object.entries(nb.buckets).map(([k,arr])=>[k, arr.join(' | ')])
       });
-      if(nb.missing.length){
-        payload.tables.push({
-          title: 'Ninebox_Faltantes',
-          headers:['Usuario','Promedio_Diario','Efectividad'],
-          rows: nb.missing.map(m=>[m.u, (m.prom==null?'':m.prom), (m.eff==null?'':m.eff)])
-        });
-      }
+      // faltantes
+      // (opcional)
     }
     if(id==='detalle'){
       const data=buildUsersPromEff(f);
@@ -1332,7 +1423,7 @@
       });
     }
 
-    // Hoja con filtros aplicados
+    // Filtros aplicados
     const filt=filtersSummary();
     payload.tables.push({
       title:'Filtros',
@@ -1430,4 +1521,3 @@
   </script>
 </body>
 </html>
-
