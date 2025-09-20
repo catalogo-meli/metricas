@@ -178,9 +178,25 @@
 
           <!-- Detalle por Usuario -->
           <section id="detalle" class="page-section hidden">
-            <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-4">Promedio Diario - % Efectividad</h3>
-              <div class="chart-container"><canvas id="tasksByUserChart"></canvas></div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div class="kpi-card lg:col-span-2">
+                <h3 class="text-xl font-semibold mb-4">Promedio Diario - % Efectividad</h3>
+                <div class="chart-container"><canvas id="tasksByUserChart"></canvas></div>
+              </div>
+              <div class="grid grid-cols-1 gap-4">
+                <div class="kpi-card text-center">
+                  <h3 class="text-slate-500 font-medium">Promedio Diario</h3>
+                  <p id="det-kpi-prom" class="text-4xl font-bold mt-2"></p>
+                </div>
+                <div class="kpi-card text-center">
+                  <h3 class="text-slate-500 font-medium">% Efectividad</h3>
+                  <p id="det-kpi-ef" class="text-4xl font-bold mt-2"></p>
+                </div>
+                <div class="kpi-card text-center">
+                  <h3 class="text-slate-500 font-medium">IDs trabajados</h3>
+                  <p id="det-kpi-ids" class="text-3xl font-bold mt-2"></p>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -284,7 +300,7 @@
     c4: '#2c92d5',
     c5: '#13538a'
   };
-  const BAR_BG = 'rgba(55,201,239,0.5)'; // c2 con alpha para que destaque la línea
+  const BAR_BG = 'rgba(55,201,239,0.5)';
   const LINE_ACC = PALETTE.c1;
 
   // Defaults para que la línea resalte
@@ -445,7 +461,6 @@
   let originalData = [];
   let currentData  = [];
   const charts = {};
-  // estado para ninebox (detalle por cuadrante)
   let nineboxDetailsData = {};
 
   /**********************
@@ -476,7 +491,6 @@
     setOptions(document.getElementById('filter-lider'), lideres, 'Todos los líderes');
     setOptions(document.getElementById('filter-q'), qs, 'Todos los trimestres');
 
-    // listeners
     ['filter-mes','filter-semana','filter-ubicacion','filter-usuario','filter-lider','filter-q','filter-flujo']
       .forEach(id => document.getElementById(id).addEventListener('change', applyFilters));
   }
@@ -493,7 +507,7 @@
         document.querySelector(target).classList.remove('hidden');
         links.forEach(x=>x.classList.remove('active')); a.classList.add('active');
         document.getElementById('page-title').textContent=a.textContent;
-        if(target==='#detalle')      renderTasksByUser();
+        if(target==='#detalle'){ renderTasksByUser(); updateDetailKPIs(); }
         if(target==='#lideres')      renderTasksByLeader();
         if(target==='#evolucion'){   renderWeeklyEvolution(); updateEvolutionKPIs(); }
         if(target==='#ubicacion')    renderByLocation();
@@ -554,29 +568,56 @@
     };
   }
 
-  // restringe dinámicamente el combo "Usuario" según el resto de filtros (excluyente)
-  function refreshUserFilterOptions(){
-    const f = {
+  // --- NUEVO: filtros excluyentes Q ↔ Mes ↔ Semana (y Usuario dependiente)
+  function filteredOriginalDataExcept(exceptKey){
+    const v = {
       mes:document.getElementById('filter-mes').value,
       semana:document.getElementById('filter-semana').value,
       ubic:document.getElementById('filter-ubicacion').value,
+      user:document.getElementById('filter-usuario').value,
       lider:document.getElementById('filter-lider').value,
       q:document.getElementById('filter-q').value
     };
-    const allowed = originalData.filter(r =>
-      (!f.mes   || r.mes === f.mes) &&
-      (!f.semana|| String(r.week) === String(f.semana)) &&
-      (!f.ubic  || r.ciudad === f.ubic) &&
-      (!f.lider || r['líder'] === f.lider) &&
-      (!f.q     || r.q === f.q)
+    return originalData.filter(r =>
+      (exceptKey==='mes'    || !v.mes    || r.mes === v.mes) &&
+      (exceptKey==='semana' || !v.semana || String(r.week) === String(v.semana)) &&
+      (exceptKey==='ubic'   || !v.ubic   || r.ciudad === v.ubic) &&
+      (exceptKey==='user'   || !v.user   || r.usuario === v.user) &&
+      (exceptKey==='lider'  || !v.lider  || r['líder'] === v.lider) &&
+      (exceptKey==='q'      || !v.q      || r.q === v.q)
     );
-    const usuarios= uniqueSorted(allowed.map(r=>r.usuario));
-    setOptions(document.getElementById('filter-usuario'), usuarios, 'Todos los usuarios');
+  }
+
+  function refreshDependentFilters(){
+    // Q
+    {
+      const allowed = filteredOriginalDataExcept('q');
+      const qs = ['Q1','Q2','Q3','Q4'].filter(q => allowed.some(r=>r.q===q));
+      setOptions(document.getElementById('filter-q'), qs, 'Todos los trimestres');
+    }
+    // Mes
+    {
+      const allowed = filteredOriginalDataExcept('mes');
+      const meses = MONTHS_ES.filter(m => allowed.some(r=>r.mes===m));
+      setOptions(document.getElementById('filter-mes'), meses, 'Todos los meses');
+    }
+    // Semana
+    {
+      const allowed = filteredOriginalDataExcept('semana');
+      const semanas = uniqueSortedNum(allowed.map(r=>r.week)).map(String);
+      setOptions(document.getElementById('filter-semana'), semanas, 'Todas las semanas');
+    }
+    // Usuario (como antes, dependiente del resto)
+    {
+      const allowed = filteredOriginalDataExcept('user');
+      const usuarios= uniqueSorted(allowed.map(r=>r.usuario));
+      setOptions(document.getElementById('filter-usuario'), usuarios, 'Todos los usuarios');
+    }
   }
 
   function applyFilters(){
-    // actualizar opciones dependientes (excluyente)
-    refreshUserFilterOptions();
+    // actualizar opciones dependientes (excluyentes Q/Mes/Semana/Usuario)
+    refreshDependentFilters();
 
     const f = {
       mes:document.getElementById('filter-mes').value,
@@ -603,6 +644,7 @@
     renderWeeklyEvolution();
     renderByLocation();
     updateEvolutionKPIs();
+    updateDetailKPIs();
   }
 
   /**********************
@@ -622,11 +664,9 @@
     const promEl = document.getElementById('kpi-promedio-diario');
     const efEl   = document.getElementById('kpi-efectividad-prom');
 
-    // Promedio Diario: Rojo <=70 ; Amarillo 71-79 ; Verde >=80
     let promColor = (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500';
     setColor(promEl, promColor);
 
-    // % Efectividad (<=75 rojo, 75-87 naranja, 87-90 amarillo, >=90 verde)
     const efPct = ef*100;
     let efColor = (efPct<=75) ? 'text-red-600'
                  : (efPct<87) ? 'text-orange-500'
@@ -642,6 +682,7 @@
     efEl.textContent   = fmt.pct(ef);
   }
 
+  // KPIs a la derecha del gráfico en "Evolución Semanal"
   function updateEvolutionKPIs(){
     const f = flujoSel();
     const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
@@ -663,13 +704,33 @@
     document.getElementById('evo-kpi-users').textContent = fmt.int(usuarios);
   }
 
+  // NUEVO: KPIs a la derecha del gráfico en "Detalle por Usuario"
+  function updateDetailKPIs(){
+    const f = flujoSel();
+    const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
+    const prom = promedioDiario(currentData, f);
+    const vals = currentData.map(r=>r.efectividad).filter(v=>v!=='' && v!==null && v!==undefined);
+    const ef   = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
+
+    const promEl = document.getElementById('det-kpi-prom');
+    const efEl   = document.getElementById('det-kpi-ef');
+    setColor(promEl, (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500');
+
+    const efPct = ef*100;
+    setColor(efEl, (efPct<=75) ? 'text-red-600' : (efPct<87) ? 'text-orange-500' : (efPct<90) ? 'text-yellow-500' : 'text-green-600');
+
+    promEl.textContent = fmt.dec(prom);
+    efEl.textContent   = fmt.pct(ef);
+    document.getElementById('det-kpi-ids').textContent = fmt.int(idsTrab);
+  }
+
   function createOrUpdateChart(id, cfg){
     if(charts[id]){ charts[id].data=cfg.data; charts[id].options=cfg.options||{}; charts[id].update(); return charts[id]; }
     const ctx=document.getElementById(id).getContext('2d');
     charts[id]=new Chart(ctx,cfg); return charts[id];
   }
 
-  // Helpers para datasets de barras + línea (orden y estilos consistentes)
+  // Helpers para datasets de barras + línea
   function barDataset(label, data){
     return {
       type:'bar',
@@ -691,7 +752,7 @@
       yAxisID:'y1',
       borderColor: LINE_ACC,
       backgroundColor: LINE_ACC,
-      order: 2,               // la línea por encima de las barras
+      order: 2,
       fill: false,
       tension: 0.25,
       pointRadius: 3,
@@ -699,7 +760,7 @@
       pointBackgroundColor: '#ffffff',
       pointBorderColor: LINE_ACC,
       borderWidth: 3,
-      spanGaps: true          // no 0% cuando no hay calidad
+      spanGaps: true
     };
   }
 
@@ -772,10 +833,8 @@
     });
     grid.innerHTML = html;
 
-    // guarda detalle para los clicks
     nineboxDetailsData = details;
 
-    // click en cuadrantes
     grid.onclick = (ev)=>{
       const cell = ev.target.closest('.nb-cell[data-bucket]');
       if(!cell) return;
@@ -1073,7 +1132,7 @@
   }
 
   /**********************
-   * BUILDERS para exportación
+   * BUILDERS + EXPORTS
    **********************/
   function buildNineboxData(f) {
     const map = new Map(); // user -> {num,den, effSum, effN}
@@ -1197,7 +1256,7 @@
   }
 
   /**********************
-   * EXPORTS (CSV, PNG, ZIP, Google Sheets Webhook)
+   * EXPORTS
    **********************/
   function getActiveSectionId(){
     const sec=[...document.querySelectorAll('.page-section')].find(s=>!s.classList.contains('hidden'));
@@ -1364,131 +1423,6 @@
     download(`export_${id}.zip`, blob);
   }
 
-  async function exportToGoogleSheets(){
-    if(!SHEETS_WEBHOOK_URL || !SHEETS_WEBHOOK_URL.startsWith('https://script.google.com')) {
-      alert('Configurá SHEETS_WEBHOOK_URL con la URL de tu Web App de Google Apps Script.');
-      return;
-    }
-    const id=getActiveSectionId();
-    const f=flujoSel();
-    const payload = {
-      section: id,
-      generatedAt: new Date().toISOString(),
-      filters: filtersSummary(),
-      tables: []
-    };
-
-    // KPIs
-    const totalFlujo = currentData.reduce((s,r)=> s + tareasFlujo(r,f), 0);
-    const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
-    const usuarios = new Set(currentData.map(r=>r.usuario)).size;
-    const correcc = currentData.reduce((s,r)=> s + (r.correcciones_auditadas||0), 0);
-    const prom = promedioDiario(currentData, f);
-    const efVals = currentData.map(r=>r.efectividad).filter(v=>v!=='' && v!=null);
-    const ef = efVals.length ? efVals.reduce((a,b)=>a+b,0)/efVals.length : 0;
-
-    payload.tables.push({
-      title: 'KPIs',
-      headers: ['Métrica','Valor'],
-      rows: [
-        ['Total tareas', totalFlujo],
-        ['IDs trabajados', idsTrab],
-        ['Promedio Diario', prom],
-        ['% Efectividad', ef],
-        ['Correcciones auditadas', correcc],
-        ['Usuarios activos', usuarios]
-      ]
-    });
-
-    if(id==='resumen'){
-      const demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
-      const enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
-      const tot = demand+enh;
-      payload.tables.push({
-        title: 'Demanda_vs_Enhancement',
-        headers: ['Flujo','Total','Porcentaje'],
-        rows: [
-          ['Demanda', demand, tot? demand/tot : 0],
-          ['Enhancement', enh, tot? enh/tot : 0]
-        ]
-      });
-      const nb=buildNineboxData(f);
-      payload.tables.push({
-        title: 'Ninebox_Conteo',
-        headers:['Caja','Conteo'],
-        rows:Object.entries(nb.buckets).map(([k,arr])=>[k, arr.length])
-      });
-      payload.tables.push({
-        title: 'Ninebox_Usuarios',
-        headers:['Caja','Usuarios'],
-        rows:Object.entries(nb.buckets).map(([k,arr])=>[k, arr.join(' | ')])
-      });
-    }
-    if(id==='detalle'){
-      const data=buildUsersPromEff(f);
-      payload.tables.push({
-        title:'Usuarios_Promedio_y_Efectividad',
-        headers:['Usuario','Promedio_Diario','Efectividad'],
-        rows:data.map(d=>[d.user,d.prom,d.eff])
-      });
-    }
-    if(id==='lideres'){
-      const data=buildLideresData(f);
-      payload.tables.push({
-        title:'Equipos_Promedio_y_Efectividad',
-        headers:['Lider','Promedio_Diario','Efectividad'],
-        rows:data.map(d=>[d.lider,d.prom,d.eff])
-      });
-    }
-    if(id==='evolucion'){
-      const s=buildEvolucionData(f);
-      payload.tables.push({
-        title:'Evolucion_Semanal',
-        headers:['Semana','Promedio_Diario','Efectividad'],
-        rows:s.labels.map((lab,i)=>[lab, s.values[i], s.eff[i]/100])
-      });
-    }
-    if(id==='ubicacion'){
-      const d=buildUbicacionData(f);
-      payload.tables.push({
-        title:'Ubicacion_Promedio_y_Efectividad',
-        headers:['Ubicacion','Promedio_Diario','Efectividad'],
-        rows:d.labels.map((lab,i)=>[lab, d.prom[i], (d.eff[i]==null? '' : d.eff[i]/100)])
-      });
-      payload.tables.push({
-        title:'Ubicacion_Antiguedad',
-        headers:['Ubicacion','Antiguedad_Promedio_meses'],
-        rows:d.antig.map(([loc,avg])=>[loc, avg])
-      });
-    }
-
-    // Filtros aplicados
-    const filt=filtersSummary();
-    payload.tables.push({
-      title:'Filtros',
-      headers:['Filtro','Valor'],
-      rows:Object.entries(filt)
-    });
-
-    try{
-      const r = await fetch(SHEETS_WEBHOOK_URL, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify(payload),
-        redirect:'follow',
-        credentials:'omit',
-        referrerPolicy:'no-referrer'
-      });
-      const text = await r.text();
-      let data; try{ data=JSON.parse(text) }catch{ throw new Error(text || 'Respuesta inválida'); }
-      if(!r.ok) throw new Error(data.error || 'Error creando la hoja');
-      const url = data.url;
-      window.open(url, '_blank');
-    }catch(e){
-      alert('No se pudo exportar a Google Sheets: '+e.message);
-    }
-  }
-
   /**********************
    * GEMINI (prompts mejorados)
    **********************/
@@ -1499,7 +1433,6 @@
     const efVals= currentData.map(r=>r.efectividad).filter(v=>v!==''&&v!=null);
     const ef    = efVals.length? efVals.reduce((a,b)=>a+b,0)/efVals.length : 0;
 
-    // conteo por cuadrante
     const buckets = { 'Prod Alta / Cal Alta':0,'Prod Alta / Cal Media':0,'Prod Alta / Cal Baja':0,'Prod Media / Cal Alta':0,'Prod Media / Cal Media':0,'Prod Media / Cal Baja':0,'Prod Baja / Cal Alta':0,'Prod Baja / Cal Media':0,'Prod Baja / Cal Baja':0 };
     const map=new Map();
     currentData.forEach(r=>{
@@ -1529,9 +1462,9 @@ ${Object.entries(buckets).map(([k,v])=>`- ${k}: ${v}`).join('\n')}
 Instrucciones:
 1) Entrega 6 hallazgos concretos (tendencias o riesgos).
 2) Propón 3 acciones rápidas y medibles para la próxima semana.
-3) Usa el lenguaje de Catálogo/Netkel: BTC grupal con casos, coaching 1:1, micro-feedback en correcciones, shadowing, dojos/reentrenamiento, calibraciones con QA, chequeo de FAQs/checklist de SdC, limitación temporal de flujos complejos, pairing y revisión por pares, compromisos de mejora (objetivo de efectividad con plazo).
-4) Distingue, si aplica, foco para cuadrantes “Prod Alta / Cal Baja” y “Prod Baja / Cal Alta”.
-Formato: viñetas cortas, accionables y con responsables (“Líder/Colaborador/QA”) y plazo.
+3) Usa el lenguaje de Catálogo/Netkel: BTC grupal con casos, coaching 1:1, micro-feedback, shadowing, dojos, calibraciones, checklist SdC/FAQs, pairing y compromisos de mejora con plazo.
+4) Distingue foco para “Prod Alta / Cal Baja” y “Prod Baja / Cal Alta”.
+Formato: viñetas cortas, accionables y con responsable y plazo.
 `;
   }
 
@@ -1545,27 +1478,26 @@ Formato: viñetas cortas, accionables y con responsables (“Líder/Colaborador/
 
     return `
 Actuá como Analista de Mejora Continua de Catálogo (Netkel).
-Norte: alcanzar/sostener %Efectividad >=90% con Promedio Diario >=80, cuidando experiencia y throughput.
+Norte: alcanzar/sostener %Efectividad >=90% con Promedio Diario >=80.
 
 Datos (con filtros actuales):
 - Usuarios activos: ${usuarios}
 - IDs trabajados: ${idsTrab}
 - Promedio Diario: ${prom.toFixed(2)}
-- % Efectividad promedio: ${(ef*100).toFixed(2)}%
+- % Efectividad: ${(ef*100).toFixed(2)}%
 - Filtros: ${JSON.stringify(filtersSummary())}
 
 Qué espero:
-1) “Foto” en 4 bullets (qué va bien / qué preocupa).
-2) Detección de LOWs “ocasionales vs. recurrentes” (define criterio simple por variabilidad y semanas con <90%).
-3) Plan de acción por frente:
-   • Calidad: BTC grupal con casos reales, 1:1 semanales, micro-feedback por corrección, shadowing, dojos/reentrenamiento,
-     calibraciones con QA, checklist de SdC/FAQs, revisión por pares y correcciones ancla.
-   • Productividad: limpieza de colas/colas complejas, orden de priorización, time-boxing, pairing en picos, revisión de reglas de flujo.
-   • Gobierno: compromisos de mejora (% objetivo y plazo), muestreo semanal, seguimiento y cierre.
+1) Foto en 4 bullets (qué va bien / qué preocupa).
+2) LOWs ocasionales vs. recurrentes (criterio simple por variabilidad y semanas <90%).
+3) Plan de acción:
+   • Calidad: BTC, 1:1, micro-feedback por corrección, shadowing, dojos, calibraciones QA, checklist SdC/FAQs, pares.
+   • Productividad: orden/prioridad, time-boxing, pairing, limpieza colas complejas.
+   • Gobierno: compromisos (% objetivo y fecha), muestreo semanal, seguimiento y cierre.
 4) Riesgos y mitigaciones.
-5) Próximos pasos (máximo 5, con responsable y fecha).
+5) Próximos pasos (máx. 5, con responsable y fecha).
 
-Formato: encabezados breves + viñetas muy concretas y medibles. No inventes datos fuera de lo provisto; si algo falta, sugiere cómo medirlo.
+Formato: encabezados breves + viñetas concretas. No inventes datos fuera de lo provisto.
 `;
   }
 
@@ -1587,7 +1519,6 @@ Formato: encabezados breves + viñetas muy concretas y medibles. No inventes dat
   }
 
   function setupGeminiFeatures(){
-    // Resumen corto enfocado en nine-box
     document.getElementById('generate-summary-btn').addEventListener('click', async ()=>{
       const block = document.getElementById('ninebox-missing');
       const prompt = buildNineboxPrompt();
@@ -1599,7 +1530,6 @@ Formato: encabezados breves + viñetas muy concretas y medibles. No inventes dat
       }catch(e){ block.textContent = e.message; }
     });
 
-    // Análisis profundo
     document.getElementById('generate-insights-btn').addEventListener('click', async ()=>{
       const out = document.getElementById('insights-output');
       out.classList.remove('hidden');
@@ -1632,7 +1562,6 @@ Formato: encabezados breves + viñetas muy concretas y medibles. No inventes dat
       setupNavigation();
       setupGeminiFeatures();
 
-      // render inicial
       currentData = originalData.slice();
       applyFilters();
     }catch(err){
