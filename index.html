@@ -42,6 +42,8 @@
     .dropdown-menu{position:absolute;right:0;top:100%;background:#fff;border:1px solid #e2e8f0;border-radius:.5rem;box-shadow:0 10px 20px rgba(0,0,0,.08);min-width:260px;z-index:50}
     .dropdown-menu a{display:block;padding:.6rem .8rem;font-size:.95rem;color:#334155}
     .dropdown-menu a:hover{background:#f1f5f9}
+    /* IA */
+    #insights-output{white-space:pre-wrap}
   </style>
 </head>
 
@@ -160,9 +162,7 @@
                 <div id="ninebox-missing" class="mt-4 text-sm text-slate-600"></div>
 
                 <!-- Detalle dinámico de cuadrante -->
-                <div id="ninebox-details" class="mt-4 hidden">
-                  <!-- contenido dinámico -->
-                </div>
+                <div id="ninebox-details" class="mt-4 hidden"></div>
               </div>
 
               <!-- Demanda vs Enhancement -->
@@ -192,11 +192,31 @@
             </div>
           </section>
 
-          <!-- Evolución -->
+          <!-- Evolución semanal -->
           <section id="evolucion" class="page-section hidden">
-            <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-4">Promedio Diario - % Efectividad</h3>
-              <div class="chart-container"><canvas id="weeklyEvolutionChart"></canvas></div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div class="kpi-card lg:col-span-2">
+                <h3 class="text-xl font-semibold mb-4">Promedio Diario - % Efectividad</h3>
+                <div class="chart-container"><canvas id="weeklyEvolutionChart"></canvas></div>
+              </div>
+              <div class="grid grid-cols-1 gap-4">
+                <div class="kpi-card text-center">
+                  <h3 class="text-slate-500 font-medium">Promedio Diario</h3>
+                  <p id="evo-kpi-prom" class="text-4xl font-bold mt-2"></p>
+                </div>
+                <div class="kpi-card text-center">
+                  <h3 class="text-slate-500 font-medium">% Efectividad</h3>
+                  <p id="evo-kpi-ef" class="text-4xl font-bold mt-2"></p>
+                </div>
+                <div class="kpi-card text-center">
+                  <h3 class="text-slate-500 font-medium">IDs trabajados</h3>
+                  <p id="evo-kpi-ids" class="text-3xl font-bold mt-2"></p>
+                </div>
+                <div class="kpi-card text-center">
+                  <h3 class="text-slate-500 font-medium">Usuarios Activos</h3>
+                  <p id="evo-kpi-users" class="text-3xl font-bold mt-2"></p>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -220,7 +240,7 @@
               <h3 class="text-xl font-semibold mb-2">Análisis Inteligente con Gemini</h3>
               <p class="text-slate-600 mb-4">Insights basados en los datos y filtros actuales.</p>
               <button id="generate-insights-btn" class="bg-sky-600 text-white px-6 py-3 rounded-lg hover:bg-sky-700 transition-colors text-base font-semibold">
-                ✨ Generar Resumen
+                ✨ Analizar Datos y Generar Sugerencias
               </button>
               <div id="insights-output" class="mt-6 p-4 bg-slate-50 rounded-md border border-slate-200 hidden"></div>
             </div>
@@ -264,7 +284,7 @@
     c4: '#2c92d5',
     c5: '#13538a'
   };
-  const BAR_BG = 'rgba(55,201,239,0.65)'; // c2 con alpha
+  const BAR_BG = 'rgba(55,201,239,0.5)'; // c2 con alpha para que destaque la línea
   const LINE_ACC = PALETTE.c1;
 
   // Defaults para que la línea resalte
@@ -436,7 +456,6 @@
     sel.innerHTML = '';
     const opt=document.createElement('option'); opt.value=''; opt.textContent=placeholder; sel.appendChild(opt);
     values.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o); });
-    // intenta preservar selección
     if(values.includes(prev)) sel.value = prev;
   }
   function uniqueSorted(arr){ return Array.from(new Set(arr)).sort(); }
@@ -476,7 +495,7 @@
         document.getElementById('page-title').textContent=a.textContent;
         if(target==='#detalle')      renderTasksByUser();
         if(target==='#lideres')      renderTasksByLeader();
-        if(target==='#evolucion')    renderWeeklyEvolution();
+        if(target==='#evolucion'){   renderWeeklyEvolution(); updateEvolutionKPIs(); }
         if(target==='#ubicacion')    renderByLocation();
       });
     });
@@ -507,7 +526,7 @@
         if(type==='csv') exportSectionCSV();
         if(type==='png') exportSectionPNGs();
         if(type==='zip') exportSectionZIP();
-        if(type==='sheets') exportToGoogleSheets(); // webhook a Apps Script
+        if(type==='sheets') exportToGoogleSheets();
       });
     });
 
@@ -556,7 +575,7 @@
   }
 
   function applyFilters(){
-    // actualizar opciones dependientes ANTES de filtrar (excluyente)
+    // actualizar opciones dependientes (excluyente)
     refreshUserFilterOptions();
 
     const f = {
@@ -583,6 +602,7 @@
     renderTasksByLeader();
     renderWeeklyEvolution();
     renderByLocation();
+    updateEvolutionKPIs();
   }
 
   /**********************
@@ -606,7 +626,7 @@
     let promColor = (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500';
     setColor(promEl, promColor);
 
-    // % Efectividad
+    // % Efectividad (<=75 rojo, 75-87 naranja, 87-90 amarillo, >=90 verde)
     const efPct = ef*100;
     let efColor = (efPct<=75) ? 'text-red-600'
                  : (efPct<87) ? 'text-orange-500'
@@ -620,6 +640,27 @@
     document.getElementById('kpi-correcciones').textContent     = fmt.int(correcc);
     promEl.textContent = fmt.dec(prom);
     efEl.textContent   = fmt.pct(ef);
+  }
+
+  function updateEvolutionKPIs(){
+    const f = flujoSel();
+    const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
+    const usuarios = new Set(currentData.map(r=>r.usuario)).size;
+    const prom = promedioDiario(currentData, f);
+    const vals = currentData.map(r=>r.efectividad).filter(v=>v!=='' && v!==null && v!==undefined);
+    const ef   = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
+
+    const promEl = document.getElementById('evo-kpi-prom');
+    const efEl   = document.getElementById('evo-kpi-ef');
+    setColor(promEl, (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500');
+
+    const efPct = ef*100;
+    setColor(efEl, (efPct<=75) ? 'text-red-600' : (efPct<87) ? 'text-orange-500' : (efPct<90) ? 'text-yellow-500' : 'text-green-600');
+
+    promEl.textContent = fmt.dec(prom);
+    efEl.textContent   = fmt.pct(ef);
+    document.getElementById('evo-kpi-ids').textContent   = fmt.int(idsTrab);
+    document.getElementById('evo-kpi-users').textContent = fmt.int(usuarios);
   }
 
   function createOrUpdateChart(id, cfg){
@@ -637,7 +678,7 @@
       yAxisID:'y',
       backgroundColor: BAR_BG,
       borderColor: 'rgba(0,0,0,0)',
-      order: 1,                    // primero las barras
+      order: 1,
       barPercentage: 0.8,
       categoryPercentage: 0.8
     };
@@ -650,7 +691,7 @@
       yAxisID:'y1',
       borderColor: LINE_ACC,
       backgroundColor: LINE_ACC,
-      order: 2,                    // luego la línea (encima)
+      order: 2,               // la línea por encima de las barras
       fill: false,
       tension: 0.25,
       pointRadius: 3,
@@ -658,7 +699,7 @@
       pointBackgroundColor: '#ffffff',
       pointBorderColor: LINE_ACC,
       borderWidth: 3,
-      spanGaps: true               // evita cortar por pequeños gaps
+      spanGaps: true          // no 0% cuando no hay calidad
     };
   }
 
@@ -734,7 +775,7 @@
     // guarda detalle para los clicks
     nineboxDetailsData = details;
 
-    // delegación de eventos: click en cuadrantes
+    // click en cuadrantes
     grid.onclick = (ev)=>{
       const cell = ev.target.closest('.nb-cell[data-bucket]');
       if(!cell) return;
@@ -1014,7 +1055,7 @@
       }
     });
 
-    // Antigüedad tarjetas (estilo KPI)
+    // Antigüedad tarjetas
     const list = labels.map(loc=>{
       const v=antig[loc]||{sum:0,n:0}; const avg=v.n? v.sum/v.n : 0;
       return [loc, avg];
@@ -1382,8 +1423,6 @@
         headers:['Caja','Usuarios'],
         rows:Object.entries(nb.buckets).map(([k,arr])=>[k, arr.join(' | ')])
       });
-      // faltantes
-      // (opcional)
     }
     if(id==='detalle'){
       const data=buildUsersPromEff(f);
@@ -1451,8 +1490,85 @@
   }
 
   /**********************
-   * GEMINI (opcional)
+   * GEMINI (prompts mejorados)
    **********************/
+  function buildNineboxPrompt(){
+    const f=flujoSel();
+    const total = currentData.reduce((s,r)=>s+tareasFlujo(r,f),0);
+    const prom  = promedioDiario(currentData,f);
+    const efVals= currentData.map(r=>r.efectividad).filter(v=>v!==''&&v!=null);
+    const ef    = efVals.length? efVals.reduce((a,b)=>a+b,0)/efVals.length : 0;
+
+    // conteo por cuadrante
+    const buckets = { 'Prod Alta / Cal Alta':0,'Prod Alta / Cal Media':0,'Prod Alta / Cal Baja':0,'Prod Media / Cal Alta':0,'Prod Media / Cal Media':0,'Prod Media / Cal Baja':0,'Prod Baja / Cal Alta':0,'Prod Baja / Cal Media':0,'Prod Baja / Cal Baja':0 };
+    const map=new Map();
+    currentData.forEach(r=>{
+      const u=r.usuario; const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
+      o.num += tareasFlujo(r,f); o.den += (r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!=null){ o.effSum+=r.efectividad; o.effN++; }
+      map.set(u,o);
+    });
+    const prodBand=p=>(p>=80?'Alta':p>=70?'Media':'Baja');
+    const calBand=e=>(e>=0.90?'Alta':e>=0.75?'Media':'Baja');
+    Array.from(map.values()).forEach(o=>{
+      const prom = o.den?o.num/o.den:null, eff=o.effN?o.effSum/o.effN:null;
+      if(prom==null||eff==null) return;
+      buckets[`Prod ${prodBand(prom)} / Cal ${calBand(eff)}`]++;
+    });
+
+    return `
+Rol: Analista de Calidad y Productividad del proyecto Catálogo (Netkel).
+Objetivo: Sostener/elevar Promedio Diario (target >=80) con % Efectividad >=90% y corregir desvíos LOW.
+
+Contexto (filtros activos): ${JSON.stringify(filtersSummary())}
+KPIs: total_tareas=${total}, prom_diario=${prom.toFixed(2)}, efectividad=${(ef*100).toFixed(2)}%
+
+Distribución Nine-box (Prod x Calidad):
+${Object.entries(buckets).map(([k,v])=>`- ${k}: ${v}`).join('\n')}
+
+Instrucciones:
+1) Entrega 6 hallazgos concretos (tendencias o riesgos).
+2) Propón 3 acciones rápidas y medibles para la próxima semana.
+3) Usa el lenguaje de Catálogo/Netkel: BTC grupal con casos, coaching 1:1, micro-feedback en correcciones, shadowing, dojos/reentrenamiento, calibraciones con QA, chequeo de FAQs/checklist de SdC, limitación temporal de flujos complejos, pairing y revisión por pares, compromisos de mejora (objetivo de efectividad con plazo).
+4) Distingue, si aplica, foco para cuadrantes “Prod Alta / Cal Baja” y “Prod Baja / Cal Alta”.
+Formato: viñetas cortas, accionables y con responsables (“Líder/Colaborador/QA”) y plazo.
+`;
+  }
+
+  function buildDeepInsightsPrompt(){
+    const f = flujoSel();
+    const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
+    const prom = promedioDiario(currentData, f);
+    const efVals = currentData.map(r=>r.efectividad).filter(v=>v!==''&&v!=null);
+    const ef = efVals.length ? efVals.reduce((a,b)=>a+b,0)/efVals.length : 0;
+    const usuarios = Array.from(new Set(currentData.map(r=>r.usuario))).length;
+
+    return `
+Actuá como Analista de Mejora Continua de Catálogo (Netkel).
+Norte: alcanzar/sostener %Efectividad >=90% con Promedio Diario >=80, cuidando experiencia y throughput.
+
+Datos (con filtros actuales):
+- Usuarios activos: ${usuarios}
+- IDs trabajados: ${idsTrab}
+- Promedio Diario: ${prom.toFixed(2)}
+- % Efectividad promedio: ${(ef*100).toFixed(2)}%
+- Filtros: ${JSON.stringify(filtersSummary())}
+
+Qué espero:
+1) “Foto” en 4 bullets (qué va bien / qué preocupa).
+2) Detección de LOWs “ocasionales vs. recurrentes” (define criterio simple por variabilidad y semanas con <90%).
+3) Plan de acción por frente:
+   • Calidad: BTC grupal con casos reales, 1:1 semanales, micro-feedback por corrección, shadowing, dojos/reentrenamiento,
+     calibraciones con QA, checklist de SdC/FAQs, revisión por pares y correcciones ancla.
+   • Productividad: limpieza de colas/colas complejas, orden de priorización, time-boxing, pairing en picos, revisión de reglas de flujo.
+   • Gobierno: compromisos de mejora (% objetivo y plazo), muestreo semanal, seguimiento y cierre.
+4) Riesgos y mitigaciones.
+5) Próximos pasos (máximo 5, con responsable y fecha).
+
+Formato: encabezados breves + viñetas muy concretas y medibles. No inventes datos fuera de lo provisto; si algo falta, sugiere cómo medirlo.
+`;
+  }
+
   async function geminiRequest(prompt) {
     if (!GEMINI_PROXY_URL) return "Configura GEMINI_PROXY_URL.";
     const attempts = [{ prompt: String(prompt) }, { contents: [{ parts: [{ text: String(prompt) }]}] }];
@@ -1471,21 +1587,27 @@
   }
 
   function setupGeminiFeatures(){
+    // Resumen corto enfocado en nine-box
     document.getElementById('generate-summary-btn').addEventListener('click', async ()=>{
       const block = document.getElementById('ninebox-missing');
-      const f=flujoSel();
+      const prompt = buildNineboxPrompt();
       block.classList.remove('hidden');
-      const total = currentData.reduce((s,r)=>s+tareasFlujo(r,f),0);
-      const prom  = promedioDiario(currentData,f);
-      const effVals = currentData.map(r=>r.efectividad).filter(v=>v!==''&&v!=null);
-      const eff = effVals.length? effVals.reduce((a,b)=>a+b,0)/effVals.length : 0;
-
       block.textContent='Generando…';
       try{
-        const prompt = `Sos analista. Con los filtros actuales, resume 6 hallazgos y 3 acciones rápidas. Datos: total=${total}, prom_diario=${prom.toFixed(2)}, efectividad=${(eff*100).toFixed(2)}%.`;
         const resp = await geminiRequest(prompt);
         block.textContent = resp;
       }catch(e){ block.textContent = e.message; }
+    });
+
+    // Análisis profundo
+    document.getElementById('generate-insights-btn').addEventListener('click', async ()=>{
+      const out = document.getElementById('insights-output');
+      out.classList.remove('hidden');
+      out.textContent = 'Analizando…';
+      try{
+        const resp = await geminiRequest(buildDeepInsightsPrompt());
+        out.textContent = resp;
+      }catch(e){ out.textContent = e.message; }
     });
   }
 
