@@ -1450,12 +1450,12 @@
 
     return `🔹 Prompt 1: *Análisis Nine-box con foco en Productividad x Calidad*
 
-Actuá como analista operativo de Catálogo (Netkel), enfocado en detectar oportunidades de mejora en productividad sin sacrificar calidad.
+Actuá como analista operativo de Catálogo (Netkel). Tu objetivo es identificar focos de mejora en productividad sin comprometer la calidad.
 
-🎯 Objetivo: elevar o sostener Promedio Diario (target ≥80) y mantener % Efectividad ≥90%.
+🎯 Objetivo: Sostener o elevar Promedio Diario (target ≥80) con % Efectividad ≥90%.
 
 📊 Filtros activos: ${filtros_activos}
-📈 KPIs actuales:
+📈 KPIs:
 • Total tareas: ${total_tareas}
 • Prom. Diario: ${promedio_diario}
 • % Efectividad: ${efectividad}%
@@ -1463,21 +1463,23 @@ Actuá como analista operativo de Catálogo (Netkel), enfocado en detectar oport
 📦 Distribución actual de perfiles (Nine-box Prod x Calidad):
 ${distribucion_ninebox}
 
-🎯 Reglas de gestión:
-• Seguimiento: 87–89% → sin plan, solo monitoreo
-• Low Moderado: 75–86% → requiere plan 3 semanas
-• Low Grave: <75% → requiere plan intensivo
+🛑 Importante:
+• Una alta concentración en “Prod Alta / Cal Alta” es positiva. No lo señales como problema.
+• No generes alertas si no hay perfiles en cuadrantes problemáticos.
+• Enfocá el análisis SOLO en cuadrantes con baja calidad: “Prod Alta / Cal Baja” y “Prod Baja / Cal Alta”.
 
-🧩 Qué necesito:
-1. Mencioná 6 hallazgos clave (riesgos, patrones, inconsistencias)
-2. Proponé 3 acciones realizables, concretas y personalizadas
-3. Usá solo herramientas internas: BTC, feedback 1:1, checklist, acompañamiento individual, planes 3 semanas
-4. Diferenciá qué hacer con “Prod Alta / Cal Baja” vs “Prod Baja / Cal Alta”
+🧩 Instrucciones:
+1. Listá 4 a 6 hallazgos RELEVANTES y accionables (sin suposiciones sin data).
+2. Proponé 3 acciones concretas solo para perfiles fuera de target (según la tabla LOW actual).
+   - Usá solo herramientas internas: BTC, feedback 1:1, checklist, acompañamiento individual, plan 3 semanas.
+3. En la sección de diferenciación, explicá qué harías si hubiera perfiles en:
+   - “Prod Alta / Cal Baja” → foco en aumentar calidad
+   - “Prod Baja / Cal Alta” → foco en aumentar productividad
 
 📝 Formato:
-• Bullets concisos
-• Acciones con responsable + plazo
-• Tono empático, interno, sin inventar datos`;
+• Bullets claros
+• Cada acción debe incluir responsable y plazo
+• No inventes datos. Sé empático y específico`;
   }
 
   function buildGlobalInsightsPrompt(){
@@ -1491,32 +1493,40 @@ ${distribucion_ninebox}
 
     return `🔹 Prompt 2: *Análisis Global para Coordinación*
 
-Sos analista de mejora continua en Catálogo (Netkel). Apuntás a ayudar al equipo a mejorar productividad sin perder calidad (target: PD ≥80, Efec. ≥90%).
+Sos analista de mejora continua de Catálogo (Netkel). Buscás mantener una operación productiva sin sacrificar calidad (targets: PD ≥80, Efectividad ≥90%).
 
-📊 Filtros actuales: ${filtros_activos}
+📊 Filtros aplicados: ${filtros_activos}
 📌 Datos clave:
 • Usuarios activos: ${usuarios}
 • IDs trabajados: ${ids}
 • Prom. Diario: ${prom}
 • % Efectividad: ${ef}
 
-🧠 Necesito:
-1. Un diagnóstico en 4 bullets: qué va bien / qué preocupa
+🛑 Consideraciones:
+• Si la mayoría está on target, es positivo. No señales como problema.
+• No recomiendes revisar métricas, metodología o distribución si no hay señales claras.
+• Enfocá el análisis en:
+   - Casos recurrentes de baja calidad
+   - Perfiles en plan de trabajo (Low Grave / Low Moderado)
+   - Desvíos sostenidos <90%
+
+🧠 Qué necesito:
+1. Foto general en 4 bullets: qué va bien / qué podría mejorar (solo si hay data)
 2. Identificá perfiles LOW:
-   - Ocasionales (bajan y recuperan)
-   - Recurrentes (baja sostenida)
-3. Para cada LOW, proponé una acción del toolkit real:
-   - BTC grupal con casos
-   - Revisión individual de desvíos
-   - Micro-feedback según error
-   - Checklist por desvíos comunes
-   - Plan 3 semanas con objetivo claro
+   - Ocasionales: bajan 1 semana y recuperan
+   - Recurrentes: bajan sostenidamente
+3. Proponé 3–5 acciones reales usando solo:
+   - BTC con casos
+   - Feedback 1:1 por error frecuente
+   - Checklist personalizada
+   - Plan 3 semanas (según categoría)
    - Acompañamiento individual
-4. Sé breve pero estratégico. Nada genérico.
 
 📢 Formato:
-• Listado con perfiles LOW y acción sugerida
-• Evitá recomendaciones fuera del alcance (ej. contratar más, usar software externo)`;
+• Bullets concretos
+• Perfiles LOW → acción específica → plazo → responsable
+• No inventes ni generalices
+• Tono interno, claro y accionable`;
   }
 
   async function geminiRequest(prompt) {
@@ -1589,3 +1599,4 @@ Sos analista de mejora continua en Catálogo (Netkel). Apuntás a ayudar al equi
   </script>
 </body>
 </html>
+
