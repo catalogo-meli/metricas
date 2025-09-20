@@ -49,7 +49,23 @@
     .ai-output th, .ai-output td { border: 1px solid #cbd5e1; padding: 0.5rem; text-align: left; }
     .ai-output th { background-color: #f1f5f9; }
     .ai-output code { background: #f3f4f6; padding: 0.2rem 0.4rem; border-radius: 4px; }
-    .hint{font-size:.75rem;color:#64748b}
+
+    /* --------- MultiSelect Dropdown (bonito) --------- */
+    .msel { position: relative; }
+    .msel-btn {
+      @apply w-full justify-between px-3 py-2 rounded-md border border-slate-300 bg-white shadow-sm text-left text-sm text-slate-700 flex items-center gap-2;
+    }
+    .msel-btn .chev { transition: transform .2s ease; }
+    .msel.open .msel-btn .chev { transform: rotate(180deg); }
+    .msel-panel {
+      @apply absolute z-50 mt-2 w-full bg-white border border-slate-200 rounded-lg shadow-xl;
+      max-height: 20rem; overflow: hidden;
+    }
+    .msel-panel .head { @apply flex items-center justify-between px-3 py-2 border-b border-slate-200; }
+    .msel-panel .list { max-height: 14rem; overflow:auto; }
+    .msel-item { @apply flex items-center gap-2 px-3 py-2 hover:bg-slate-50 cursor-pointer; }
+    .msel-search { @apply w-full px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500; }
+    .hint{font-size:.8rem;color:#64748b}
   </style>
 </head>
 
@@ -64,12 +80,12 @@
         <h1 class="text-2xl font-bold text-white">Catálogo</h1>
       </div>
       <nav id="nav-menu" class="flex-1 space-y-2">
-        <a href="#resumen" class="sidebar-link active flex items-center p-3 rounded-lg">Resumen General</a>
-        <a href="#detalle" class="sidebar-link flex items-center p-3 rounded-lg">Detalle por Usuario</a>
+        <a href="#resumen" class="sidebar-link active flex items-center p-3 rounded-lg">Visión Global</a>
+        <a href="#detalle" class="sidebar-link flex items-center p-3 rounded-lg">Performance Individual</a>
         <a href="#lideres" class="sidebar-link flex items-center p-3 rounded-lg">Comparativa por Equipo</a>
         <a href="#evolucion" class="sidebar-link flex items-center p-3 rounded-lg">Evolución Semanal</a>
         <a href="#ubicacion" class="sidebar-link flex items-center p-3 rounded-lg">Análisis por Ubicación</a>
-        <a href="#analisis" class="sidebar-link flex items-center p-3 rounded-lg">Análisis Inteligente</a>
+        <a href="#analisis" class="sidebar-link flex items-center p-3 rounded-lg">Insights Avanzados</a>
       </nav>
     </aside>
 
@@ -77,19 +93,20 @@
     <main class="flex-1 overflow-x-hidden overflow-y-auto">
       <div class="container mx-auto px-6 py-8">
         <!-- Header -->
-        <div class="flex flex-wrap justify-between items-center mb-4 gap-3">
+        <div class="flex flex-wrap justify-between items-center mb-6 gap-3">
           <div class="flex items-center gap-3">
             <button id="mobile-menu-button" class="md:hidden text-slate-600">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
               </svg>
             </button>
-            <h2 id="page-title" class="text-3xl font-bold text-slate-700">Resumen General</h2>
+            <h2 id="page-title" class="text-3xl font-bold text-slate-700">Visión Global</h2>
           </div>
 
+          <!-- Toolbar global: limpiar + exportar -->
           <div class="flex items-center gap-2">
             <button id="btn-clear-filters" class="px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-sm">
-              Limpiar filtros
+              Limpiar todos los filtros
             </button>
 
             <div class="dropdown">
@@ -106,21 +123,16 @@
           </div>
         </div>
 
-        <!-- Filtros (reordenados, EXCLUYENTES y MULTI-SELECCIÓN) -->
-        <p class="hint mb-2">Podés elegir varias opciones en cada filtro (Ctrl/Cmd + clic). Las listas se ajustan según lo seleccionado.</p>
+        <!-- Filtros (dropdowns multi con checkboxes) -->
+        <p class="hint mb-2">Usá los dropdowns para seleccionar múltiples valores. Cada filtro puede limpiarse individualmente.</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4 mb-8">
-          <select id="filter-q" multiple class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
-          <select id="filter-mes" multiple class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
-          <select id="filter-semana" multiple class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
-          <select id="filter-ubicacion" multiple class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
-          <select id="filter-lider" multiple class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
-          <select id="filter-usuario" multiple class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
-          <select id="filter-flujo" multiple class="w-full p-2 border rounded-md bg-white shadow-sm">
-            <option value="">Todos los flujos</option>
-            <option value="mixto" selected>Mixto</option>
-            <option value="demanda">Demanda</option>
-            <option value="enhancement">Enhancement</option>
-          </select>
+          <div id="filter-q" class="msel"></div>
+          <div id="filter-mes" class="msel"></div>
+          <div id="filter-semana" class="msel"></div>
+          <div id="filter-ubicacion" class="msel"></div>
+          <div id="filter-lider" class="msel"></div>
+          <div id="filter-usuario" class="msel"></div>
+          <div id="filter-flujo" class="msel"></div>
         </div>
 
         <!-- Secciones -->
@@ -258,7 +270,7 @@
           <!-- IA -->
           <section id="analisis" class="page-section hidden">
             <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-2">Análisis Inteligente con Gemini</h3>
+              <h3 class="text-xl font-semibold mb-2">Insights Avanzados</h3>
               <p class="text-slate-600 mb-4">Insights basados en los datos y filtros actuales.</p>
               <button id="generate-insights-btn" class="bg-sky-600 text-white px-6 py-3 rounded-lg hover:bg-sky-700 transition-colors text-base font-semibold">
                 ✨ Analizar Datos y Generar Sugerencias
@@ -353,52 +365,151 @@
     dec: x => (x ?? 0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})
   };
 
-  /* ---------- Filtros multi ---------- */
-  const getMultiValues = (id) =>
-    Array.from(document.getElementById(id)?.selectedOptions || [])
-      .map(o => o.value)
-      .filter(v => v !== '');
+  /**********************
+   * MULTISELECT DROPDOWNS
+   **********************/
+  const FILTERS = [
+    {key:'q',      id:'filter-q',       label:'Trimestres', placeholder:'Todos los trimestres'},
+    {key:'mes',    id:'filter-mes',     label:'Mes',        placeholder:'Todos los meses'},
+    {key:'semana', id:'filter-semana',  label:'Semana',     placeholder:'Todas las semanas'},
+    {key:'ubic',   id:'filter-ubicacion',label:'Ubicación', placeholder:'Todas las ubicaciones'},
+    {key:'lider',  id:'filter-lider',   label:'Líderes',    placeholder:'Todos los líderes'},
+    {key:'user',   id:'filter-usuario', label:'Usuarios',   placeholder:'Todos los usuarios'},
+    {key:'flows',  id:'filter-flujo',   label:'Flujo',      placeholder:'Todos los flujos', isFlow:true}
+  ];
+  const defById = Object.fromEntries(FILTERS.map(d=>[d.id,d]));
+  const defByKey = Object.fromEntries(FILTERS.map(d=>[d.key,d]));
 
-  function setOptions(sel, values, placeholder){
-    const prev = Array.from(sel.selectedOptions || []).map(o=>o.value);
-    sel.innerHTML = '';
-    // opción placeholder
-    const opt=document.createElement('option'); opt.value=''; opt.textContent=placeholder; sel.appendChild(opt);
-    values.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o); });
-    // restaurar selección múltiple previa si aplica
-    prev.forEach(v=>{
-      const o = Array.from(sel.options).find(x=>x.value===v);
-      if(o) o.selected = true;
+  // Estado seleccionado
+  const sel = {
+    q:new Set(), mes:new Set(), semana:new Set(), ubic:new Set(), lider:new Set(), user:new Set(),
+    flows:new Set(['mixto']) // por defecto
+  };
+
+  function createDropdownHTML(def){
+    const c = document.getElementById(def.id);
+    c.innerHTML = `
+      <button type="button" class="msel-btn" aria-haspopup="listbox" aria-expanded="false">
+        <span class="msel-text">${def.placeholder}</span>
+        <svg class="chev h-5 w-5 text-slate-500" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/>
+        </svg>
+      </button>
+      <div class="msel-panel hidden">
+        <div class="head">
+          <span class="text-sm font-medium">${def.label}</span>
+          <div class="flex items-center gap-2">
+            <input type="text" placeholder="Buscar..." class="msel-search hidden sm:block">
+            <button class="text-xs text-sky-600 hover:underline" data-clear>Limpiar</button>
+          </div>
+        </div>
+        <div class="list"></div>
+      </div>
+    `;
+    c.querySelector('.msel-btn').addEventListener('click', (e)=>{
+      e.stopPropagation();
+      closeAllDropdowns(def.id);
+      c.classList.toggle('open');
+      c.querySelector('.msel-panel').classList.toggle('hidden');
+      c.querySelector('.msel-btn').setAttribute('aria-expanded', c.classList.contains('open')?'true':'false');
+    });
+    c.querySelector('[data-clear]').addEventListener('click', (e)=>{
+      e.preventDefault(); e.stopPropagation();
+      if(def.isFlow){ sel.flows = new Set(['mixto']); }
+      else { sel[def.key].clear(); }
+      updateDropdownOptions(def.id); // vuelve a dibujar checks
+      updateDropdownLabel(def.id);
+      applyFilters();
+    });
+    const search = c.querySelector('.msel-search');
+    search.addEventListener('input', ()=>{
+      const term = search.value.toLowerCase();
+      c.querySelectorAll('.msel-item').forEach(it=>{
+        const t = it.getAttribute('data-text');
+        it.classList.toggle('hidden', t.indexOf(term)===-1);
+      });
     });
   }
 
-  function clearMulti(id){
-    const el = document.getElementById(id);
-    Array.from(el.options).forEach(o => o.selected = false);
-    if(el.options.length) el.options[0].selected = true; // placeholder
+  function closeAllDropdowns(exceptId){
+    document.querySelectorAll('.msel').forEach(el=>{
+      if(exceptId && el.id===exceptId) return;
+      el.classList.remove('open');
+      const p=el.querySelector('.msel-panel');
+      if(p) p.classList.add('hidden');
+      const b=el.querySelector('.msel-btn');
+      if(b) b.setAttribute('aria-expanded','false');
+    });
+  }
+  document.addEventListener('click', ()=>closeAllDropdowns());
+
+  function updateDropdownLabel(id){
+    const def = defById[id];
+    const values = Array.from(sel[def.key] || []);
+    const el = document.querySelector(`#${id} .msel-text`);
+    if(!values.length){
+      el.textContent = def.placeholder;
+      return;
+    }
+    const txt = values.length<=2 ? `${def.label}: ${values.join(', ')}`
+                                 : `${def.label}: ${values.slice(0,2).join(', ')} +${values.length-2}`;
+    el.textContent = txt;
   }
 
-  /* ---------- Flujos multi ---------- */
-  const selectedFlows = () => {
-    const vals = getMultiValues('filter-flujo');
-    if (!vals.length) return ['mixto'];
-    return vals.includes('mixto') ? ['mixto'] : vals;
-  };
-  const tareasByFlows = (r, flows) => {
-    if (flows.includes('mixto')) return (r.total_tareas||0);
-    let s = 0;
-    if (flows.includes('demanda')) s += (r.tareas_demanda||0);
-    if (flows.includes('enhancement')) s += (r.tareas_enhancement||0);
-    return s;
-  };
-  function promedioDiario(rows, flows){
-    const den = rows.reduce((s,r)=> s + (r.dias_activos||0), 0);
-    const num = rows.reduce((s,r)=> s + tareasByFlows(r,flows), 0);
-    return den ? num/den : 0;
+  function updateDropdownOptions(id, values=[]){
+    const def = defById[id];
+    const list = document.querySelector(`#${id} .list`);
+    // clamp selección a valores permitidos
+    if(!def.isFlow){
+      const allowed = new Set(values);
+      sel[def.key] = new Set(Array.from(sel[def.key]).filter(v=>allowed.has(v)));
+    }
+
+    // opciones por defecto para flujo
+    if(def.isFlow && values.length===0){
+      values = ['mixto','demanda','enhancement'];
+    }
+
+    // render
+    list.innerHTML = values.map(v=>{
+      const safeId = `${id}-${btoa(encodeURIComponent(String(v))).replace(/=/g,'')}`;
+      const checked = sel[def.key].has(v) ? 'checked' : '';
+      return `
+        <label class="msel-item" data-text="${String(v).toLowerCase()}">
+          <input type="checkbox" class="msel-check" id="${safeId}" value="${v}" ${checked}>
+          <span class="text-sm">${v}</span>
+        </label>`;
+    }).join('');
+
+    // listeners
+    list.querySelectorAll('.msel-check').forEach(chk=>{
+      chk.addEventListener('change', ()=>{
+        const val = chk.value;
+        if(def.isFlow){
+          if(val==='mixto' && chk.checked){
+            sel.flows = new Set(['mixto']);
+          }else{
+            sel.flows.delete('mixto');
+            if(chk.checked) sel.flows.add(val); else sel.flows.delete(val);
+            if(sel.flows.size===0) sel.flows = new Set(['mixto']); // fallback
+          }
+          // re-render checks por exclusividad de Mixto
+          updateDropdownOptions(id, values);
+        }else{
+          if(chk.checked) sel[def.key].add(val); else sel[def.key].delete(val);
+        }
+        updateDropdownLabel(id);
+        applyFilters();
+      });
+    });
+
+    updateDropdownLabel(id);
   }
-  function setColor(el, color){
-    el.classList.remove('text-red-600','text-yellow-500','text-green-600','text-orange-500');
-    if(color) el.classList.add(color);
+
+  function setupDropdowns(){
+    FILTERS.forEach(def=>{
+      createDropdownHTML(def);
+    });
   }
 
   /**********************
@@ -500,6 +611,9 @@
   function uniqueSortedNum(arr){ return Array.from(new Set(arr)).sort((a,b)=>a-b); }
 
   function setupFilters(){
+    setupDropdowns(); // crea el esqueleto visual
+
+    // llenar opciones iniciales
     const meses   = MONTHS_ES.filter(m => originalData.some(r=>r.mes===m));
     const semanas = uniqueSortedNum(originalData.map(r=>r.week)).map(String);
     const ubic    = uniqueSorted(originalData.map(r=>r.ciudad).filter(Boolean));
@@ -507,16 +621,13 @@
     const lideres = uniqueSorted(originalData.map(r=>r['líder']).filter(l => l && l.toLowerCase()!=='sin líder'));
     const qs      = ['Q1','Q2','Q3','Q4'].filter(q => originalData.some(r=>r.q===q));
 
-    setOptions(document.getElementById('filter-mes'), meses, 'Todos los meses');
-    setOptions(document.getElementById('filter-semana'), semanas, 'Todas las semanas');
-    setOptions(document.getElementById('filter-ubicacion'), ubic, 'Todas las ubicaciones');
-    setOptions(document.getElementById('filter-usuario'), usuarios, 'Todos los usuarios');
-    setOptions(document.getElementById('filter-lider'), lideres, 'Todos los líderes');
-    setOptions(document.getElementById('filter-q'), qs, 'Todos los trimestres');
-
-    // listeners
-    ['filter-mes','filter-semana','filter-ubicacion','filter-usuario','filter-lider','filter-q','filter-flujo']
-      .forEach(id => document.getElementById(id).addEventListener('change', applyFilters));
+    updateDropdownOptions('filter-mes', meses);
+    updateDropdownOptions('filter-semana', semanas);
+    updateDropdownOptions('filter-ubicacion', ubic);
+    updateDropdownOptions('filter-usuario', usuarios);
+    updateDropdownOptions('filter-lider', lideres);
+    updateDropdownOptions('filter-q', qs);
+    updateDropdownOptions('filter-flujo', ['mixto','demanda','enhancement']); // flujo
   }
 
   function setupNavigation(){
@@ -564,48 +675,56 @@
         if(type==='csv') exportSectionCSV();
         if(type==='png') exportSectionPNGs();
         if(type==='zip') exportSectionZIP();
-        if(type==='sheets') exportToGoogleSheets();
+        if(type==='sheets') exportToGoogleSheets && exportToGoogleSheets();
       });
     });
 
-    // Limpiar filtros
+    // Limpiar todos los filtros
     document.getElementById('btn-clear-filters').addEventListener('click', ()=>{
-      ['filter-mes','filter-semana','filter-ubicacion','filter-usuario','filter-lider','filter-q'].forEach(clearMulti);
-      // Flujo vuelve a Mixto
-      const ff = document.getElementById('filter-flujo');
-      Array.from(ff.options).forEach(o=>o.selected=false);
-      const optMixto = Array.from(ff.options).find(o=>o.value==='mixto');
-      if(optMixto) optMixto.selected = true;
+      sel.q.clear(); sel.mes.clear(); sel.semana.clear(); sel.ubic.clear(); sel.lider.clear(); sel.user.clear();
+      sel.flows = new Set(['mixto']);
+      refreshDependentFilters();
+      // Volver a etiquetas por defecto
+      FILTERS.forEach(def=>updateDropdownLabel(def.id));
       applyFilters();
     });
   }
 
   function getFilterState(){
     return {
-      mes:     getMultiValues('filter-mes'),
-      semana:  getMultiValues('filter-semana'),
-      ubic:    getMultiValues('filter-ubicacion'),
-      user:    getMultiValues('filter-usuario'),
-      lider:   getMultiValues('filter-lider'),
-      q:       getMultiValues('filter-q'),
+      mes:     Array.from(sel.mes),
+      semana:  Array.from(sel.semana).map(String),
+      ubic:    Array.from(sel.ubic),
+      user:    Array.from(sel.user),
+      lider:   Array.from(sel.lider),
+      q:       Array.from(sel.q),
       flows:   selectedFlows()
     };
   }
 
-  function filtersSummary() {
-    const f = getFilterState();
-    return {
-      Trimestre: f.q.join(', ') || 'Todos',
-      Mes: f.mes.join(', ') || 'Todos',
-      Semana: f.semana.join(', ') || 'Todas',
-      Ubicacion: f.ubic.join(', ') || 'Todas',
-      Lider: f.lider.join(', ') || 'Todos',
-      Usuario: f.user.join(', ') || 'Todos',
-      Flujo: f.flows.join(' + ')
-    };
+  function selectedFlows(){
+    const values = Array.from(sel.flows);
+    if(values.length===0 || values.includes('mixto')) return ['mixto'];
+    return values;
+  }
+  const tareasByFlows = (r, flows) => {
+    if (flows.includes('mixto')) return (r.total_tareas||0);
+    let s = 0;
+    if (flows.includes('demanda')) s += (r.tareas_demanda||0);
+    if (flows.includes('enhancement')) s += (r.tareas_enhancement||0);
+    return s;
+  };
+  function promedioDiario(rows, flows){
+    const den = rows.reduce((s,r)=> s + (r.dias_activos||0), 0);
+    const num = rows.reduce((s,r)=> s + tareasByFlows(r,flows), 0);
+    return den ? num/den : 0;
+  }
+  function setColor(el, color){
+    el.classList.remove('text-red-600','text-yellow-500','text-green-600','text-orange-500');
+    if(color) el.classList.add(color);
   }
 
-  // Data filtrada por todo excepto la clave indicada (para recalcular opciones válidas)
+  // Data filtrada por todo excepto una clave (para recalcular opciones válidas)
   function filteredOriginalDataExcept(exceptKey){
     const v = getFilterState();
     return originalData.filter(r =>
@@ -623,42 +742,44 @@
     {
       const allowed = filteredOriginalDataExcept('q');
       const qs = ['Q1','Q2','Q3','Q4'].filter(q => allowed.some(r=>r.q===q));
-      setOptions(document.getElementById('filter-q'), qs, 'Todos los trimestres');
+      updateDropdownOptions('filter-q', qs);
     }
     // Mes
     {
       const allowed = filteredOriginalDataExcept('mes');
       const meses = MONTHS_ES.filter(m => allowed.some(r=>r.mes===m));
-      setOptions(document.getElementById('filter-mes'), meses, 'Todos los meses');
+      updateDropdownOptions('filter-mes', meses);
     }
     // Semana
     {
       const allowed = filteredOriginalDataExcept('semana');
       const semanas = uniqueSortedNum(allowed.map(r=>r.week)).map(String);
-      setOptions(document.getElementById('filter-semana'), semanas, 'Todas las semanas');
+      updateDropdownOptions('filter-semana', semanas);
     }
     // Ubicación
     {
       const allowed = filteredOriginalDataExcept('ubic');
       const ubic = uniqueSorted(allowed.map(r=>r.ciudad).filter(Boolean));
-      setOptions(document.getElementById('filter-ubicacion'), ubic, 'Todas las ubicaciones');
+      updateDropdownOptions('filter-ubicacion', ubic);
     }
     // Líder
     {
       const allowed = filteredOriginalDataExcept('lider');
       const lideres = uniqueSorted(allowed.map(r=>r['líder']).filter(l => l && l.toLowerCase()!=='sin líder'));
-      setOptions(document.getElementById('filter-lider'), lideres, 'Todos los líderes');
+      updateDropdownOptions('filter-lider', lideres);
     }
     // Usuario
     {
       const allowed = filteredOriginalDataExcept('user');
       const usuarios= uniqueSorted(allowed.map(r=>r.usuario));
-      setOptions(document.getElementById('filter-usuario'), usuarios, 'Todos los usuarios');
+      updateDropdownOptions('filter-usuario', usuarios);
     }
+    // Flujo (estático, pero re-render para mantener etiqueta)
+    updateDropdownOptions('filter-flujo', ['mixto','demanda','enhancement']);
   }
 
   function applyFilters(){
-    refreshDependentFilters(); // recalcula opciones válidas de todos
+    refreshDependentFilters(); // recalcula opciones válidas en todos
 
     const f = getFilterState();
     currentData = originalData.filter(r =>
@@ -764,7 +885,6 @@
     charts[id]=new Chart(ctx,cfg); return charts[id];
   }
 
-  // Helpers para datasets de barras + línea
   function barDataset(label, data){
     return {
       type:'bar',
@@ -820,8 +940,8 @@
     const prodBand = p => (p>=80 ? 'alta' : p>=70 ? 'media' : 'baja');
     const calBand  = e => (e>=0.90 ? 'alta' : e>=0.75 ? 'media' : 'baja');
 
-    const rows=['alta','media','baja']; // productividad
-    const cols=['alta','media','baja']; // calidad
+    const rows=['alta','media','baja'];
+    const cols=['alta','media','baja'];
 
     const buckets = {};
     const details = {};
@@ -1455,8 +1575,21 @@
   }
 
   /**********************
-   * GEMINI (prompts actualizados)
+   * GEMINI (prompts + render enriquecido)
    **********************/
+  function filtersSummary() {
+    const f = getFilterState();
+    return {
+      Trimestre: f.q.join(', ') || 'Todos',
+      Mes: f.mes.join(', ') || 'Todos',
+      Semana: f.semana.join(', ') || 'Todas',
+      Ubicacion: f.ubic.join(', ') || 'Todas',
+      Lider: f.lider.join(', ') || 'Todos',
+      Usuario: f.user.join(', ') || 'Todos',
+      Flujo: f.flows.join(' + ')
+    };
+  }
+
   function buildNineboxPrompt(){
     const flows=selectedFlows();
     const filtros_activos = JSON.stringify(filtersSummary());
