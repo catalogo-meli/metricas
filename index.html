@@ -44,6 +44,8 @@
     .dropdown-menu a:hover{background:#f1f5f9}
     /* IA */
     #insights-output{white-space:pre-wrap}
+    /* Multiselect hint */
+    .hint{font-size:.75rem;color:#64748b}
   </style>
 </head>
 
@@ -71,7 +73,7 @@
     <main class="flex-1 overflow-x-hidden overflow-y-auto">
       <div class="container mx-auto px-6 py-8">
         <!-- Header -->
-        <div class="flex flex-wrap justify-between items-center mb-6 gap-3">
+        <div class="flex flex-wrap justify-between items-center mb-4 gap-3">
           <div class="flex items-center gap-3">
             <button id="mobile-menu-button" class="md:hidden text-slate-600">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -81,7 +83,6 @@
             <h2 id="page-title" class="text-3xl font-bold text-slate-700">Resumen General</h2>
           </div>
 
-          <!-- Toolbar global: limpiar + exportar -->
           <div class="flex items-center gap-2">
             <button id="btn-clear-filters" class="px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-sm">
               Limpiar filtros
@@ -101,16 +102,18 @@
           </div>
         </div>
 
-        <!-- Filtros (reordenados y excluyentes) -->
+        <!-- Filtros (reordenados, EXCLUYENTES y MULTI-SELECCIÓN) -->
+        <p class="hint mb-2">Podés elegir varias opciones en cada filtro (Ctrl/Cmd + clic). Las listas se ajustan según lo seleccionado.</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4 mb-8">
-          <select id="filter-q" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
-          <select id="filter-mes" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
-          <select id="filter-semana" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
-          <select id="filter-ubicacion" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
-          <select id="filter-lider" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
-          <select id="filter-usuario" class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
-          <select id="filter-flujo" class="w-full p-2 border rounded-md bg-white shadow-sm">
-            <option value="mixto">Flujo mixto</option>
+          <select id="filter-q" multiple class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
+          <select id="filter-mes" multiple class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
+          <select id="filter-semana" multiple class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
+          <select id="filter-ubicacion" multiple class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
+          <select id="filter-lider" multiple class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
+          <select id="filter-usuario" multiple class="w-full p-2 border rounded-md bg-white shadow-sm"></select>
+          <select id="filter-flujo" multiple class="w-full p-2 border rounded-md bg-white shadow-sm">
+            <option value="">Todos los flujos</option>
+            <option value="mixto" selected>Mixto</option>
             <option value="demanda">Demanda</option>
             <option value="enhancement">Enhancement</option>
           </select>
@@ -346,12 +349,47 @@
     dec: x => (x ?? 0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})
   };
 
-  // Flujo helpers
-  const flujoSel = ()=> (document.getElementById('filter-flujo')?.value || 'mixto').toLowerCase();
-  const tareasFlujo = (r, f) => f==='demanda' ? (r.tareas_demanda||0) : f==='enhancement' ? (r.tareas_enhancement||0) : (r.total_tareas||0);
-  function promedioDiario(rows, f){
+  /* ---------- Filtros multi ---------- */
+  const getMultiValues = (id) =>
+    Array.from(document.getElementById(id)?.selectedOptions || [])
+      .map(o => o.value)
+      .filter(v => v !== '');
+
+  function setOptions(sel, values, placeholder){
+    const prev = Array.from(sel.selectedOptions || []).map(o=>o.value);
+    sel.innerHTML = '';
+    // opción placeholder
+    const opt=document.createElement('option'); opt.value=''; opt.textContent=placeholder; sel.appendChild(opt);
+    values.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o); });
+    // restaurar selección múltiple previa si aplica
+    prev.forEach(v=>{
+      const o = Array.from(sel.options).find(x=>x.value===v);
+      if(o) o.selected = true;
+    });
+  }
+
+  function clearMulti(id){
+    const el = document.getElementById(id);
+    Array.from(el.options).forEach(o => o.selected = false);
+    if(el.options.length) el.options[0].selected = true; // placeholder
+  }
+
+  /* ---------- Flujos multi ---------- */
+  const selectedFlows = () => {
+    const vals = getMultiValues('filter-flujo');
+    if (!vals.length) return ['mixto'];
+    return vals.includes('mixto') ? ['mixto'] : vals;
+  };
+  const tareasByFlows = (r, flows) => {
+    if (flows.includes('mixto')) return (r.total_tareas||0);
+    let s = 0;
+    if (flows.includes('demanda')) s += (r.tareas_demanda||0);
+    if (flows.includes('enhancement')) s += (r.tareas_enhancement||0);
+    return s;
+  };
+  function promedioDiario(rows, flows){
     const den = rows.reduce((s,r)=> s + (r.dias_activos||0), 0);
-    const num = rows.reduce((s,r)=> s + tareasFlujo(r,f), 0);
+    const num = rows.reduce((s,r)=> s + tareasByFlows(r,flows), 0);
     return den ? num/den : 0;
   }
   function setColor(el, color){
@@ -454,13 +492,6 @@
   /**********************
    * FILTROS + NAV
    **********************/
-  function setOptions(sel, values, placeholder){
-    const prev = sel.value;
-    sel.innerHTML = '';
-    const opt=document.createElement('option'); opt.value=''; opt.textContent=placeholder; sel.appendChild(opt);
-    values.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o); });
-    if(values.includes(prev)) sel.value = prev;
-  }
   function uniqueSorted(arr){ return Array.from(new Set(arr)).sort(); }
   function uniqueSortedNum(arr){ return Array.from(new Set(arr)).sort((a,b)=>a-b); }
 
@@ -479,6 +510,7 @@
     setOptions(document.getElementById('filter-lider'), lideres, 'Todos los líderes');
     setOptions(document.getElementById('filter-q'), qs, 'Todos los trimestres');
 
+    // listeners
     ['filter-mes','filter-semana','filter-ubicacion','filter-usuario','filter-lider','filter-q','filter-flujo']
       .forEach(id => document.getElementById(id).addEventListener('change', applyFilters));
   }
@@ -534,50 +566,56 @@
 
     // Limpiar filtros
     document.getElementById('btn-clear-filters').addEventListener('click', ()=>{
-      ['filter-mes','filter-semana','filter-ubicacion','filter-usuario','filter-lider','filter-q'].forEach(id=>{
-        const el=document.getElementById(id); if(el) el.value='';
-      });
-      const f=document.getElementById('filter-flujo'); if(f) f.value='mixto';
+      ['filter-mes','filter-semana','filter-ubicacion','filter-usuario','filter-lider','filter-q'].forEach(clearMulti);
+      // Flujo vuelve a Mixto
+      const ff = document.getElementById('filter-flujo');
+      Array.from(ff.options).forEach(o=>o.selected=false);
+      const optMixto = Array.from(ff.options).find(o=>o.value==='mixto');
+      if(optMixto) optMixto.selected = true;
       applyFilters();
     });
   }
 
-  function filtersSummary() {
-    const grab = id => document.getElementById(id)?.value || '';
-    const flujo = (document.getElementById('filter-flujo')?.value || 'mixto');
+  function getFilterState(){
     return {
-      Trimestre: grab('filter-q'),
-      Mes: grab('filter-mes'),
-      Semana: grab('filter-semana'),
-      Ubicacion: grab('filter-ubicacion'),
-      Lider: grab('filter-lider'),
-      Usuario: grab('filter-usuario'),
-      Flujo: flujo
+      mes:     getMultiValues('filter-mes'),
+      semana:  getMultiValues('filter-semana'),
+      ubic:    getMultiValues('filter-ubicacion'),
+      user:    getMultiValues('filter-usuario'),
+      lider:   getMultiValues('filter-lider'),
+      q:       getMultiValues('filter-q'),
+      flows:   selectedFlows()
     };
   }
 
-  // --- EXCLUYENTES entre Q ↔ Mes ↔ Semana ↔ Ubicación ↔ Líder ↔ Usuario
-  function filteredOriginalDataExcept(exceptKey){
-    const v = {
-      mes:document.getElementById('filter-mes').value,
-      semana:document.getElementById('filter-semana').value,
-      ubic:document.getElementById('filter-ubicacion').value,
-      user:document.getElementById('filter-usuario').value,
-      lider:document.getElementById('filter-lider').value,
-      q:document.getElementById('filter-q').value
+  function filtersSummary() {
+    const f = getFilterState();
+    return {
+      Trimestre: f.q.join(', ') || 'Todos',
+      Mes: f.mes.join(', ') || 'Todos',
+      Semana: f.semana.join(', ') || 'Todas',
+      Ubicacion: f.ubic.join(', ') || 'Todas',
+      Lider: f.lider.join(', ') || 'Todos',
+      Usuario: f.user.join(', ') || 'Todos',
+      Flujo: f.flows.join(' + ')
     };
+  }
+
+  // Data filtrada por todo excepto la clave indicada (para recalcular opciones válidas)
+  function filteredOriginalDataExcept(exceptKey){
+    const v = getFilterState();
     return originalData.filter(r =>
-      (exceptKey==='mes'    || !v.mes    || r.mes === v.mes) &&
-      (exceptKey==='semana' || !v.semana || String(r.week) === String(v.semana)) &&
-      (exceptKey==='ubic'   || !v.ubic   || r.ciudad === v.ubic) &&
-      (exceptKey==='user'   || !v.user   || r.usuario === v.user) &&
-      (exceptKey==='lider'  || !v.lider  || r['líder'] === v.lider) &&
-      (exceptKey==='q'      || !v.q      || r.q === v.q)
+      (exceptKey==='mes'    || v.mes.length===0    || v.mes.includes(r.mes)) &&
+      (exceptKey==='semana' || v.semana.length===0 || v.semana.includes(String(r.week))) &&
+      (exceptKey==='ubic'   || v.ubic.length===0   || v.ubic.includes(r.ciudad)) &&
+      (exceptKey==='user'   || v.user.length===0   || v.user.includes(r.usuario)) &&
+      (exceptKey==='lider'  || v.lider.length===0  || v.lider.includes(r['líder'])) &&
+      (exceptKey==='q'      || v.q.length===0      || v.q.includes(r.q))
     );
   }
 
   function refreshDependentFilters(){
-    // Trimestre
+    // Q
     {
       const allowed = filteredOriginalDataExcept('q');
       const qs = ['Q1','Q2','Q3','Q4'].filter(q => allowed.some(r=>r.q===q));
@@ -618,21 +656,14 @@
   function applyFilters(){
     refreshDependentFilters(); // recalcula opciones válidas de todos
 
-    const f = {
-      mes:document.getElementById('filter-mes').value,
-      semana:document.getElementById('filter-semana').value,
-      ubic:document.getElementById('filter-ubicacion').value,
-      user:document.getElementById('filter-usuario').value,
-      lider:document.getElementById('filter-lider').value,
-      q:document.getElementById('filter-q').value
-    };
+    const f = getFilterState();
     currentData = originalData.filter(r =>
-      (!f.mes   || r.mes === f.mes) &&
-      (!f.semana|| String(r.week) === String(f.semana)) &&
-      (!f.ubic  || r.ciudad === f.ubic) &&
-      (!f.user  || r.usuario === f.user) &&
-      (!f.lider || r['líder'] === f.lider) &&
-      (!f.q     || r.q === f.q)
+      (f.mes.length===0    || f.mes.includes(r.mes)) &&
+      (f.semana.length===0 || f.semana.includes(String(r.week))) &&
+      (f.ubic.length===0   || f.ubic.includes(r.ciudad)) &&
+      (f.user.length===0   || f.user.includes(r.usuario)) &&
+      (f.lider.length===0  || f.lider.includes(r['líder'])) &&
+      (f.q.length===0      || f.q.includes(r.q))
     );
 
     updateKPIs();
@@ -650,13 +681,13 @@
    * KPI + RENDER
    **********************/
   function updateKPIs(){
-    const f = flujoSel();
+    const flows = selectedFlows();
 
-    const totalFlujo = currentData.reduce((s,r)=> s + tareasFlujo(r,f), 0);
+    const totalFlujo = currentData.reduce((s,r)=> s + tareasByFlows(r,flows), 0);
     const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
     const usuarios = new Set(currentData.map(r=>r.usuario)).size;
     const correcc = currentData.reduce((s,r)=> s + (r.correcciones_auditadas||0), 0);
-    const prom = promedioDiario(currentData, f);
+    const prom = promedioDiario(currentData, flows);
     const vals = currentData.map(r=>r.efectividad).filter(v => v!=='' && v!==null && v!==undefined);
     const ef = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
 
@@ -683,10 +714,10 @@
 
   // KPIs a la derecha del gráfico en "Evolución Semanal"
   function updateEvolutionKPIs(){
-    const f = flujoSel();
+    const flows = selectedFlows();
     const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
     const usuarios = new Set(currentData.map(r=>r.usuario)).size;
-    const prom = promedioDiario(currentData, f);
+    const prom = promedioDiario(currentData, flows);
     const vals = currentData.map(r=>r.efectividad).filter(v=>v!=='' && v!==null && v!==undefined);
     const ef   = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
 
@@ -705,9 +736,9 @@
 
   // KPIs a la derecha del gráfico en "Detalle por Usuario"
   function updateDetailKPIs(){
-    const f = flujoSel();
+    const flows = selectedFlows();
     const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
-    const prom = promedioDiario(currentData, f);
+    const prom = promedioDiario(currentData, flows);
     const vals = currentData.map(r=>r.efectividad).filter(v=>v!=='' && v!==null && v!==undefined);
     const ef   = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
 
@@ -765,13 +796,13 @@
 
   /* ---------- Nine-box ---------- */
   function renderNineBox(){
-    const f = flujoSel();
+    const flows = selectedFlows();
 
     const map = new Map(); // user -> {num,den, effSum, effN}
     currentData.forEach(r=>{
       const u=r.usuario;
       const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
-      o.num += tareasFlujo(r,f); o.den += (r.dias_activos||0);
+      o.num += tareasByFlows(r,flows); o.den += (r.dias_activos||0);
       if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){ o.effSum+=r.efectividad; o.effN++; }
       map.set(u,o);
     });
@@ -932,12 +963,12 @@
 
   /* ---------- Detalle por usuario ---------- */
   function renderTasksByUser(){
-    const f = flujoSel();
+    const flows = selectedFlows();
 
     const agg = new Map(); // user -> {num,den, effNum, effDen}
     currentData.forEach(r=>{
       const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
-      o.num += tareasFlujo(r,f);
+      o.num += tareasByFlows(r,flows);
       o.den += (r.dias_activos||0);
       if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
         const w=(r.correcciones_auditadas||0)||1;
@@ -973,12 +1004,12 @@
 
   /* ---------- Comparativa por equipo ---------- */
   function renderTasksByLeader(){
-    const f = flujoSel();
+    const flows = selectedFlows();
     const agg = new Map(); // líder -> {num,den, effNum, effDen}
     currentData.forEach(r=>{
       const l = r['líder']; if(!l || l.toLowerCase()==='sin líder') return;
       const o = agg.get(l) || {num:0,den:0,effNum:0,effDen:0};
-      o.num += tareasFlujo(r,f);
+      o.num += tareasByFlows(r,flows);
       o.den += (r.dias_activos||0);
       if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
         const w = (r.correcciones_auditadas || 0) || 1;
@@ -1014,12 +1045,12 @@
 
   /* ---------- Evolución semanal ---------- */
   function renderWeeklyEvolution(){
-    const f = flujoSel();
+    const flows = selectedFlows();
     const agg = new Map(); // week -> {num,den, effNum, effDen}
     currentData.forEach(r=>{
       const w = Number(r.week); if(!Number.isFinite(w)) return;
       const o = agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
-      o.num += tareasFlujo(r,f);
+      o.num += tareasByFlows(r,flows);
       o.den += (r.dias_activos||0);
       if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
         const weight = (r.correcciones_auditadas||0)||1;
@@ -1064,7 +1095,7 @@
 
   /* ---------- Ubicación ---------- */
   function renderByLocation(){
-    const f = flujoSel();
+    const flows = selectedFlows();
     const byLoc = new Map(); // ciudad -> {num,den}
     const effLoc = new Map(); // ciudad -> {num,den}
     const antig = {}; // ciudad -> {sum, n}
@@ -1072,7 +1103,7 @@
     currentData.forEach(r=>{
       const c=r.ciudad||'Sin ubicación';
       const o=byLoc.get(c)||{num:0,den:0};
-      o.num += tareasFlujo(r,f); o.den += (r.dias_activos||0); byLoc.set(c,o);
+      o.num += tareasByFlows(r,flows); o.den += (r.dias_activos||0); byLoc.set(c,o);
 
       if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
         const w=(r.correcciones_auditadas||0)||1;
@@ -1133,12 +1164,12 @@
   /**********************
    * BUILDERS + EXPORTS
    **********************/
-  function buildNineboxData(f) {
+  function buildNineboxData(flows) {
     const map = new Map(); // user -> {num,den, effSum, effN}
     currentData.forEach(r=>{
       const u=r.usuario;
       const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
-      const t = (f==='demanda') ? (r.tareas_demanda||0) : (f==='enhancement') ? (r.tareas_enhancement||0) : (r.total_tareas||0);
+      const t = tareasByFlows(r,flows);
       o.num += t; o.den += (r.dias_activos||0);
       if(r.efectividad!=='' && r.efectividad!=null){ o.effSum+=r.efectividad; o.effN++; }
       map.set(u,o);
@@ -1165,11 +1196,11 @@
     return { buckets, missing };
   }
 
-  function buildUsersPromEff(f){
+  function buildUsersPromEff(flows){
     const agg = new Map(); // user -> {num,den, effNum, effDen}
     currentData.forEach(r=>{
       const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
-      const t = (f==='demanda') ? (r.tareas_demanda||0) : (f==='enhancement') ? (r.tareas_enhancement||0) : (r.total_tareas||0);
+      const t = tareasByFlows(r,flows);
       o.num += t; o.den += (r.dias_activos||0);
       if(r.efectividad!=='' && r.efectividad!=null){
         const w=(r.correcciones_auditadas||0)||1;
@@ -1182,12 +1213,12 @@
     })).sort((a,b)=>b.prom-a.prom);
   }
 
-  function buildLideresData(f){
+  function buildLideresData(flows){
     const agg = new Map(); // líder -> {num,den, effNum, effDen}
     currentData.forEach(r=>{
       const l=r['líder']; if(!l || l.toLowerCase()==='sin líder') return;
       const o=agg.get(l)||{num:0,den:0,effNum:0,effDen:0};
-      const t = (f==='demanda') ? (r.tareas_demanda||0) : (f==='enhancement') ? (r.tareas_enhancement||0) : (r.total_tareas||0);
+      const t = tareasByFlows(r,flows);
       o.num += t; o.den += (r.dias_activos||0);
       if(r.efectividad!=='' && r.efectividad!=null){
         const w=(r.correcciones_auditadas||0)||1;
@@ -1200,12 +1231,12 @@
     })).sort((a,b)=>b.prom-a.prom);
   }
 
-  function buildEvolucionData(f){
+  function buildEvolucionData(flows){
     const agg = new Map(); // week -> {num,den, effNum, effDen}
     currentData.forEach(r=>{
       const w=Number(r.week); if(!Number.isFinite(w)) return;
       const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
-      const t = (f==='demanda') ? (r.tareas_demanda||0) : (f==='enhancement') ? (r.tareas_enhancement||0) : (r.total_tareas||0);
+      const t = tareasByFlows(r,flows);
       o.num+=t; o.den+=(r.dias_activos||0);
       if(r.efectividad!=='' && r.efectividad!=null){
         const wgt=(r.correcciones_auditadas||0)||1;
@@ -1225,7 +1256,7 @@
     return { labels, values, eff };
   }
 
-  function buildUbicacionData(f){
+  function buildUbicacionData(flows){
     const byLoc = new Map(); // ciudad -> {num,den}
     const effLoc = new Map(); // ciudad -> {num,den}
     const antig = {}; // ciudad -> {sum, n}
@@ -1233,7 +1264,7 @@
     currentData.forEach(r=>{
       const c=r.ciudad||'Sin ubicación';
       const o=byLoc.get(c)||{num:0,den:0};
-      const t=(f==='demanda') ? (r.tareas_demanda||0) : (f==='enhancement') ? (r.tareas_enhancement||0) : (r.total_tareas||0);
+      const t=tareasByFlows(r,flows);
       o.num+=t; o.den+=(r.dias_activos||0); byLoc.set(c,o);
 
       if(r.efectividad!=='' && r.efectividad!=null){
@@ -1292,7 +1323,7 @@
 
   async function exportSectionCSV(){
     const id=getActiveSectionId();
-    const f=flujoSel();
+    const flows=selectedFlows();
 
     if(id==='resumen'){
       const demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
@@ -1305,7 +1336,7 @@
       const csv1 = toCSV(['Flujo','Total','Porcentaje'], rows1);
       download('resumen_demanda_enhancement.csv', new Blob([csv1],{type:'text/csv;charset=utf-8'}));
 
-      const nb = buildNineboxData(f);
+      const nb = buildNineboxData(flows);
       const headers=['Caja','Usuarios','Conteo'];
       const rows=[];
       Object.entries(nb.buckets).forEach(([k,arr])=>{
@@ -1320,25 +1351,25 @@
       }
 
     }else if(id==='detalle'){
-      const data = buildUsersPromEff(f);
+      const data = buildUsersPromEff(flows);
       const rows = data.map(d=>({Usuario:d.user, Promedio_Diario:d.prom, Efectividad:d.eff}));
       const csv=toCSV(['Usuario','Promedio_Diario','Efectividad'], rows);
       download('detalle_por_usuario.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
 
     }else if(id==='lideres'){
-      const data = buildLideresData(f);
+      const data = buildLideresData(flows);
       const rows = data.map(d=>({Lider:d.lider, Promedio_Diario:d.prom, Efectividad:d.eff}));
       const csv = toCSV(['Lider','Promedio_Diario','Efectividad'], rows);
       download('comparativa_equipo.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
 
     }else if(id==='evolucion'){
-      const series = buildEvolucionData(f);
+      const series = buildEvolucionData(flows);
       const rows = series.labels.map((lab,i)=>({Semana:lab, Promedio_Diario:series.values[i], Efectividad:series.eff[i]}));
       const csv = toCSV(['Semana','Promedio_Diario','Efectividad'], rows);
       download('evolucion_promedio_y_efectividad.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
 
     }else if(id==='ubicacion'){
-      const data = buildUbicacionData(f);
+      const data = buildUbicacionData(flows);
       const rows = data.labels.map((lab,i)=>({Ubicacion:lab, Promedio_Diario:data.prom[i], Efectividad:data.eff[i]}));
       const csv = toCSV(['Ubicacion','Promedio_Diario','Efectividad'], rows);
       download('ubicacion_prom_y_efectividad.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
@@ -1351,7 +1382,7 @@
 
   async function exportSectionZIP(){
     const id=getActiveSectionId();
-    const f=flujoSel();
+    const flows=selectedFlows();
     const zip=new JSZip();
 
     function addCSV(name, headers, rows){
@@ -1365,7 +1396,7 @@
         ['Flujo','Total','Porcentaje'],
         [{Flujo:'Demanda',Total:demand,Porcentaje:tot?demand/tot:0},{Flujo:'Enhancement',Total:enh,Porcentaje:tot?enh/tot:0}]
       );
-      const nb = buildNineboxData(f);
+      const nb = buildNineboxData(flows);
       const rows=[]; Object.entries(nb.buckets).forEach(([k,arr])=> rows.push({Caja:k,Usuarios:arr.join(' | '),Conteo:arr.length}));
       addCSV('resumen_productividad_calidad.csv', ['Caja','Usuarios','Conteo'], rows);
       if(nb.missing.length){
@@ -1381,7 +1412,7 @@
       zip.file('demanda_enhancement.png', b1);
 
     }else if(id==='detalle'){
-      const data = buildUsersPromEff(f);
+      const data = buildUsersPromEff(flows);
       addCSV('detalle_por_usuario.csv', ['Usuario','Promedio_Diario','Efectividad'],
              data.map(d=>({Usuario:d.user,Promedio_Diario:d.prom,Efectividad:d.eff})));
       const c1=document.getElementById('tasksByUserChart');
@@ -1389,7 +1420,7 @@
       zip.file('detalle_prom_efectividad.png', b1);
 
     }else if(id==='lideres'){
-      const data = buildLideresData(f);
+      const data = buildLideresData(flows);
       addCSV('comparativa_equipo.csv', ['Lider','Promedio_Diario','Efectividad'],
              data.map(d=>({Lider:d.lider,Promedio_Diario:d.prom,Efectividad:d.eff})));
       const c=document.getElementById('tasksByLeaderChart');
@@ -1397,7 +1428,7 @@
       zip.file('comparativa_equipo.png', b);
 
     }else if(id==='evolucion'){
-      const series=buildEvolucionData(f);
+      const series=buildEvolucionData(flows);
       addCSV('evolucion_promedio_y_efectividad.csv', ['Semana','Promedio_Diario','Efectividad'],
              series.labels.map((lab,i)=>({Semana:lab,Promedio_Diario:series.values[i],Efectividad:series.eff[i]})));
       const c=document.getElementById('weeklyEvolutionChart');
@@ -1405,7 +1436,7 @@
       zip.file('evolucion.png', b);
 
     }else if(id==='ubicacion'){
-      const data=buildUbicacionData(f);
+      const data=buildUbicacionData(flows);
       addCSV('ubicacion_prom_y_efectividad.csv',['Ubicacion','Promedio_Diario','Efectividad'],
              data.labels.map((lab,i)=>({Ubicacion:lab,Promedio_Diario:data.prom[i],Efectividad:data.eff[i]})));
       addCSV('ubicacion_antiguedad.csv',['Ubicacion','Antiguedad_Promedio'],
@@ -1423,10 +1454,10 @@
    * GEMINI (prompts actualizados)
    **********************/
   function buildNineboxPrompt(){
-    const f=flujoSel();
+    const flows=selectedFlows();
     const filtros_activos = JSON.stringify(filtersSummary());
-    const total_tareas = currentData.reduce((s,r)=>s+tareasFlujo(r,f),0);
-    const promedio_diario = promedioDiario(currentData,f).toFixed(2);
+    const total_tareas = currentData.reduce((s,r)=>s+tareasByFlows(r,flows),0);
+    const promedio_diario = promedioDiario(currentData,flows).toFixed(2);
     const efVals= currentData.map(r=>r.efectividad).filter(v=>v!==''&&v!=null);
     const efectividad = (efVals.length? (100*efVals.reduce((a,b)=>a+b,0)/efVals.length) : 0).toFixed(2);
 
@@ -1437,7 +1468,7 @@
     const map=new Map();
     currentData.forEach(r=>{
       const u=r.usuario; const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
-      o.num += tareasFlujo(r,f); o.den += (r.dias_activos||0);
+      o.num += tareasByFlows(r,flows); o.den += (r.dias_activos||0);
       if(r.efectividad!=='' && r.efectividad!=null){ o.effSum+=r.efectividad; o.effN++; }
       map.set(u,o);
     });
@@ -1483,11 +1514,11 @@ ${distribucion_ninebox}
   }
 
   function buildGlobalInsightsPrompt(){
-    const f=flujoSel();
+    const flows=selectedFlows();
     const filtros_activos = JSON.stringify(filtersSummary());
     const usuarios = new Set(currentData.map(r=>r.usuario)).size;
     const ids = currentData.reduce((s,r)=>s+(r.ids_trabajados||0),0);
-    const prom = promedioDiario(currentData,f).toFixed(2);
+    const prom = promedioDiario(currentData,flows).toFixed(2);
     const efVals= currentData.map(r=>r.efectividad).filter(v=>v!==''&&v!=null);
     const ef = (efVals.length? (100*efVals.reduce((a,b)=>a+b,0)/efVals.length) : 0).toFixed(2);
 
@@ -1599,4 +1630,3 @@ Sos analista de mejora continua de Catálogo (Netkel). Buscás mantener una oper
   </script>
 </body>
 </html>
-
