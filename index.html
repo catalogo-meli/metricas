@@ -42,6 +42,7 @@
     .dropdown-menu{position:absolute;right:0;top:100%;background:#fff;border:1px solid #e2e8f0;border-radius:.5rem;box-shadow:0 10px 20px rgba(0,0,0,.08);min-width:260px;z-index:50}
     .dropdown-menu a{display:block;padding:.6rem .8rem;font-size:.95rem;color:#334155}
     .dropdown-menu a:hover{background:#f1f5f9}
+
     /* IA (formato enriquecido) */
     .ai-output p { margin-bottom: 0.75rem; line-height: 1.5; }
     .ai-output ul { list-style: disc; margin-left: 1.5rem; margin-bottom: 1rem; }
@@ -50,22 +51,18 @@
     .ai-output th { background-color: #f1f5f9; }
     .ai-output code { background: #f3f4f6; padding: 0.2rem 0.4rem; border-radius: 4px; }
 
-    /* --------- MultiSelect Dropdown (bonito) --------- */
-    .msel { position: relative; }
-    .msel-btn {
-      @apply w-full justify-between px-3 py-2 rounded-md border border-slate-300 bg-white shadow-sm text-left text-sm text-slate-700 flex items-center gap-2;
-    }
-    .msel-btn .chev { transition: transform .2s ease; }
-    .msel.open .msel-btn .chev { transform: rotate(180deg); }
-    .msel-panel {
-      @apply absolute z-50 mt-2 w-full bg-white border border-slate-200 rounded-lg shadow-xl;
-      max-height: 20rem; overflow: hidden;
-    }
-    .msel-panel .head { @apply flex items-center justify-between px-3 py-2 border-b border-slate-200; }
-    .msel-panel .list { max-height: 14rem; overflow:auto; }
-    .msel-item { @apply flex items-center gap-2 px-3 py-2 hover:bg-slate-50 cursor-pointer; }
-    .msel-search { @apply w-full px-3 py-2 text-sm border border-slate-200 rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500; }
-    .hint{font-size:.8rem;color:#64748b}
+    /* --------- Filtros en acordeón con checkboxes --------- */
+    .acc { @apply bg-white border border-slate-200 rounded-lg shadow-sm; }
+    .acc-btn { @apply w-full flex items-center justify-between px-4 py-2 text-left; }
+    .acc-btn .summary { @apply text-slate-500 text-sm; }
+    .acc-btn .chev { transition: transform .2s ease; }
+    .acc.open .chev { transform: rotate(180deg); }
+    .acc-panel { @apply border-t border-slate-200; }
+    .acc-tools { @apply flex items-center gap-2 px-4 py-2; }
+    .acc-search { @apply w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-1 focus:ring-sky-500; }
+    .acc-list { max-height: 13.5rem; overflow:auto; @apply px-2 pb-3; }
+    .acc-item { @apply flex items-center gap-2 px-2 py-1.5 hover:bg-slate-50 rounded cursor-pointer; }
+    .acc-clear { @apply text-xs px-2 py-1 rounded border border-slate-300 text-slate-700 hover:bg-slate-50; }
   </style>
 </head>
 
@@ -80,12 +77,12 @@
         <h1 class="text-2xl font-bold text-white">Catálogo</h1>
       </div>
       <nav id="nav-menu" class="flex-1 space-y-2">
-        <a href="#resumen" class="sidebar-link active flex items-center p-3 rounded-lg">Visión Global</a>
-        <a href="#detalle" class="sidebar-link flex items-center p-3 rounded-lg">Performance Individual</a>
+        <a href="#resumen" class="sidebar-link active flex items-center p-3 rounded-lg">Resumen General</a>
+        <a href="#detalle" class="sidebar-link flex items-center p-3 rounded-lg">Detalle por Usuario</a>
         <a href="#lideres" class="sidebar-link flex items-center p-3 rounded-lg">Comparativa por Equipo</a>
         <a href="#evolucion" class="sidebar-link flex items-center p-3 rounded-lg">Evolución Semanal</a>
         <a href="#ubicacion" class="sidebar-link flex items-center p-3 rounded-lg">Análisis por Ubicación</a>
-        <a href="#analisis" class="sidebar-link flex items-center p-3 rounded-lg">Insights Avanzados</a>
+        <a href="#analisis" class="sidebar-link flex items-center p-3 rounded-lg">Análisis Inteligente</a>
       </nav>
     </aside>
 
@@ -100,7 +97,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
               </svg>
             </button>
-            <h2 id="page-title" class="text-3xl font-bold text-slate-700">Visión Global</h2>
+            <h2 id="page-title" class="text-3xl font-bold text-slate-700">Resumen General</h2>
           </div>
 
           <!-- Toolbar global: limpiar + exportar -->
@@ -123,17 +120,8 @@
           </div>
         </div>
 
-        <!-- Filtros (dropdowns multi con checkboxes) -->
-        <p class="hint mb-2">Usá los dropdowns para seleccionar múltiples valores. Cada filtro puede limpiarse individualmente.</p>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4 mb-8">
-          <div id="filter-q" class="msel"></div>
-          <div id="filter-mes" class="msel"></div>
-          <div id="filter-semana" class="msel"></div>
-          <div id="filter-ubicacion" class="msel"></div>
-          <div id="filter-lider" class="msel"></div>
-          <div id="filter-usuario" class="msel"></div>
-          <div id="filter-flujo" class="msel"></div>
-        </div>
+        <!-- Filtros (apilados en acordeón con checkboxes + limpiar individual) -->
+        <div id="filters-accordion" class="space-y-3 mb-8"></div>
 
         <!-- Secciones -->
         <div id="dashboard-content">
@@ -270,7 +258,7 @@
           <!-- IA -->
           <section id="analisis" class="page-section hidden">
             <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-2">Insights Avanzados</h3>
+              <h3 class="text-xl font-semibold mb-2">Análisis Inteligente con Gemini</h3>
               <p class="text-slate-600 mb-4">Insights basados en los datos y filtros actuales.</p>
               <button id="generate-insights-btn" class="bg-sky-600 text-white px-6 py-3 rounded-lg hover:bg-sky-700 transition-colors text-base font-semibold">
                 ✨ Analizar Datos y Generar Sugerencias
@@ -366,7 +354,7 @@
   };
 
   /**********************
-   * MULTISELECT DROPDOWNS
+   * FILTROS (acordeón con multiselección)
    **********************/
   const FILTERS = [
     {key:'q',      id:'filter-q',       label:'Trimestres', placeholder:'Todos los trimestres'},
@@ -375,114 +363,111 @@
     {key:'ubic',   id:'filter-ubicacion',label:'Ubicación', placeholder:'Todas las ubicaciones'},
     {key:'lider',  id:'filter-lider',   label:'Líderes',    placeholder:'Todos los líderes'},
     {key:'user',   id:'filter-usuario', label:'Usuarios',   placeholder:'Todos los usuarios'},
-    {key:'flows',  id:'filter-flujo',   label:'Flujo',      placeholder:'Todos los flujos', isFlow:true}
+    {key:'flows',  id:'filter-flujo',   label:'Flujo',      placeholder:'Flujo mixto', isFlow:true}
   ];
   const defById = Object.fromEntries(FILTERS.map(d=>[d.id,d]));
-  const defByKey = Object.fromEntries(FILTERS.map(d=>[d.key,d]));
 
-  // Estado seleccionado
   const sel = {
     q:new Set(), mes:new Set(), semana:new Set(), ubic:new Set(), lider:new Set(), user:new Set(),
     flows:new Set(['mixto']) // por defecto
   };
 
-  function createDropdownHTML(def){
-    const c = document.getElementById(def.id);
-    c.innerHTML = `
-      <button type="button" class="msel-btn" aria-haspopup="listbox" aria-expanded="false">
-        <span class="msel-text">${def.placeholder}</span>
-        <svg class="chev h-5 w-5 text-slate-500" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/>
-        </svg>
-      </button>
-      <div class="msel-panel hidden">
-        <div class="head">
-          <span class="text-sm font-medium">${def.label}</span>
-          <div class="flex items-center gap-2">
-            <input type="text" placeholder="Buscar..." class="msel-search hidden sm:block">
-            <button class="text-xs text-sky-600 hover:underline" data-clear>Limpiar</button>
+  // Construye 7 acordeones apilados
+  function setupAccordions(){
+    const wrap = document.getElementById('filters-accordion');
+    wrap.innerHTML = FILTERS.map(def=>`
+      <div class="acc" id="${def.id}">
+        <button type="button" class="acc-btn">
+          <div>
+            <div class="font-medium text-slate-700">${def.label}</div>
+            <div class="summary">${def.placeholder}</div>
           </div>
+          <div class="flex items-center gap-3">
+            <button class="acc-clear hidden sm:inline-block" data-clear>Limpiar</button>
+            <svg class="chev h-5 w-5 text-slate-500" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/>
+            </svg>
+          </div>
+        </button>
+        <div class="acc-panel hidden">
+          <div class="acc-tools">
+            <input type="text" class="acc-search" placeholder="Buscar...">
+            <button class="acc-clear" data-clear>Limpiar ${def.label}</button>
+          </div>
+          <div class="acc-list"></div>
         </div>
-        <div class="list"></div>
       </div>
-    `;
-    c.querySelector('.msel-btn').addEventListener('click', (e)=>{
-      e.stopPropagation();
-      closeAllDropdowns(def.id);
-      c.classList.toggle('open');
-      c.querySelector('.msel-panel').classList.toggle('hidden');
-      c.querySelector('.msel-btn').setAttribute('aria-expanded', c.classList.contains('open')?'true':'false');
-    });
-    c.querySelector('[data-clear]').addEventListener('click', (e)=>{
-      e.preventDefault(); e.stopPropagation();
-      if(def.isFlow){ sel.flows = new Set(['mixto']); }
-      else { sel[def.key].clear(); }
-      updateDropdownOptions(def.id); // vuelve a dibujar checks
-      updateDropdownLabel(def.id);
-      applyFilters();
-    });
-    const search = c.querySelector('.msel-search');
-    search.addEventListener('input', ()=>{
-      const term = search.value.toLowerCase();
-      c.querySelectorAll('.msel-item').forEach(it=>{
-        const t = it.getAttribute('data-text');
-        it.classList.toggle('hidden', t.indexOf(term)===-1);
+    `).join('');
+
+    // listeners por acordeón
+    FILTERS.forEach(def=>{
+      const root = document.getElementById(def.id);
+      const btn  = root.querySelector('.acc-btn');
+      const pnl  = root.querySelector('.acc-panel');
+      btn.addEventListener('click', (e)=>{
+        // Evita que el click en "Limpiar" abra/cierre
+        if(e.target.closest('[data-clear]')) return;
+        root.classList.toggle('open');
+        pnl.classList.toggle('hidden');
+      });
+      // limpiar individual
+      root.querySelectorAll('[data-clear]').forEach(b=>{
+        b.addEventListener('click', (e)=>{
+          e.preventDefault();
+          if(def.isFlow){ sel.flows = new Set(['mixto']); }
+          else { sel[def.key].clear(); }
+          updateFilterOptions(def.id); // re-render items (checks)
+          updateFilterSummary(def.id);
+          applyFilters();
+        });
+      });
+      // búsqueda
+      root.querySelector('.acc-search').addEventListener('input', (ev)=>{
+        const term = ev.target.value.toLowerCase();
+        root.querySelectorAll('.acc-item').forEach(it=>{
+          const t=it.getAttribute('data-text');
+          it.classList.toggle('hidden', t.indexOf(term)===-1);
+        });
       });
     });
   }
 
-  function closeAllDropdowns(exceptId){
-    document.querySelectorAll('.msel').forEach(el=>{
-      if(exceptId && el.id===exceptId) return;
-      el.classList.remove('open');
-      const p=el.querySelector('.msel-panel');
-      if(p) p.classList.add('hidden');
-      const b=el.querySelector('.msel-btn');
-      if(b) b.setAttribute('aria-expanded','false');
-    });
-  }
-  document.addEventListener('click', ()=>closeAllDropdowns());
-
-  function updateDropdownLabel(id){
+  function updateFilterSummary(id){
     const def = defById[id];
     const values = Array.from(sel[def.key] || []);
-    const el = document.querySelector(`#${id} .msel-text`);
+    const el = document.querySelector(`#${id} .summary`);
     if(!values.length){
       el.textContent = def.placeholder;
       return;
     }
-    const txt = values.length<=2 ? `${def.label}: ${values.join(', ')}`
-                                 : `${def.label}: ${values.slice(0,2).join(', ')} +${values.length-2}`;
-    el.textContent = txt;
+    el.textContent = values.length<=2 ? values.join(', ') : `${values.slice(0,2).join(', ')} +${values.length-2}`;
   }
 
-  function updateDropdownOptions(id, values=[]){
+  function updateFilterOptions(id, values=[]){
     const def = defById[id];
-    const list = document.querySelector(`#${id} .list`);
-    // clamp selección a valores permitidos
-    if(!def.isFlow){
-      const allowed = new Set(values);
-      sel[def.key] = new Set(Array.from(sel[def.key]).filter(v=>allowed.has(v)));
-    }
+    const list = document.querySelector(`#${id} .acc-list`);
 
-    // opciones por defecto para flujo
+    // default opciones para flujo
     if(def.isFlow && values.length===0){
       values = ['mixto','demanda','enhancement'];
     }
 
-    // render
+    // restringe selección a valores permitidos (salvo flujo)
+    if(!def.isFlow){
+      const ok = new Set(values);
+      sel[def.key] = new Set(Array.from(sel[def.key]).filter(v=>ok.has(v)));
+    }
+
     list.innerHTML = values.map(v=>{
-      const safeId = `${id}-${btoa(encodeURIComponent(String(v))).replace(/=/g,'')}`;
-      const checked = sel[def.key].has(v) ? 'checked' : '';
+      const checked = (sel[def.key]||new Set()).has(v) ? 'checked' : '';
       return `
-        <label class="msel-item" data-text="${String(v).toLowerCase()}">
-          <input type="checkbox" class="msel-check" id="${safeId}" value="${v}" ${checked}>
+        <label class="acc-item" data-text="${String(v).toLowerCase()}">
+          <input type="checkbox" class="acc-check" value="${v}" ${checked}>
           <span class="text-sm">${v}</span>
         </label>`;
     }).join('');
 
-    // listeners
-    list.querySelectorAll('.msel-check').forEach(chk=>{
+    list.querySelectorAll('.acc-check').forEach(chk=>{
       chk.addEventListener('change', ()=>{
         const val = chk.value;
         if(def.isFlow){
@@ -491,25 +476,19 @@
           }else{
             sel.flows.delete('mixto');
             if(chk.checked) sel.flows.add(val); else sel.flows.delete(val);
-            if(sel.flows.size===0) sel.flows = new Set(['mixto']); // fallback
+            if(sel.flows.size===0) sel.flows = new Set(['mixto']);
           }
-          // re-render checks por exclusividad de Mixto
-          updateDropdownOptions(id, values);
+          // re-render por exclusividad
+          updateFilterOptions(id, values);
         }else{
           if(chk.checked) sel[def.key].add(val); else sel[def.key].delete(val);
         }
-        updateDropdownLabel(id);
+        updateFilterSummary(id);
         applyFilters();
       });
     });
 
-    updateDropdownLabel(id);
-  }
-
-  function setupDropdowns(){
-    FILTERS.forEach(def=>{
-      createDropdownHTML(def);
-    });
+    updateFilterSummary(id);
   }
 
   /**********************
@@ -605,31 +584,8 @@
   let nineboxDetailsData = {};
 
   /**********************
-   * FILTROS + NAV
+   * NAV + EXPORT + LIMPIAR
    **********************/
-  function uniqueSorted(arr){ return Array.from(new Set(arr)).sort(); }
-  function uniqueSortedNum(arr){ return Array.from(new Set(arr)).sort((a,b)=>a-b); }
-
-  function setupFilters(){
-    setupDropdowns(); // crea el esqueleto visual
-
-    // llenar opciones iniciales
-    const meses   = MONTHS_ES.filter(m => originalData.some(r=>r.mes===m));
-    const semanas = uniqueSortedNum(originalData.map(r=>r.week)).map(String);
-    const ubic    = uniqueSorted(originalData.map(r=>r.ciudad).filter(Boolean));
-    const usuarios= uniqueSorted(originalData.map(r=>r.usuario));
-    const lideres = uniqueSorted(originalData.map(r=>r['líder']).filter(l => l && l.toLowerCase()!=='sin líder'));
-    const qs      = ['Q1','Q2','Q3','Q4'].filter(q => originalData.some(r=>r.q===q));
-
-    updateDropdownOptions('filter-mes', meses);
-    updateDropdownOptions('filter-semana', semanas);
-    updateDropdownOptions('filter-ubicacion', ubic);
-    updateDropdownOptions('filter-usuario', usuarios);
-    updateDropdownOptions('filter-lider', lideres);
-    updateDropdownOptions('filter-q', qs);
-    updateDropdownOptions('filter-flujo', ['mixto','demanda','enhancement']); // flujo
-  }
-
   function setupNavigation(){
     const links=[...document.querySelectorAll('#nav-menu a')];
     const mobile=document.getElementById('mobile-nav-menu');
@@ -684,11 +640,16 @@
       sel.q.clear(); sel.mes.clear(); sel.semana.clear(); sel.ubic.clear(); sel.lider.clear(); sel.user.clear();
       sel.flows = new Set(['mixto']);
       refreshDependentFilters();
-      // Volver a etiquetas por defecto
-      FILTERS.forEach(def=>updateDropdownLabel(def.id));
+      FILTERS.forEach(def=>updateFilterSummary(def.id));
       applyFilters();
     });
   }
+
+  /**********************
+   * FILTRADO (multi + dependencias)
+   **********************/
+  function uniqueSorted(arr){ return Array.from(new Set(arr)).sort(); }
+  function uniqueSortedNum(arr){ return Array.from(new Set(arr)).sort((a,b)=>a-b); }
 
   function getFilterState(){
     return {
@@ -742,40 +703,40 @@
     {
       const allowed = filteredOriginalDataExcept('q');
       const qs = ['Q1','Q2','Q3','Q4'].filter(q => allowed.some(r=>r.q===q));
-      updateDropdownOptions('filter-q', qs);
+      updateFilterOptions('filter-q', qs);
     }
     // Mes
     {
       const allowed = filteredOriginalDataExcept('mes');
       const meses = MONTHS_ES.filter(m => allowed.some(r=>r.mes===m));
-      updateDropdownOptions('filter-mes', meses);
+      updateFilterOptions('filter-mes', meses);
     }
     // Semana
     {
       const allowed = filteredOriginalDataExcept('semana');
       const semanas = uniqueSortedNum(allowed.map(r=>r.week)).map(String);
-      updateDropdownOptions('filter-semana', semanas);
+      updateFilterOptions('filter-semana', semanas);
     }
     // Ubicación
     {
       const allowed = filteredOriginalDataExcept('ubic');
       const ubic = uniqueSorted(allowed.map(r=>r.ciudad).filter(Boolean));
-      updateDropdownOptions('filter-ubicacion', ubic);
+      updateFilterOptions('filter-ubicacion', ubic);
     }
     // Líder
     {
       const allowed = filteredOriginalDataExcept('lider');
       const lideres = uniqueSorted(allowed.map(r=>r['líder']).filter(l => l && l.toLowerCase()!=='sin líder'));
-      updateDropdownOptions('filter-lider', lideres);
+      updateFilterOptions('filter-lider', lideres);
     }
     // Usuario
     {
       const allowed = filteredOriginalDataExcept('user');
       const usuarios= uniqueSorted(allowed.map(r=>r.usuario));
-      updateDropdownOptions('filter-usuario', usuarios);
+      updateFilterOptions('filter-usuario', usuarios);
     }
-    // Flujo (estático, pero re-render para mantener etiqueta)
-    updateDropdownOptions('filter-flujo', ['mixto','demanda','enhancement']);
+    // Flujo (estático)
+    updateFilterOptions('filter-flujo', ['mixto','demanda','enhancement']);
   }
 
   function applyFilters(){
@@ -884,37 +845,17 @@
     const ctx=document.getElementById(id).getContext('2d');
     charts[id]=new Chart(ctx,cfg); return charts[id];
   }
-
   function barDataset(label, data){
     return {
-      type:'bar',
-      label,
-      data,
-      yAxisID:'y',
-      backgroundColor: BAR_BG,
-      borderColor: 'rgba(0,0,0,0)',
-      order: 1,
-      barPercentage: 0.8,
-      categoryPercentage: 0.8
+      type:'bar', label, data, yAxisID:'y',
+      backgroundColor: BAR_BG, borderColor:'rgba(0,0,0,0)', order:1, barPercentage:0.8, categoryPercentage:0.8
     };
   }
   function lineEffDataset(label, data){
     return {
-      type:'line',
-      label,
-      data,
-      yAxisID:'y1',
-      borderColor: LINE_ACC,
-      backgroundColor: LINE_ACC,
-      order: 2,
-      fill: false,
-      tension: 0.25,
-      pointRadius: 3,
-      pointHoverRadius: 5,
-      pointBackgroundColor: '#ffffff',
-      pointBorderColor: LINE_ACC,
-      borderWidth: 3,
-      spanGaps: true
+      type:'line', label, data, yAxisID:'y1',
+      borderColor: LINE_ACC, backgroundColor: LINE_ACC, order:2, fill:false, tension:0.25,
+      pointRadius:3, pointHoverRadius:5, pointBackgroundColor:'#ffffff', pointBorderColor:LINE_ACC, borderWidth:3, spanGaps:true
     };
   }
 
@@ -1286,129 +1227,8 @@
   }
 
   /**********************
-   * BUILDERS + EXPORTS
+   * EXPORTS
    **********************/
-  function buildNineboxData(flows) {
-    const map = new Map(); // user -> {num,den, effSum, effN}
-    currentData.forEach(r=>{
-      const u=r.usuario;
-      const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
-      const t = tareasByFlows(r,flows);
-      o.num += t; o.den += (r.dias_activos||0);
-      if(r.efectividad!=='' && r.efectividad!=null){ o.effSum+=r.efectividad; o.effN++; }
-      map.set(u,o);
-    });
-
-    const prodBand = p => (p>=80 ? 'Alta' : p>=70 ? 'Media' : 'Baja');
-    const calBand  = e => (e>=0.90 ? 'Alta' : e>=0.75 ? 'Media' : 'Baja');
-
-    const buckets = {
-      "Prod Alta / Cal Alta":[], "Prod Alta / Cal Media":[], "Prod Alta / Cal Baja":[],
-      "Prod Media / Cal Alta":[], "Prod Media / Cal Media":[], "Prod Media / Cal Baja":[],
-      "Prod Baja / Cal Alta":[], "Prod Baja / Cal Media":[], "Prod Baja / Cal Baja":[]
-    };
-    const missing = [];
-
-    Array.from(map.entries()).forEach(([u,o])=>{
-      const prom = o.den? o.num/o.den : null;
-      const eff  = o.effN? o.effSum/o.effN : null;
-      if(prom==null || eff==null){ missing.push({u, prom, eff}); return; }
-      const caja = `Prod ${prodBand(prom)} / Cal ${calBand(eff)}`;
-      buckets[caja].push(u);
-    });
-
-    return { buckets, missing };
-  }
-
-  function buildUsersPromEff(flows){
-    const agg = new Map(); // user -> {num,den, effNum, effDen}
-    currentData.forEach(r=>{
-      const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
-      const t = tareasByFlows(r,flows);
-      o.num += t; o.den += (r.dias_activos||0);
-      if(r.efectividad!=='' && r.efectividad!=null){
-        const w=(r.correcciones_auditadas||0)||1;
-        o.effNum += r.efectividad*w; o.effDen += w;
-      }
-      agg.set(u,o);
-    });
-    return Array.from(agg.entries()).map(([user,o])=>({
-      user, prom: (o.den? o.num/o.den : 0), eff: (o.effDen? o.effNum/o.effDen : null)
-    })).sort((a,b)=>b.prom-a.prom);
-  }
-
-  function buildLideresData(flows){
-    const agg = new Map(); // líder -> {num,den, effNum, effDen}
-    currentData.forEach(r=>{
-      const l=r['líder']; if(!l || l.toLowerCase()==='sin líder') return;
-      const o=agg.get(l)||{num:0,den:0,effNum:0,effDen:0};
-      const t = tareasByFlows(r,flows);
-      o.num += t; o.den += (r.dias_activos||0);
-      if(r.efectividad!=='' && r.efectividad!=null){
-        const w=(r.correcciones_auditadas||0)||1;
-        o.effNum += r.efectividad*w; o.effDen += w;
-      }
-      agg.set(l,o);
-    });
-    return Array.from(agg.entries()).map(([lider,o])=>({
-      lider, prom:(o.den? o.num/o.den : 0), eff:(o.effDen? o.effNum/o.effDen : null)
-    })).sort((a,b)=>b.prom-a.prom);
-  }
-
-  function buildEvolucionData(flows){
-    const agg = new Map(); // week -> {num,den, effNum, effDen}
-    currentData.forEach(r=>{
-      const w=Number(r.week); if(!Number.isFinite(w)) return;
-      const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
-      const t = tareasByFlows(r,flows);
-      o.num+=t; o.den+=(r.dias_activos||0);
-      if(r.efectividad!=='' && r.efectividad!=null){
-        const wgt=(r.correcciones_auditadas||0)||1;
-        o.effNum+=r.efectividad*wgt; o.effDen+=wgt;
-      }
-      agg.set(w,o);
-    });
-    const weeks=Array.from(agg.keys());
-    const minW=Math.min(...weeks), maxW=Math.max(...weeks);
-    const labels=[], values=[], eff=[];
-    for(let w=minW; w<=maxW; w++){
-      const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
-      labels.push('W'+String(w).padStart(2,'0'));
-      values.push(o.den? o.num/o.den : 0);
-      eff.push(o.effDen? 100*o.effNum/o.effDen : null);
-    }
-    return { labels, values, eff };
-  }
-
-  function buildUbicacionData(flows){
-    const byLoc = new Map(); // ciudad -> {num,den}
-    const effLoc = new Map(); // ciudad -> {num,den}
-    const antig = {}; // ciudad -> {sum, n}
-
-    currentData.forEach(r=>{
-      const c=r.ciudad||'Sin ubicación';
-      const o=byLoc.get(c)||{num:0,den:0};
-      const t=tareasByFlows(r,flows);
-      o.num+=t; o.den+=(r.dias_activos||0); byLoc.set(c,o);
-
-      if(r.efectividad!=='' && r.efectividad!=null){
-        const w=(r.correcciones_auditadas||0)||1;
-        const e=effLoc.get(c)||{num:0,den:0};
-        e.num+=r.efectividad*w; e.den+=w; effLoc.set(c,e);
-      }
-
-      const a = Number(r.antigüedad||0);
-      if(!antig[c]) antig[c]={sum:0,n:0};
-      if(Number.isFinite(a)){ antig[c].sum+=a; antig[c].n++; }
-    });
-
-    const labels = Array.from(byLoc.keys()).sort();
-    const prom = labels.map(c=>{ const o=byLoc.get(c)||{num:0,den:0}; return o.den? o.num/o.den : 0; });
-    const eff = labels.map(c=>{ const e=effLoc.get(c)||{num:0,den:0}; return e.den? 100*e.num/e.den : null; });
-    const antigList = labels.map(c=>{ const v=antig[c]||{sum:0,n:0}; return [c, v.n? v.sum/v.n : 0]; });
-    return { labels, prom, eff, antig: antigList };
-  }
-
   function getActiveSectionId(){
     const sec=[...document.querySelectorAll('.page-section')].find(s=>!s.classList.contains('hidden'));
     return sec ? sec.id : 'resumen';
@@ -1443,6 +1263,117 @@
       const url=c.toDataURL('image/png');
       fetch(url).then(r=>r.blob()).then(b=>download(`${id}-chart${i+1}.png`, b));
     });
+  }
+
+  function buildNineboxData(flows) {
+    const map = new Map();
+    currentData.forEach(r=>{
+      const u=r.usuario;
+      const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
+      const t = tareasByFlows(r,flows);
+      o.num += t; o.den += (r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!=null){ o.effSum+=r.efectividad; o.effN++; }
+      map.set(u,o);
+    });
+    const prodBand = p => (p>=80 ? 'Alta' : p>=70 ? 'Media' : 'Baja');
+    const calBand  = e => (e>=0.90 ? 'Alta' : e>=0.75 ? 'Media' : 'Baja');
+    const buckets = {
+      "Prod Alta / Cal Alta":[], "Prod Alta / Cal Media":[], "Prod Alta / Cal Baja":[],
+      "Prod Media / Cal Alta":[], "Prod Media / Cal Media":[], "Prod Media / Cal Baja":[],
+      "Prod Baja / Cal Alta":[], "Prod Baja / Cal Media":[], "Prod Baja / Cal Baja":[]
+    };
+    const missing = [];
+    Array.from(map.entries()).forEach(([u,o])=>{
+      const prom = o.den? o.num/o.den : null;
+      const eff  = o.effN? o.effSum/o.effN : null;
+      if(prom==null || eff==null){ missing.push({u, prom, eff}); return; }
+      const caja = `Prod ${prodBand(prom)} / Cal ${calBand(eff)}`;
+      buckets[caja].push(u);
+    });
+    return { buckets, missing };
+  }
+  function buildUsersPromEff(flows){
+    const agg = new Map();
+    currentData.forEach(r=>{
+      const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
+      const t = tareasByFlows(r,flows);
+      o.num += t; o.den += (r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!=null){
+        const w=(r.correcciones_auditadas||0)||1;
+        o.effNum += r.efectividad*w; o.effDen += w;
+      }
+      agg.set(u,o);
+    });
+    return Array.from(agg.entries()).map(([user,o])=>({
+      user, prom: (o.den? o.num/o.den : 0), eff: (o.effDen? o.effNum/o.effDen : null)
+    })).sort((a,b)=>b.prom-a.prom);
+  }
+  function buildLideresData(flows){
+    const agg = new Map();
+    currentData.forEach(r=>{
+      const l=r['líder']; if(!l || l.toLowerCase()==='sin líder') return;
+      const o=agg.get(l)||{num:0,den:0,effNum:0,effDen:0};
+      const t = tareasByFlows(r,flows);
+      o.num += t; o.den += (r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!=null){
+        const w=(r.correcciones_auditadas||0)||1;
+        o.effNum += r.efectividad*w; o.effDen += w;
+      }
+      agg.set(l,o);
+    });
+    return Array.from(agg.entries()).map(([lider,o])=>({
+      lider, prom:(o.den? o.num/o.den : 0), eff:(o.effDen? o.effNum/o.effDen : null)
+    })).sort((a,b)=>b.prom-a.prom);
+  }
+  function buildEvolucionData(flows){
+    const agg = new Map();
+    currentData.forEach(r=>{
+      const w=Number(r.week); if(!Number.isFinite(w)) return;
+      const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
+      const t = tareasByFlows(r,flows);
+      o.num+=t; o.den+=(r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!=null){
+        const wgt=(r.correcciones_auditadas||0)||1;
+        o.effNum+=r.efectividad*wgt; o.effDen+=wgt;
+      }
+      agg.set(w,o);
+    });
+    const weeks=Array.from(agg.keys());
+    const minW=Math.min(...weeks), maxW=Math.max(...weeks);
+    const labels=[], values=[], eff=[];
+    for(let w=minW; w<=maxW; w++){
+      const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
+      labels.push('W'+String(w).padStart(2,'0'));
+      values.push(o.den? o.num/o.den : 0);
+      eff.push(o.effDen? 100*o.effNum/o.effDen : null);
+    }
+    return { labels, values, eff };
+  }
+  function buildUbicacionData(flows){
+    const byLoc = new Map();
+    const effLoc = new Map();
+    const antig = {};
+    currentData.forEach(r=>{
+      const c=r.ciudad||'Sin ubicación';
+      const o=byLoc.get(c)||{num:0,den:0};
+      const t=tareasByFlows(r,flows);
+      o.num+=t; o.den+=(r.dias_activos||0); byLoc.set(c,o);
+
+      if(r.efectividad!=='' && r.efectividad!=null){
+        const w=(r.correcciones_auditadas||0)||1;
+        const e=effLoc.get(c)||{num:0,den:0};
+        e.num+=r.efectividad*w; e.den+=w; effLoc.set(c,e);
+      }
+
+      const a = Number(r.antigüedad||0);
+      if(!antig[c]) antig[c]={sum:0,n:0};
+      if(Number.isFinite(a)){ antig[c].sum+=a; antig[c].n++; }
+    });
+    const labels = Array.from(byLoc.keys()).sort();
+    const prom = labels.map(c=>{ const o=byLoc.get(c)||{num:0,den:0}; return o.den? o.num/o.den : 0; });
+    const eff = labels.map(c=>{ const e=effLoc.get(c)||{num:0,den:0}; return e.den? 100*e.num/e.den : null; });
+    const antigList = labels.map(c=>{ const v=antig[c]||{sum:0,n:0}; return [c, v.n? v.sum/v.n : 0]; });
+    return { labels, prom, eff, antig: antigList };
   }
 
   async function exportSectionCSV(){
@@ -1483,7 +1414,7 @@
     }else if(id==='lideres'){
       const data = buildLideresData(flows);
       const rows = data.map(d=>({Lider:d.lider, Promedio_Diario:d.prom, Efectividad:d.eff}));
-      const csv = toCSV(['Lider','Promedio_Diario','Efectividad'], rows);
+      const csv = toCSV(['Lider','Promedio_Diario','Efectectividad'], rows);
       download('comparativa_equipo.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
 
     }else if(id==='evolucion'){
@@ -1598,7 +1529,6 @@
     const efVals= currentData.map(r=>r.efectividad).filter(v=>v!==''&&v!=null);
     const efectividad = (efVals.length? (100*efVals.reduce((a,b)=>a+b,0)/efVals.length) : 0).toFixed(2);
 
-    // distribución ninebox
     const prodBand=p=>(p>=80?'Alta':p>=70?'Media':'Baja');
     const calBand=e=>(e>=0.90?'Alta':e>=0.75?'Media':'Baja');
     const buckets = { 'Prod Alta / Cal Alta':0,'Prod Alta / Cal Media':0,'Prod Alta / Cal Baja':0,'Prod Media / Cal Alta':0,'Prod Media / Cal Media':0,'Prod Media / Cal Baja':0,'Prod Baja / Cal Alta':0,'Prod Baja / Cal Media':0,'Prod Baja / Cal Baja':0 };
@@ -1721,7 +1651,7 @@ Sos analista de mejora continua de Catálogo (Netkel). Buscás mantener una oper
       block.textContent='Generando…';
       try{
         const resp = await geminiRequest(buildNineboxPrompt());
-        block.innerHTML = resp; // permite HTML enriquecido
+        block.innerHTML = resp; // HTML enriquecido
       }catch(e){ block.textContent = e.message; }
     });
 
@@ -1731,7 +1661,7 @@ Sos analista de mejora continua de Catálogo (Netkel). Buscás mantener una oper
       out.textContent = 'Analizando…';
       try{
         const resp = await geminiRequest(buildGlobalInsightsPrompt());
-        out.innerHTML = resp; // permite HTML enriquecido
+        out.innerHTML = resp; // HTML enriquecido
       }catch(e){ out.textContent = e.message; }
     });
   }
@@ -1739,6 +1669,26 @@ Sos analista de mejora continua de Catálogo (Netkel). Buscás mantener una oper
   /**********************
    * INIT
    **********************/
+  function setupFilters(){
+    setupAccordions();
+
+    // opciones iniciales desde los datos
+    const meses   = MONTHS_ES.filter(m => originalData.some(r=>r.mes===m));
+    const semanas = uniqueSortedNum(originalData.map(r=>r.week)).map(String);
+    const ubic    = uniqueSorted(originalData.map(r=>r.ciudad).filter(Boolean));
+    const usuarios= uniqueSorted(originalData.map(r=>r.usuario));
+    const lideres = uniqueSorted(originalData.map(r=>r['líder']).filter(l => l && l.toLowerCase()!=='sin líder'));
+    const qs      = ['Q1','Q2','Q3','Q4'].filter(q => originalData.some(r=>r.q===q));
+
+    updateFilterOptions('filter-mes', meses);
+    updateFilterOptions('filter-semana', semanas);
+    updateFilterOptions('filter-ubicacion', ubic);
+    updateFilterOptions('filter-usuario', usuarios);
+    updateFilterOptions('filter-lider', lideres);
+    updateFilterOptions('filter-q', qs);
+    updateFilterOptions('filter-flujo', ['mixto','demanda','enhancement']);
+  }
+
   document.addEventListener('DOMContentLoaded', async ()=>{
     try{
       const [tProd,tCal,tBase,tLid] = await Promise.all([
@@ -1753,6 +1703,7 @@ Sos analista de mejora continua de Catálogo (Netkel). Buscás mantener una oper
       const lids = parseCSV(tLid);
 
       originalData = buildWeeklyRows(prod, cal, base, lids);
+
       setupFilters();
       setupNavigation();
       setupGeminiFeatures();
