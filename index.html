@@ -42,9 +42,13 @@
     .dropdown-menu{position:absolute;right:0;top:100%;background:#fff;border:1px solid #e2e8f0;border-radius:.5rem;box-shadow:0 10px 20px rgba(0,0,0,.08);min-width:260px;z-index:50}
     .dropdown-menu a{display:block;padding:.6rem .8rem;font-size:.95rem;color:#334155}
     .dropdown-menu a:hover{background:#f1f5f9}
-    /* IA */
-    #insights-output{white-space:pre-wrap}
-    /* Multiselect hint */
+    /* IA (formato enriquecido) */
+    .ai-output p { margin-bottom: 0.75rem; line-height: 1.5; }
+    .ai-output ul { list-style: disc; margin-left: 1.5rem; margin-bottom: 1rem; }
+    .ai-output table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    .ai-output th, .ai-output td { border: 1px solid #cbd5e1; padding: 0.5rem; text-align: left; }
+    .ai-output th { background-color: #f1f5f9; }
+    .ai-output code { background: #f3f4f6; padding: 0.2rem 0.4rem; border-radius: 4px; }
     .hint{font-size:.75rem;color:#64748b}
   </style>
 </head>
@@ -162,7 +166,7 @@
                   Productividad: Alta ≥80; Media 70–&lt;80; Baja &lt;70. &nbsp;|&nbsp;
                   Calidad: Alta ≥90%; Media 75%–&lt;90%; Baja &lt;75%.
                 </p>
-                <div id="ninebox-missing" class="mt-4 text-sm text-slate-600"></div>
+                <div id="ninebox-missing" class="mt-4 text-sm text-slate-600 ai-output"></div>
                 <div id="ninebox-details" class="mt-4 hidden"></div>
               </div>
 
@@ -259,7 +263,7 @@
               <button id="generate-insights-btn" class="bg-sky-600 text-white px-6 py-3 rounded-lg hover:bg-sky-700 transition-colors text-base font-semibold">
                 ✨ Analizar Datos y Generar Sugerencias
               </button>
-              <div id="insights-output" class="mt-6 p-4 bg-slate-50 rounded-md border border-slate-200 hidden"></div>
+              <div id="insights-output" class="mt-6 p-4 bg-slate-50 rounded-md border border-slate-200 hidden ai-output"></div>
             </div>
           </section>
         </div>
@@ -1584,7 +1588,7 @@ Sos analista de mejora continua de Catálogo (Netkel). Buscás mantener una oper
       block.textContent='Generando…';
       try{
         const resp = await geminiRequest(buildNineboxPrompt());
-        block.textContent = resp;
+        block.innerHTML = resp; // permite HTML enriquecido
       }catch(e){ block.textContent = e.message; }
     });
 
@@ -1594,7 +1598,7 @@ Sos analista de mejora continua de Catálogo (Netkel). Buscás mantener una oper
       out.textContent = 'Analizando…';
       try{
         const resp = await geminiRequest(buildGlobalInsightsPrompt());
-        out.textContent = resp;
+        out.innerHTML = resp; // permite HTML enriquecido
       }catch(e){ out.textContent = e.message; }
     });
   }
