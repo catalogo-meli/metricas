@@ -36,22 +36,25 @@
     .nb-red{background:#fee2e2}
     .nb-cell[data-bucket]{cursor:pointer}
 
-    /* filtros – dropdowns */
-    .filter-pill{background:#fff;border:1px solid #e2e8f0;border-radius:.75rem;padding:.65rem .9rem;display:flex;align-items:center;gap:.5rem;min-width:230px;box-shadow:0 1px 2px rgb(0 0 0 / .05)}
+    /* filtros – dropdowns (más pequeños, 1 sola fila) */
+    #filters-row{overflow-x:auto;white-space:nowrap;padding-bottom:.25rem}
+    #filters-row::-webkit-scrollbar{height:8px}
+    #filters-row::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:9999px}
+    .filter-pill{background:#fff;border:1px solid #e2e8f0;border-radius:.75rem;padding:.45rem .7rem;display:flex;align-items:center;gap:.45rem;min-width:160px;box-shadow:0 1px 2px rgb(0 0 0 / .05);font-size:.85rem}
     .filter-pill:hover{box-shadow:0 2px 6px rgb(0 0 0 / .07)}
-    .filter-label{font-weight:600;color:#334155}
-    .filter-value{color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
-    .panel{position:absolute;z-index:50;top:110%;left:0;background:#fff;border:1px solid #e2e8f0;border-radius:.75rem;box-shadow:0 20px 50px rgba(2,12,27,.15);width:320px;max-height:18rem;display:none}
+    .filter-label{font-weight:600;color:#334155;font-size:.8rem}
+    .filter-value{color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
+    .caret{margin-left:auto;color:#64748b;font-size:.85rem}
+    .panel{position:absolute;z-index:50;top:110%;left:0;background:#fff;border:1px solid #e2e8f0;border-radius:.75rem;box-shadow:0 20px 50px rgba(2,12,27,.15);width:280px;max-height:18rem;display:none}
     .panel.open{display:block}
-    .panel-header{position:sticky;top:0;background:#fff;border-bottom:1px solid #e2e8f0;padding:.6rem .8rem;display:flex;align-items:center;justify-content:space-between}
-    .panel-body{padding:.5rem .5rem .75rem .5rem;max-height:14.5rem;overflow:auto}
-    .opt-row{display:flex;align-items:center;gap:.55rem;padding:.35rem .45rem;border-radius:.5rem}
+    .panel-header{position:sticky;top:0;background:#fff;border-bottom:1px solid #e2e8f0;padding:.55rem .75rem;display:flex;align-items:center;justify-content:space-between;font-size:.9rem}
+    .panel-body{padding:.45rem .45rem .7rem .45rem;max-height:14.5rem;overflow:auto}
+    .opt-row{display:flex;align-items:center;gap:.5rem;padding:.35rem .45rem;border-radius:.5rem;font-size:.9rem}
     .opt-row:hover{background:#f8fafc}
-    .opt-row input{width:1.05rem;height:1.05rem}
+    .opt-row input{width:1rem;height:1rem}
     .filter-clear{color:#0ea5e9;font-weight:600}
-    .caret{margin-left:auto;color:#64748b}
 
-    /* IA: permitir HTML enriquecido */
+    /* IA: HTML enriquecido */
     .ai-output p{margin-bottom:.75rem;line-height:1.5}
     .ai-output ul{list-style:disc;margin-left:1.5rem;margin-bottom:1rem}
     .ai-output table{width:100%;border-collapse:collapse;margin-top:1rem}
@@ -107,8 +110,8 @@
           </div>
         </div>
 
-        <!-- Filtros (horizontales, multi, con scroll y limpiar individual) -->
-        <div id="filters-row" class="flex flex-wrap gap-3 mb-8"></div>
+        <!-- Filtros: 1 sola fila con scroll -->
+        <div id="filters-row" class="flex gap-2 mb-6 pr-2"></div>
 
         <!-- Secciones -->
         <div id="dashboard-content">
@@ -263,7 +266,7 @@
   const FILES = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
   const SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxqTzxdY090fV2JWIFxiqAVnkre_dtUw1M09ZMv9mNKYz3GQW-d1ONSP_FIJTswZ9t2qA/exec";
 
-  const PALETTE = { c0:'#86eae9', c1:'#3edad8', c2:'#37c9ef', c3:'#37c9ef', c4:'#2c92d5', c5:'#13538a' };
+  const PALETTE = { c0:'#86eae9', c1:'#3edad8', c2:'#37c9ef', c4:'#2c92d5' };
   const BAR_BG = 'rgba(55,201,239,0.5)';
   const LINE_ACC = PALETTE.c1;
 
@@ -431,7 +434,7 @@
   }
 
   function createFilterDropdown({key,label,placeholder}, options){
-    const wrap=document.createElement('div'); wrap.className='relative'; wrap.dataset.key=key;
+    const wrap=document.createElement('div'); wrap.className='relative inline-flex'; wrap.dataset.key=key;
 
     const btn=document.createElement('button');
     btn.className='filter-pill';
@@ -469,12 +472,15 @@
     const set = state[key];
     if(key==='flujo'){
       const arr=[...set];
-      sum.textContent = arr.length===0 ? 'mixto' : (arr.length===1 ? arr[0] : `${arr.length} seleccionados`);
+      const txt = arr.length===0 ? 'mixto' : (arr.length===1 ? arr[0] : `${arr.length} seleccionados`);
+      sum.textContent = txt;
+      sum.title = arr.length ? arr.join(', ') : 'mixto';
       return;
     }
     const arr=[...set];
     const def = filtersDef.find(f=>f.key===key)?.placeholder || 'Todos';
     sum.textContent = arr.length===0 ? def : (arr.length===1 ? arr[0] : `${arr.length} seleccionados`);
+    sum.title = arr.length ? arr.join(', ') : def;
   }
 
   function uniqueSorted(arr){ return Array.from(new Set(arr)).sort(); }
