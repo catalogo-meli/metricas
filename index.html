@@ -43,30 +43,26 @@
     .dropdown-menu a{display:block;padding:.6rem .8rem;font-size:.95rem;color:#334155}
     .dropdown-menu a:hover{background:#f1f5f9}
 
-    /* IA (formato enriquecido) */
+    /* Filtros dropdown bonitos */
+    .filter-wrap{position:relative}
+    .filter-btn{width:100%; background:#fff; border:1px solid #e2e8f0; border-radius:.5rem; padding:.65rem .8rem; box-shadow:0 1px 1px rgba(0,0,0,.03); text-align:left}
+    .filter-btn:hover{background:#f8fafc}
+    .filter-caret{transition:transform .2s ease}
+    .filter-open .filter-caret{transform:rotate(180deg)}
+    .filter-menu{position:absolute; left:0; right:0; top:calc(100% + .4rem); background:#fff; border:1px solid #e2e8f0; border-radius:.65rem; box-shadow:0 14px 28px rgba(2,8,23,.12); z-index:60}
+    .filter-body{max-height:260px; overflow:auto; padding:.25rem .5rem .75rem}
+    .filter-row{display:flex; align-items:center; gap:.5rem; padding:.35rem .35rem; border-radius:.4rem}
+    .filter-row:hover{background:#f8fafc}
+    .filter-clear{font-size:.78rem; color:#475569}
+    .filter-clear:hover{color:#0f172a; text-decoration:underline}
+
+    /* IA salida enriquecida */
     .ai-output p { margin-bottom: 0.75rem; line-height: 1.5; }
     .ai-output ul { list-style: disc; margin-left: 1.5rem; margin-bottom: 1rem; }
     .ai-output table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
     .ai-output th, .ai-output td { border: 1px solid #cbd5e1; padding: 0.5rem; text-align: left; }
     .ai-output th { background-color: #f1f5f9; }
     .ai-output code { background: #f3f4f6; padding: 0.2rem 0.4rem; border-radius: 4px; }
-
-    /* --------- Filtros en acordeón con checkboxes --------- */
-    .acc { background:#fff; border:1px solid #e2e8f0; border-radius:.5rem; box-shadow:0 1px 2px rgba(0,0,0,.06); }
-    .acc + .acc { margin-top:.75rem; }
-    .acc-btn { width:100%; display:flex; align-items:center; justify-content:space-between; padding:.5rem 1rem; text-align:left; }
-    .acc-btn .summary { color:#64748b; font-size:.875rem; }
-    .acc-btn .chev { transition: transform .2s ease; }
-    .acc.open .chev { transform: rotate(180deg); }
-    .acc-panel { border-top:1px solid #e2e8f0; }
-    .acc-tools { display:flex; align-items:center; gap:.5rem; padding:.5rem 1rem; }
-    .acc-search { width:100%; padding:.5rem .75rem; font-size:.875rem; border:1px solid #cbd5e1; border-radius:.375rem; }
-    .acc-search:focus { outline:none; border-color:#0ea5e9; box-shadow:0 0 0 1px #0ea5e9; }
-    .acc-list { max-height: 13.5rem; overflow:auto; padding:0 .5rem .75rem; }
-    .acc-item { display:flex; align-items:center; gap:.5rem; padding:.375rem .5rem; border-radius:.375rem; cursor:pointer; }
-    .acc-item:hover { background:#f8fafc; }
-    .acc-clear { font-size:.75rem; padding:.25rem .5rem; border-radius:.375rem; border:1px solid #cbd5e1; color:#334155; background:#fff; }
-    .acc-clear:hover { background:#f8fafc; }
   </style>
 </head>
 
@@ -124,8 +120,8 @@
           </div>
         </div>
 
-        <!-- Filtros (acordeón apilado) -->
-        <div id="filters-accordion" class="mb-8"></div>
+        <!-- Filtros (horizontales con dropdown scroll + limpiar individual) -->
+        <div id="filters-bar" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-7 gap-4 mb-8"></div>
 
         <!-- Secciones -->
         <div id="dashboard-content">
@@ -170,7 +166,7 @@
                   Productividad: Alta ≥80; Media 70–&lt;80; Baja &lt;70. &nbsp;|&nbsp;
                   Calidad: Alta ≥90%; Media 75%–&lt;90%; Baja &lt;75%.
                 </p>
-                <div id="ninebox-missing" class="mt-4 text-sm text-slate-600 ai-output"></div>
+                <div id="ninebox-missing" class="mt-4 text-sm text-slate-600"></div>
                 <div id="ninebox-details" class="mt-4 hidden"></div>
               </div>
 
@@ -296,6 +292,7 @@
    **********************/
   const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
   const FILES = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
+  const SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxqTzxdY090fV2JWIFxiqAVnkre_dtUw1M09ZMv9mNKYz3GQW-d1ONSP_FIJTswZ9t2qA/exec";
 
   // Paleta
   const PALETTE = { c0:'#86eae9', c1:'#3edad8', c2:'#37c9ef', c3:'#37c9ef', c4:'#2c92d5', c5:'#13538a' };
@@ -357,148 +354,7 @@
   };
 
   /**********************
-   * FILTROS (acordeón con multiselección)
-   **********************/
-  const FILTERS = [
-    {key:'q',      id:'filter-q',       label:'Trimestres', placeholder:'Todos los trimestres'},
-    {key:'mes',    id:'filter-mes',     label:'Mes',        placeholder:'Todos los meses'},
-    {key:'semana', id:'filter-semana',  label:'Semana',     placeholder:'Todas las semanas'},
-    {key:'ubic',   id:'filter-ubicacion',label:'Ubicación', placeholder:'Todas las ubicaciones'},
-    {key:'lider',  id:'filter-lider',   label:'Líderes',    placeholder:'Todos los líderes'},
-    {key:'user',   id:'filter-usuario', label:'Usuarios',   placeholder:'Todos los usuarios'},
-    {key:'flows',  id:'filter-flujo',   label:'Flujo',      placeholder:'Flujo mixto', isFlow:true}
-  ];
-  const defById = Object.fromEntries(FILTERS.map(d=>[d.id,d]));
-
-  const sel = {
-    q:new Set(), mes:new Set(), semana:new Set(), ubic:new Set(), lider:new Set(), user:new Set(),
-    flows:new Set(['mixto']) // por defecto
-  };
-
-  // Construye acordeones
-  function setupAccordions(){
-    const wrap = document.getElementById('filters-accordion');
-    if(!wrap) return;
-    wrap.innerHTML = FILTERS.map(def=>`
-      <div class="acc" id="${def.id}">
-        <button type="button" class="acc-btn">
-          <div>
-            <div class="font-medium text-slate-700">${def.label}</div>
-            <div class="summary">${def.placeholder}</div>
-          </div>
-          <div class="flex items-center gap-3">
-            <button class="acc-clear hidden sm:inline-block" data-clear>Limpiar</button>
-            <svg class="chev h-5 w-5 text-slate-500" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z"/>
-            </svg>
-          </div>
-        </button>
-        <div class="acc-panel hidden">
-          <div class="acc-tools">
-            <input type="text" class="acc-search" placeholder="Buscar...">
-            <button class="acc-clear" data-clear>Limpiar ${def.label}</button>
-          </div>
-          <div class="acc-list"></div>
-        </div>
-      </div>
-    `).join('');
-
-    // listeners por acordeón
-    FILTERS.forEach(def=>{
-      const root = document.getElementById(def.id);
-      if(!root) return;
-      const btn  = root.querySelector('.acc-btn');
-      const pnl  = root.querySelector('.acc-panel');
-      if(btn && pnl){
-        btn.addEventListener('click', (e)=>{
-          if(e.target.closest('[data-clear]')) return;
-          root.classList.toggle('open');
-          pnl.classList.toggle('hidden');
-        });
-      }
-      root.querySelectorAll('[data-clear]').forEach(b=>{
-        b.addEventListener('click', (e)=>{
-          e.preventDefault();
-          if(def.isFlow){ sel.flows = new Set(['mixto']); }
-          else { sel[def.key].clear(); }
-          updateFilterOptions(def.id); // re-render items (checks)
-          updateFilterSummary(def.id);
-          applyFilters();
-        });
-      });
-      const search = root.querySelector('.acc-search');
-      if(search){
-        search.addEventListener('input', (ev)=>{
-          const term = ev.target.value.toLowerCase();
-          root.querySelectorAll('.acc-item').forEach(it=>{
-            const t=it.getAttribute('data-text')||'';
-            it.classList.toggle('hidden', t.indexOf(term)===-1);
-          });
-        });
-      }
-    });
-  }
-
-  function updateFilterSummary(id){
-    const def = defById[id];
-    if(!def) return;
-    const values = Array.from(sel[def.key] || []);
-    const el = document.querySelector(`#${id} .summary`);
-    if(!el) return;
-    if(!values.length){
-      el.textContent = def.placeholder;
-      return;
-    }
-    el.textContent = values.length<=2 ? values.join(', ') : `${values.slice(0,2).join(', ')} +${values.length-2}`;
-  }
-
-  function updateFilterOptions(id, values=[]){
-    const def = defById[id];
-    if(!def) return;
-    const list = document.querySelector(`#${id} .acc-list`);
-    if(!list) return;
-
-    if(def.isFlow && values.length===0){ values = ['mixto','demanda','enhancement']; }
-
-    if(!def.isFlow){
-      const ok = new Set(values);
-      sel[def.key] = new Set(Array.from(sel[def.key]).filter(v=>ok.has(v)));
-    }
-
-    list.innerHTML = values.map(v=>{
-      const checked = (sel[def.key]||new Set()).has(v) ? 'checked' : '';
-      return `
-        <label class="acc-item" data-text="${String(v).toLowerCase()}">
-          <input type="checkbox" class="acc-check" value="${v}" ${checked}>
-          <span class="text-sm">${v}</span>
-        </label>`;
-    }).join('');
-
-    list.querySelectorAll('.acc-check').forEach(chk=>{
-      chk.addEventListener('change', ()=>{
-        const val = chk.value;
-        if(def.isFlow){
-          if(val==='mixto' && chk.checked){
-            sel.flows = new Set(['mixto']);
-          }else{
-            sel.flows.delete('mixto');
-            if(chk.checked) sel.flows.add(val); else sel.flows.delete(val);
-            if(sel.flows.size===0) sel.flows = new Set(['mixto']);
-          }
-          updateFilterOptions(id, values);
-        }else{
-          if(chk.checked) sel[def.key].add(val); else sel[def.key].delete(val);
-        }
-        updateFilterSummary(id);
-        applyFilters();
-      });
-    });
-
-    updateFilterSummary(id);
-  }
-
-  /**********************
-   * BUILD CONSOLIDADO
+   * CONSOLIDADO
    **********************/
   function buildWeeklyRows(prod, cal, base, lideres){
     const P = prod.map(r=>({
@@ -590,12 +446,245 @@
   let nineboxDetailsData = {};
 
   /**********************
-   * NAV + EXPORT + LIMPIAR
+   * FILTROS (dropdown scroll + multiselect)
+   **********************/
+  // Estado seleccionado (arrays)
+  const selectedFilters = {
+    q: [], mes: [], semana: [], ubic: [], lider: [], user: [],
+    flujo: ['mixto'] // mixto es exclusivo; si elegís demanda/enhancement se desmarca
+  };
+
+  // Definición visual de filtros (orden)
+  const FILTER_DEF = [
+    { key:'q',     label:'Trimestres', placeholder:'Todos los trimestres' },
+    { key:'mes',   label:'Mes',        placeholder:'Todos los meses' },
+    { key:'semana',label:'Semana',     placeholder:'Todas las semanas' },
+    { key:'ubic',  label:'Ubicación',  placeholder:'Todas las ubicaciones' },
+    { key:'lider', label:'Líderes',    placeholder:'Todos los líderes' },
+    { key:'user',  label:'Usuarios',   placeholder:'Todos los usuarios' },
+    { key:'flujo', label:'Flujo',      placeholder:'mixto' }
+  ];
+
+  // Construcción de UI
+  function setupFilters(){
+    const bar = document.getElementById('filters-bar');
+    bar.innerHTML = FILTER_DEF.map(f => `
+      <div class="filter-wrap" id="fw-${f.key}">
+        <button class="filter-btn flex flex-col gap-1" data-key="${f.key}">
+          <span class="text-xs text-slate-500">${f.label}</span>
+          <span class="flex justify-between items-center">
+            <span id="lbl-${f.key}" class="truncate text-slate-700">${f.placeholder}</span>
+            <svg class="filter-caret ml-2 h-4 w-4 text-slate-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.24 4.5a.75.75 0 01-1.08 0l-4.24-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/>
+            </svg>
+          </span>
+        </button>
+        <div class="filter-menu hidden" id="menu-${f.key}">
+          <div class="flex items-center justify-between px-3 pt-3 pb-2">
+            <span class="text-xs text-slate-500">Seleccioná uno o más</span>
+            <button class="filter-clear" data-clear="${f.key}">Limpiar</button>
+          </div>
+          <div class="filter-body space-y-1" id="opts-${f.key}"></div>
+        </div>
+      </div>
+    `).join('');
+
+    // Abrir/cerrar
+    FILTER_DEF.forEach(f=>{
+      document.querySelector(`#fw-${f.key} .filter-btn`).addEventListener('click', (e)=>{
+        closeAllMenus();
+        document.getElementById(`fw-${f.key}`).classList.toggle('filter-open');
+        document.getElementById(`menu-${f.key}`).classList.toggle('hidden');
+      });
+      document.querySelector(`#menu-${f.key} [data-clear="${f.key}"]`).addEventListener('click', ()=>{
+        if(f.key==='flujo'){ selectedFilters.flujo = ['mixto']; }
+        else selectedFilters[f.key] = [];
+        refreshDependentFilters(); // también re-renderiza opciones
+        applyFilters();
+      });
+    });
+
+    // Cierre global
+    document.addEventListener('click',(e)=>{
+      const isBtn = e.target.closest('.filter-btn');
+      const isMenu = e.target.closest('.filter-menu');
+      if(!isBtn && !isMenu) closeAllMenus();
+    });
+    window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeAllMenus(); });
+
+    // Render inicial de opciones
+    refreshDependentFilters();
+    updateFilterLabels();
+  }
+  function closeAllMenus(){
+    FILTER_DEF.forEach(f=>{
+      document.getElementById(`fw-${f.key}`)?.classList.remove('filter-open');
+      document.getElementById(`menu-${f.key}`)?.classList.add('hidden');
+    });
+  }
+  function updateFilterLabels(){
+    const summary = (key, placeholder)=>{
+      const arr = selectedFilters[key];
+      if(!arr || arr.length===0) return placeholder;
+      if(arr.length<=2) return arr.join(', ');
+      return `${arr.slice(0,2).join(', ')} +${arr.length-2}`;
+    };
+    FILTER_DEF.forEach(f=>{
+      document.getElementById(`lbl-${f.key}`).textContent = summary(f.key, f.placeholder);
+    });
+  }
+
+  // Helpers de sets
+  const uniq = arr => Array.from(new Set(arr));
+  const uniqNumSort = arr => uniq(arr).sort((a,b)=>a-b);
+
+  // Obtiene subconjunto válido dejando afuera "exceptKey" con estado actual
+  function filteredOriginalDataExcept(exceptKey){
+    return originalData.filter(r=>{
+      const S = selectedFilters;
+      const ok = (key, val)=> S[key].length===0 || S[key].includes(val);
+      return (exceptKey==='q'     || ok('q', r.q)) &&
+             (exceptKey==='mes'   || ok('mes', r.mes)) &&
+             (exceptKey==='semana'|| ok('semana', String(r.week))) &&
+             (exceptKey==='ubic'  || ok('ubic', r.ciudad)) &&
+             (exceptKey==='lider' || ok('lider', r['líder'])) &&
+             (exceptKey==='user'  || ok('user', r.usuario));
+    });
+  }
+
+  // Render de opciones (checkbox) para cada filtro, preservando selección válida
+  function renderOptions(key, values, formatter=(x)=>x){
+    const wrap = document.getElementById(`opts-${key}`);
+    const selected = new Set(selectedFilters[key]);
+    wrap.innerHTML = values.map(v=>{
+      const id = `${key}-${String(v).replace(/\s+/g,'_')}`;
+      const checked = selected.has(String(v)) ? 'checked' : '';
+      return `<label for="${id}" class="filter-row">
+        <input id="${id}" type="checkbox" class="h-4 w-4" value="${v}" ${checked}/>
+        <span class="text-sm text-slate-700">${formatter(v)}</span>
+      </label>`;
+    }).join('') || `<div class="text-sm text-slate-500 px-1 py-2">Sin opciones para los filtros actuales</div>`;
+
+    // Listeners de cambio
+    wrap.querySelectorAll('input[type="checkbox"]').forEach(chk=>{
+      chk.addEventListener('change', ()=>{
+        const val = String(chk.value);
+        if(key==='flujo'){
+          // "mixto" es exclusivo
+          if(val==='mixto' && chk.checked){
+            selectedFilters.flujo = ['mixto'];
+            // desmarcar el resto visualmente
+            wrap.querySelectorAll('input[type="checkbox"]').forEach(c=>{
+              if(c.value!=='mixto') c.checked = false;
+            });
+          }else{
+            // si marcás alguno que no sea mixto, quitamos "mixto"
+            const cur = new Set(selectedFilters.flujo.filter(x=>x!=='mixto'));
+            if(chk.checked) cur.add(val); else cur.delete(val);
+            selectedFilters.flujo = Array.from(cur);
+            // si ninguno marcado, volver a mixto
+            if(selectedFilters.flujo.length===0) selectedFilters.flujo=['mixto'];
+            // desmarcar "mixto" visual si corresponde
+            const mixto = wrap.querySelector('input[value="mixto"]'); if(mixto) mixto.checked = selectedFilters.flujo.includes('mixto');
+          }
+        }else{
+          const cur = new Set(selectedFilters[key]);
+          if(chk.checked) cur.add(val); else cur.delete(val);
+          selectedFilters[key] = Array.from(cur);
+        }
+        refreshDependentFilters(); // recalcular opciones dependientes
+        applyFilters();            // aplicar cambios
+      });
+    });
+  }
+
+  // Recalcula opciones permitidas por filtro (excluyentes Q↔Mes↔Semana y resto)
+  function refreshDependentFilters(){
+    // Q
+    {
+      const allowed = filteredOriginalDataExcept('q');
+      const qs = ['Q1','Q2','Q3','Q4'].filter(q => allowed.some(r=>r.q===q));
+      // limpiar selección inválida
+      selectedFilters.q = selectedFilters.q.filter(v=>qs.includes(v));
+      renderOptions('q', qs);
+    }
+    // Mes
+    {
+      const allowed = filteredOriginalDataExcept('mes');
+      const meses = MONTHS_ES.filter(m => allowed.some(r=>r.mes===m));
+      selectedFilters.mes = selectedFilters.mes.filter(v=>meses.includes(v));
+      renderOptions('mes', meses);
+    }
+    // Semana
+    {
+      const allowed = filteredOriginalDataExcept('semana');
+      const semanas = uniqNumSort(allowed.map(r=>Number(r.week))).map(String);
+      selectedFilters.semana = selectedFilters.semana.filter(v=>semanas.includes(v));
+      renderOptions('semana', semanas, v=>'W'+String(v).padStart(2,'0'));
+    }
+    // Ubicación
+    {
+      const allowed = filteredOriginalDataExcept('ubic');
+      const ubic = uniq(allowed.map(r=>r.ciudad).filter(Boolean)).sort();
+      selectedFilters.ubic = selectedFilters.ubic.filter(v=>ubic.includes(v));
+      renderOptions('ubic', ubic);
+    }
+    // Líder
+    {
+      const allowed = filteredOriginalDataExcept('lider');
+      const lideres = uniq(allowed.map(r=>r['líder']).filter(l=>l && l.toLowerCase()!=='sin líder')).sort();
+      selectedFilters.lider = selectedFilters.lider.filter(v=>lideres.includes(v));
+      renderOptions('lider', lideres);
+    }
+    // Usuario
+    {
+      const allowed = filteredOriginalDataExcept('user');
+      const usuarios = uniq(allowed.map(r=>r.usuario)).sort();
+      selectedFilters.user = selectedFilters.user.filter(v=>usuarios.includes(v));
+      renderOptions('user', usuarios);
+    }
+    // Flujo (estático)
+    {
+      const values = ['mixto','demanda','enhancement'];
+      const wrap = document.getElementById('opts-flujo');
+      if(!wrap.innerHTML.trim()){
+        renderOptions('flujo', values, (v)=> v.charAt(0).toUpperCase()+v.slice(1));
+      }else{
+        // actualizar checks según estado
+        wrap.querySelectorAll('input[type="checkbox"]').forEach(c=>{
+          c.checked = selectedFilters.flujo.includes(c.value);
+        });
+      }
+    }
+    updateFilterLabels();
+  }
+
+  // Flujo: suma por múltiples selecciones
+  function selectedFlows(){ return selectedFilters.flujo.slice(); }
+  function tareasFlujoMulti(r, flows){
+    if(!flows || flows.length===0 || flows.includes('mixto')) return (r.total_tareas||0);
+    let t = 0;
+    if(flows.includes('demanda')) t += (r.tareas_demanda||0);
+    if(flows.includes('enhancement')) t += (r.tareas_enhancement||0);
+    return t;
+  }
+  function promedioDiario(rows, flows){
+    const den = rows.reduce((s,r)=> s + (r.dias_activos||0), 0);
+    const num = rows.reduce((s,r)=> s + tareasFlujoMulti(r, flows), 0);
+    return den ? num/den : 0;
+  }
+  function setColor(el, color){
+    el.classList.remove('text-red-600','text-yellow-500','text-green-600','text-orange-500');
+    if(color) el.classList.add(color);
+  }
+
+  /**********************
+   * NAV + LIMPIEZA
    **********************/
   function setupNavigation(){
     const links=[...document.querySelectorAll('#nav-menu a')];
     const mobile=document.getElementById('mobile-nav-menu');
-    if(mobile) mobile.innerHTML = links.map(a=>`<a href="${a.getAttribute('href')}" class="block p-3 rounded-lg hover:bg-gray-700">${a.textContent}</a>`).join('');
+    mobile.innerHTML = links.map(a=>`<a href="${a.getAttribute('href')}" class="block p-3 rounded-lg hover:bg-gray-700">${a.textContent}</a>`).join('');
     links.forEach(a=>{
       a.addEventListener('click', e=>{
         e.preventDefault();
@@ -603,7 +692,7 @@
         document.querySelectorAll('.page-section').forEach(s=>s.classList.add('hidden'));
         document.querySelector(target).classList.remove('hidden');
         links.forEach(x=>x.classList.remove('active')); a.classList.add('active');
-        const h = document.getElementById('page-title'); if(h) h.textContent=a.textContent;
+        document.getElementById('page-title').textContent=a.textContent;
         if(target==='#detalle'){ renderTasksByUser(); updateDetailKPIs(); }
         if(target==='#lideres')      renderTasksByLeader();
         if(target==='#evolucion'){   renderWeeklyEvolution(); updateEvolutionKPIs(); }
@@ -615,154 +704,69 @@
     const mobBtn=document.getElementById('mobile-menu-button');
     const mob=document.getElementById('mobile-menu');
     const mobClose=document.getElementById('close-mobile-menu');
-    if(mobBtn && mob && mobClose){
-      mobBtn.addEventListener('click', ()=>{ mob.classList.remove('hidden'); mob.querySelector('aside').classList.remove('-translate-x-full'); });
-      mobClose.addEventListener('click', ()=>{ mob.querySelector('aside').classList.add('-translate-x-full'); setTimeout(()=>mob.classList.add('hidden'),200); });
-      if(mobile){
-        mobile.querySelectorAll('a').forEach(a=>{
-          a.addEventListener('click', ()=>{ mob.querySelector('aside').classList.add('-translate-x-full'); setTimeout(()=>mob.classList.add('hidden'),200); });
-        });
-      }
-    }
+    mobBtn.addEventListener('click', ()=>{ mob.classList.remove('hidden'); mob.querySelector('aside').classList.remove('-translate-x-full'); });
+    mobClose.addEventListener('click', ()=>{ mob.querySelector('aside').classList.add('-translate-x-full'); setTimeout(()=>mob.classList.add('hidden'),200); });
+    mobile.querySelectorAll('a').forEach(a=>{
+      a.addEventListener('click', ()=>{ mob.querySelector('aside').classList.add('-translate-x-full'); setTimeout(()=>mob.classList.add('hidden'),200); });
+    });
 
     // Export dropdown
-    const btnExp = document.getElementById('btn-export');
-    const menuExp = document.getElementById('export-menu');
-    if(btnExp && menuExp){
-      btnExp.addEventListener('click', ()=> menuExp.classList.toggle('hidden'));
-      document.addEventListener('click', (e)=>{
-        if(!menuExp.contains(e.target) && !btnExp.contains(e.target)) menuExp.classList.add('hidden');
+    document.getElementById('btn-export').addEventListener('click', ()=>{
+      document.getElementById('export-menu').classList.toggle('hidden');
+    });
+    document.addEventListener('click', (e)=>{
+      const dd = document.getElementById('export-menu');
+      if(!dd.contains(e.target) && !document.getElementById('btn-export').contains(e.target)) dd.classList.add('hidden');
+    });
+    document.querySelectorAll('#export-menu a').forEach(a=>{
+      a.addEventListener('click', (e)=>{
+        e.preventDefault();
+        document.getElementById('export-menu').classList.add('hidden');
+        const type = a.getAttribute('data-exp');
+        if(type==='csv') exportSectionCSV();
+        if(type==='png') exportSectionPNGs();
+        if(type==='zip') exportSectionZIP();
+        if(type==='sheets') exportToGoogleSheets();
       });
-      menuExp.querySelectorAll('a').forEach(a=>{
-        a.addEventListener('click', (e)=>{
-          e.preventDefault();
-          menuExp.classList.add('hidden');
-          const type = a.getAttribute('data-exp');
-          if(type==='csv') exportSectionCSV();
-          if(type==='png') exportSectionPNGs();
-          if(type==='zip') exportSectionZIP();
-          if(type==='sheets' && typeof exportToGoogleSheets==='function') exportToGoogleSheets();
-        });
-      });
-    }
+    });
 
-    // Limpiar todos los filtros
-    const clearAll = document.getElementById('btn-clear-filters');
-    if(clearAll){
-      clearAll.addEventListener('click', ()=>{
-        sel.q.clear(); sel.mes.clear(); sel.semana.clear(); sel.ubic.clear(); sel.lider.clear(); sel.user.clear();
-        sel.flows = new Set(['mixto']);
-        refreshDependentFilters();
-        FILTERS.forEach(def=>updateFilterSummary(def.id));
-        applyFilters();
-      });
-    }
+    // Limpiar TODOS
+    document.getElementById('btn-clear-filters').addEventListener('click', ()=>{
+      selectedFilters.q=[]; selectedFilters.mes=[]; selectedFilters.semana=[];
+      selectedFilters.ubic=[]; selectedFilters.lider=[]; selectedFilters.user=[];
+      selectedFilters.flujo=['mixto'];
+      refreshDependentFilters();
+      applyFilters();
+    });
   }
 
-  /**********************
-   * FILTRADO (multi + dependencias)
-   **********************/
-  function uniqueSorted(arr){ return Array.from(new Set(arr)).sort(); }
-  function uniqueSortedNum(arr){ return Array.from(new Set(arr)).sort((a,b)=>a-b); }
-
-  function selectedFlows(){
-    const values = Array.from(sel.flows);
-    if(values.length===0 || values.includes('mixto')) return ['mixto'];
-    return values;
-  }
-  const tareasByFlows = (r, flows) => {
-    if (flows.includes('mixto')) return (r.total_tareas||0);
-    let s = 0;
-    if (flows.includes('demanda')) s += (r.tareas_demanda||0);
-    if (flows.includes('enhancement')) s += (r.tareas_enhancement||0);
-    return s;
-  };
-  function promedioDiario(rows, flows){
-    const den = rows.reduce((s,r)=> s + (r.dias_activos||0), 0);
-    const num = rows.reduce((s,r)=> s + tareasByFlows(r,flows), 0);
-    return den ? num/den : 0;
-  }
-  function setColor(el, color){
-    if(!el) return;
-    el.classList.remove('text-red-600','text-yellow-500','text-green-600','text-orange-500');
-    if(color) el.classList.add(color);
-  }
-
-  function getFilterState(){
+  function filtersSummary() {
+    const S = selectedFilters;
+    const v = arr => (arr.length? arr.join(' | ') : '');
     return {
-      mes:     Array.from(sel.mes),
-      semana:  Array.from(sel.semana).map(String),
-      ubic:    Array.from(sel.ubic),
-      user:    Array.from(sel.user),
-      lider:   Array.from(sel.lider),
-      q:       Array.from(sel.q)
+      Trimestre: v(S.q),
+      Mes: v(S.mes),
+      Semana: v(S.semana),
+      Ubicacion: v(S.ubic),
+      Lider: v(S.lider),
+      Usuario: v(S.user),
+      Flujo: v(S.flujo)
     };
   }
 
-  function filteredOriginalDataExcept(exceptKey){
-    const v = getFilterState();
-    return originalData.filter(r =>
-      (exceptKey==='mes'    || v.mes.length===0    || v.mes.includes(r.mes)) &&
-      (exceptKey==='semana' || v.semana.length===0 || v.semana.includes(String(r.week))) &&
-      (exceptKey==='ubic'   || v.ubic.length===0   || v.ubic.includes(r.ciudad)) &&
-      (exceptKey==='user'   || v.user.length===0   || v.user.includes(r.usuario)) &&
-      (exceptKey==='lider'  || v.lider.length===0  || v.lider.includes(r['líder'])) &&
-      (exceptKey==='q'      || v.q.length===0      || v.q.includes(r.q))
-    );
-  }
-
-  function refreshDependentFilters(){
-    // Q
-    {
-      const allowed = filteredOriginalDataExcept('q');
-      const qs = ['Q1','Q2','Q3','Q4'].filter(q => allowed.some(r=>r.q===q));
-      updateFilterOptions('filter-q', qs);
-    }
-    // Mes
-    {
-      const allowed = filteredOriginalDataExcept('mes');
-      const meses = MONTHS_ES.filter(m => allowed.some(r=>r.mes===m));
-      updateFilterOptions('filter-mes', meses);
-    }
-    // Semana
-    {
-      const allowed = filteredOriginalDataExcept('semana');
-      const semanas = uniqueSortedNum(allowed.map(r=>r.week)).map(String);
-      updateFilterOptions('filter-semana', semanas);
-    }
-    // Ubicación
-    {
-      const allowed = filteredOriginalDataExcept('ubic');
-      const ubic = uniqueSorted(allowed.map(r=>r.ciudad).filter(Boolean));
-      updateFilterOptions('filter-ubicacion', ubic);
-    }
-    // Líder
-    {
-      const allowed = filteredOriginalDataExcept('lider');
-      const lideres = uniqueSorted(allowed.map(r=>r['líder']).filter(l => l && l.toLowerCase()!=='sin líder'));
-      updateFilterOptions('filter-lider', lideres);
-    }
-    // Usuario
-    {
-      const allowed = filteredOriginalDataExcept('user');
-      const usuarios= uniqueSorted(allowed.map(r=>r.usuario));
-      updateFilterOptions('filter-usuario', usuarios);
-    }
-    // Flujo (estático)
-    updateFilterOptions('filter-flujo', ['mixto','demanda','enhancement']);
-  }
-
+  /**********************
+   * APLICAR FILTROS
+   **********************/
   function applyFilters(){
-    refreshDependentFilters();
-
-    const f = getFilterState();
+    const S = selectedFilters;
+    const ok = (arr,val)=> arr.length===0 || arr.includes(String(val));
     currentData = originalData.filter(r =>
-      (f.mes.length===0    || f.mes.includes(r.mes)) &&
-      (f.semana.length===0 || f.semana.includes(String(r.week))) &&
-      (f.ubic.length===0   || f.ubic.includes(r.ciudad)) &&
-      (f.user.length===0   || f.user.includes(r.usuario)) &&
-      (f.lider.length===0  || f.lider.includes(r['líder'])) &&
-      (f.q.length===0      || f.q.includes(r.q))
+      ok(S.mes, r.mes) &&
+      ok(S.semana, String(r.week)) &&
+      ok(S.ubic, r.ciudad) &&
+      ok(S.user, r.usuario) &&
+      ok(S.lider, r['líder']) &&
+      ok(S.q, r.q)
     );
 
     updateKPIs();
@@ -782,7 +786,7 @@
   function updateKPIs(){
     const flows = selectedFlows();
 
-    const totalFlujo = currentData.reduce((s,r)=> s + tareasByFlows(r,flows), 0);
+    const totalFlujo = currentData.reduce((s,r)=> s + tareasFlujoMulti(r,flows), 0);
     const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
     const usuarios = new Set(currentData.map(r=>r.usuario)).size;
     const correcc = currentData.reduce((s,r)=> s + (r.correcciones_auditadas||0), 0);
@@ -793,19 +797,25 @@
     const promEl = document.getElementById('kpi-promedio-diario');
     const efEl   = document.getElementById('kpi-efectividad-prom');
 
-    setColor(promEl, (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500');
+    let promColor = (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500';
+    setColor(promEl, promColor);
 
     const efPct = ef*100;
-    setColor(efEl, (efPct<=75) ? 'text-red-600' : (efPct<87) ? 'text-orange-500' : (efPct<90) ? 'text-yellow-500' : 'text-green-600');
+    let efColor = (efPct<=75) ? 'text-red-600'
+                 : (efPct<87) ? 'text-orange-500'
+                 : (efPct<90) ? 'text-yellow-500'
+                 : 'text-green-600';
+    setColor(efEl, efColor);
 
-    if(document.getElementById('kpi-total-tareas')) document.getElementById('kpi-total-tareas').textContent = fmt.int(totalFlujo);
-    if(document.getElementById('kpi-ids')) document.getElementById('kpi-ids').textContent = fmt.int(idsTrab);
-    if(document.getElementById('kpi-usuarios')) document.getElementById('kpi-usuarios').textContent = fmt.int(usuarios);
-    if(document.getElementById('kpi-correcciones')) document.getElementById('kpi-correcciones').textContent = fmt.int(correcc);
-    if(promEl) promEl.textContent = fmt.dec(prom);
-    if(efEl)   efEl.textContent   = fmt.pct(ef);
+    document.getElementById('kpi-total-tareas').textContent     = fmt.int(totalFlujo);
+    document.getElementById('kpi-ids').textContent              = fmt.int(idsTrab);
+    document.getElementById('kpi-usuarios').textContent         = fmt.int(usuarios);
+    document.getElementById('kpi-correcciones').textContent     = fmt.int(correcc);
+    promEl.textContent = fmt.dec(prom);
+    efEl.textContent   = fmt.pct(ef);
   }
 
+  // KPIs a la derecha del gráfico en "Evolución Semanal"
   function updateEvolutionKPIs(){
     const flows = selectedFlows();
     const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
@@ -821,12 +831,13 @@
     const efPct = ef*100;
     setColor(efEl, (efPct<=75) ? 'text-red-600' : (efPct<87) ? 'text-orange-500' : (efPct<90) ? 'text-yellow-500' : 'text-green-600');
 
-    if(promEl) promEl.textContent = fmt.dec(prom);
-    if(efEl) efEl.textContent   = fmt.pct(ef);
-    if(document.getElementById('evo-kpi-ids')) document.getElementById('evo-kpi-ids').textContent   = fmt.int(idsTrab);
-    if(document.getElementById('evo-kpi-users')) document.getElementById('evo-kpi-users').textContent = fmt.int(usuarios);
+    promEl.textContent = fmt.dec(prom);
+    efEl.textContent   = fmt.pct(ef);
+    document.getElementById('evo-kpi-ids').textContent   = fmt.int(idsTrab);
+    document.getElementById('evo-kpi-users').textContent = fmt.int(usuarios);
   }
 
+  // KPIs a la derecha del gráfico en "Detalle por Usuario"
   function updateDetailKPIs(){
     const flows = selectedFlows();
     const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
@@ -841,29 +852,48 @@
     const efPct = ef*100;
     setColor(efEl, (efPct<=75) ? 'text-red-600' : (efPct<87) ? 'text-orange-500' : (efPct<90) ? 'text-yellow-500' : 'text-green-600');
 
-    if(promEl) promEl.textContent = fmt.dec(prom);
-    if(efEl) efEl.textContent   = fmt.pct(ef);
-    if(document.getElementById('det-kpi-ids')) document.getElementById('det-kpi-ids').textContent = fmt.int(idsTrab);
+    promEl.textContent = fmt.dec(prom);
+    efEl.textContent   = fmt.pct(ef);
+    document.getElementById('det-kpi-ids').textContent = fmt.int(idsTrab);
   }
 
   function createOrUpdateChart(id, cfg){
     if(charts[id]){ charts[id].data=cfg.data; charts[id].options=cfg.options||{}; charts[id].update(); return charts[id]; }
-    const canvas=document.getElementById(id);
-    if(!canvas) return null;
-    const ctx=canvas.getContext('2d');
+    const ctx=document.getElementById(id).getContext('2d');
     charts[id]=new Chart(ctx,cfg); return charts[id];
   }
+
+  // Helpers para datasets de barras + línea
   function barDataset(label, data){
     return {
-      type:'bar', label, data, yAxisID:'y',
-      backgroundColor: BAR_BG, borderColor:'rgba(0,0,0,0)', order:1, barPercentage:0.8, categoryPercentage:0.8
+      type:'bar',
+      label,
+      data,
+      yAxisID:'y',
+      backgroundColor: BAR_BG,
+      borderColor: 'rgba(0,0,0,0)',
+      order: 1,
+      barPercentage: 0.8,
+      categoryPercentage: 0.8
     };
   }
   function lineEffDataset(label, data){
     return {
-      type:'line', label, data, yAxisID:'y1',
-      borderColor: LINE_ACC, backgroundColor: LINE_ACC, order:2, fill:false, tension:0.25,
-      pointRadius:3, pointHoverRadius:5, pointBackgroundColor:'#ffffff', pointBorderColor:LINE_ACC, borderWidth:3, spanGaps:true
+      type:'line',
+      label,
+      data,
+      yAxisID:'y1',
+      borderColor: LINE_ACC,
+      backgroundColor: LINE_ACC,
+      order: 2,
+      fill: false,
+      tension: 0.25,
+      pointRadius: 3,
+      pointHoverRadius: 5,
+      pointBackgroundColor: '#ffffff',
+      pointBorderColor: LINE_ACC,
+      borderWidth: 3,
+      spanGaps: true
     };
   }
 
@@ -875,7 +905,7 @@
     currentData.forEach(r=>{
       const u=r.usuario;
       const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
-      o.num += tareasByFlows(r,flows); o.den += (r.dias_activos||0);
+      o.num += tareasFlujoMulti(r,flows); o.den += (r.dias_activos||0);
       if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){ o.effSum+=r.efectividad; o.effN++; }
       map.set(u,o);
     });
@@ -889,8 +919,8 @@
     const prodBand = p => (p>=80 ? 'alta' : p>=70 ? 'media' : 'baja');
     const calBand  = e => (e>=0.90 ? 'alta' : e>=0.75 ? 'media' : 'baja');
 
-    const rows=['alta','media','baja'];
-    const cols=['alta','media','baja'];
+    const rows=['alta','media','baja']; // productividad
+    const cols=['alta','media','baja']; // calidad
 
     const buckets = {};
     const details = {};
@@ -908,7 +938,6 @@
     });
 
     const grid = document.getElementById('ninebox-grid');
-    if(!grid) return;
     const label = s=> s.charAt(0).toUpperCase()+s.slice(1);
     const cellClass = (r,c)=>{
       if(r==='alta' && c==='alta') return 'nb-green';
@@ -947,26 +976,23 @@
     };
 
     const missDiv = document.getElementById('ninebox-missing');
-    if(missDiv){
-      if(missing.length){
-        const lines = missing
-          .sort((a,b)=> (a.u>b.u?1:-1))
-          .map(m=>{
-            const parts = [];
-            if(m.prom!==null) parts.push(`Promedio Diario: ${m.prom.toFixed(2)}`);
-            if(m.eff!==null)  parts.push(`% Efectividad: ${(m.eff*100).toFixed(2)}%`);
-            return `• ${m.u} — ${parts.join(' | ') || 'sin datos'}`;
-          });
-        missDiv.innerHTML = `<div class="font-medium mb-1">Perfiles no incluidos por datos faltantes</div><div class="whitespace-pre-line">${lines.join('\n')}</div>`;
-      }else{
-        missDiv.innerHTML = '';
-      }
+    if(missing.length){
+      const lines = missing
+        .sort((a,b)=> (a.u>b.u?1:-1))
+        .map(m=>{
+          const parts = [];
+          if(m.prom!==null) parts.push(`Promedio Diario: ${m.prom.toFixed(2)}`);
+          if(m.eff!==null)  parts.push(`% Efectividad: ${(m.eff*100).toFixed(2)}%`);
+          return `• ${m.u} — ${parts.join(' | ') || 'sin datos'}`;
+        });
+      missDiv.innerHTML = `<div class="font-medium mb-1">Perfiles no incluidos por datos faltantes</div><div class="whitespace-pre-line">${lines.join('\n')}</div>`;
+    }else{
+      missDiv.innerHTML = '';
     }
   }
 
   function showNineboxDetails(bucketKey, labelFn){
     const box = document.getElementById('ninebox-details');
-    if(!box) return;
     const rows = (nineboxDetailsData[bucketKey]||[]).slice().sort((a,b)=>b.prom-a.prom);
     const [prod, cal] = bucketKey.split('-').map(labelFn);
     if(!rows.length){
@@ -977,7 +1003,7 @@
         </div>
         <div class="text-slate-500 text-sm">Sin perfiles en este cuadrante para los filtros actuales.</div>`;
       box.classList.remove('hidden');
-      const nbClose=document.getElementById('nb-close'); if(nbClose) nbClose.onclick = ()=> box.classList.add('hidden');
+      document.getElementById('nb-close').onclick = ()=> box.classList.add('hidden');
       return;
     }
 
@@ -1011,41 +1037,46 @@
 
     box.innerHTML = header + table;
     box.classList.remove('hidden');
-    const nbClose=document.getElementById('nb-close'); if(nbClose) nbClose.onclick = ()=> box.classList.add('hidden');
+    document.getElementById('nb-close').onclick = ()=> box.classList.add('hidden');
   }
 
   /* ---------- Demanda vs Enhancement ---------- */
   function renderDemandPie(){
-    const demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
-    const enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
-    const tot = demand+enh;
-    const pctD = tot? (100*demand/tot) : 0;
-    const pctE = tot? (100*enh   /tot) : 0;
+    const flows = selectedFlows();
+    const demand = currentData.reduce((s,r)=> s + (flows.includes('mixto') ? 0 : (flows.includes('demanda')?(r.tareas_demanda||0):0)), 0);
+    const enh    = currentData.reduce((s,r)=> s + (flows.includes('mixto') ? 0 : (flows.includes('enhancement')?(r.tareas_enhancement||0):0)), 0);
+    const totMixto = currentData.reduce((s,r)=> s + (flows.includes('mixto')?(r.total_tareas||0):0), 0);
+
+    const labels = flows.includes('mixto') ? ['Mixto (total)'] : ['Demanda','Enhancement'];
+    const dataset = flows.includes('mixto') ? [totMixto] : [demand, enh];
+    const pct = dataset.reduce((a,b)=>a+b,0);
 
     createOrUpdateChart('demandPieChart',{
-      type:'pie',
-      data:{ labels:['Demanda','Enhancement'], datasets:[{ data:[pctD, pctE], backgroundColor:[PALETTE.c0, PALETTE.c4] }] },
+      type: flows.includes('mixto') ? 'doughnut' : 'pie',
+      data:{ labels, datasets:[{ data: dataset, backgroundColor: flows.includes('mixto') ? [PALETTE.c2] : [PALETTE.c0, PALETTE.c4] }] },
       options:{
         responsive:true,
         plugins:{
           legend:{ position:'bottom' },
-          tooltip:{ callbacks:{ label:(ctx)=> `${ctx.label}: ${ctx.parsed.toFixed(1)}%` } }
+          tooltip:{ callbacks:{ label:(ctx)=> `${ctx.label}: ${pct? (100*ctx.parsed/pct).toFixed(1) : 0}%` } }
         }
       }
     });
 
-    const dT = document.getElementById('demandTotals');
-    if(dT) dT.textContent = `Total Demanda: ${fmt.int(demand)} — Total Enhancement: ${fmt.int(enh)}`;
+    const txt = flows.includes('mixto')
+      ? `Total (mixto): ${fmt.int(totMixto)}`
+      : `Total Demanda: ${fmt.int(demand)} — Total Enhancement: ${fmt.int(enh)}`;
+    document.getElementById('demandTotals').textContent = txt;
   }
 
   /* ---------- Detalle por usuario ---------- */
   function renderTasksByUser(){
     const flows = selectedFlows();
 
-    const agg = new Map();
+    const agg = new Map(); // user -> {num,den, effNum, effDen}
     currentData.forEach(r=>{
       const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
-      o.num += tareasByFlows(r,flows);
+      o.num += tareasFlujoMulti(r,flows);
       o.den += (r.dias_activos||0);
       if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
         const w=(r.correcciones_auditadas||0)||1;
@@ -1082,11 +1113,11 @@
   /* ---------- Comparativa por equipo ---------- */
   function renderTasksByLeader(){
     const flows = selectedFlows();
-    const agg = new Map();
+    const agg = new Map(); // líder -> {num,den, effNum, effDen}
     currentData.forEach(r=>{
       const l = r['líder']; if(!l || l.toLowerCase()==='sin líder') return;
       const o = agg.get(l) || {num:0,den:0,effNum:0,effDen:0};
-      o.num += tareasByFlows(r,flows);
+      o.num += tareasFlujoMulti(r,flows);
       o.den += (r.dias_activos||0);
       if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
         const w = (r.correcciones_auditadas || 0) || 1;
@@ -1123,11 +1154,11 @@
   /* ---------- Evolución semanal ---------- */
   function renderWeeklyEvolution(){
     const flows = selectedFlows();
-    const agg = new Map();
+    const agg = new Map(); // week -> {num,den, effNum, effDen}
     currentData.forEach(r=>{
       const w = Number(r.week); if(!Number.isFinite(w)) return;
       const o = agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
-      o.num += tareasByFlows(r,flows);
+      o.num += tareasFlujoMulti(r,flows);
       o.den += (r.dias_activos||0);
       if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
         const weight = (r.correcciones_auditadas||0)||1;
@@ -1173,14 +1204,14 @@
   /* ---------- Ubicación ---------- */
   function renderByLocation(){
     const flows = selectedFlows();
-    const byLoc = new Map();
-    const effLoc = new Map();
-    const antig = {};
+    const byLoc = new Map(); // ciudad -> {num,den}
+    const effLoc = new Map(); // ciudad -> {num,den}
+    const antig = {}; // ciudad -> {sum, n}
 
     currentData.forEach(r=>{
       const c=r.ciudad||'Sin ubicación';
       const o=byLoc.get(c)||{num:0,den:0};
-      o.num += tareasByFlows(r,flows); o.den += (r.dias_activos||0); byLoc.set(c,o);
+      o.num += tareasFlujoMulti(r,flows); o.den += (r.dias_activos||0); byLoc.set(c,o);
 
       if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
         const w=(r.correcciones_auditadas||0)||1;
@@ -1221,83 +1252,47 @@
       }
     });
 
+    // Antigüedad tarjetas
     const list = labels.map(loc=>{
       const v=antig[loc]||{sum:0,n:0}; const avg=v.n? v.sum/v.n : 0;
       return [loc, avg];
     }).sort((a,b)=>b[1]-a[1]);
 
     const grid = document.getElementById('avg-antiguedad-cards');
-    if(grid){
-      grid.innerHTML = list.map(([loc,avg])=>`
-        <div class="kpi-card">
-          <div class="flex items-baseline justify-between">
-            <div class="text-slate-500 font-medium">${loc}</div>
-            <div class="text-3xl font-bold">${fmt.dec(avg)}</div>
-          </div>
+    grid.innerHTML = list.map(([loc,avg])=>`
+      <div class="kpi-card">
+        <div class="flex items-baseline justify-between">
+          <div class="text-slate-500 font-medium">${loc}</div>
+          <div class="text-3xl font-bold">${fmt.dec(avg)}</div>
         </div>
-      `).join('');
-    }
+      </div>
+    `).join('');
   }
 
   /**********************
-   * EXPORTS
+   * BUILDERS + EXPORTS
    **********************/
-  function getActiveSectionId(){
-    const sec=[...document.querySelectorAll('.page-section')].find(s=>!s.classList.contains('hidden'));
-    return sec ? sec.id : 'resumen';
-  }
-  function download(filename, blob){ saveAs(blob, filename); }
-  function toCSV(headers, rows){
-    const esc=v=> `"${String(v??'').replace(/"/g,'""')}"`;
-    const head = headers.map(esc).join(',');
-    const body = rows.map(r=> headers.map(h=>esc(r[h])).join(',')).join('\n');
-    return head + '\n' + body;
-  }
-
-  async function exportSectionPNGs(){
-    const id=getActiveSectionId();
-    const canvases=[];
-    if(id==='resumen'){
-      canvases.push(document.getElementById('demandPieChart'));
-      const el=document.getElementById('ninebox-card');
-      if(el){
-        const canvas = await html2canvas(el,{scale:2});
-        canvas.toBlob(b=>download('productividad-calidad.png',b));
-      }
-    }else if(id==='detalle'){
-      canvases.push(document.getElementById('tasksByUserChart'));
-    }else if(id==='lideres'){
-      canvases.push(document.getElementById('tasksByLeaderChart'));
-    }else if(id==='evolucion'){
-      canvases.push(document.getElementById('weeklyEvolutionChart'));
-    }else if(id==='ubicacion'){
-      canvases.push(document.getElementById('locCombinedChart'));
-    }
-    canvases.forEach((c,i)=>{
-      if(!c) return;
-      const url=c.toDataURL('image/png');
-      fetch(url).then(r=>r.blob()).then(b=>download(`${id}-chart${i+1}.png`, b));
-    });
-  }
-
   function buildNineboxData(flows) {
-    const map = new Map();
+    const map = new Map(); // user -> {num,den, effSum, effN}
     currentData.forEach(r=>{
       const u=r.usuario;
       const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
-      const t = tareasByFlows(r,flows);
+      const t = tareasFlujoMulti(r,flows);
       o.num += t; o.den += (r.dias_activos||0);
       if(r.efectividad!=='' && r.efectividad!=null){ o.effSum+=r.efectividad; o.effN++; }
       map.set(u,o);
     });
+
     const prodBand = p => (p>=80 ? 'Alta' : p>=70 ? 'Media' : 'Baja');
     const calBand  = e => (e>=0.90 ? 'Alta' : e>=0.75 ? 'Media' : 'Baja');
+
     const buckets = {
       "Prod Alta / Cal Alta":[], "Prod Alta / Cal Media":[], "Prod Alta / Cal Baja":[],
       "Prod Media / Cal Alta":[], "Prod Media / Cal Media":[], "Prod Media / Cal Baja":[],
       "Prod Baja / Cal Alta":[], "Prod Baja / Cal Media":[], "Prod Baja / Cal Baja":[]
     };
     const missing = [];
+
     Array.from(map.entries()).forEach(([u,o])=>{
       const prom = o.den? o.num/o.den : null;
       const eff  = o.effN? o.effSum/o.effN : null;
@@ -1305,13 +1300,15 @@
       const caja = `Prod ${prodBand(prom)} / Cal ${calBand(eff)}`;
       buckets[caja].push(u);
     });
+
     return { buckets, missing };
   }
+
   function buildUsersPromEff(flows){
-    const agg = new Map();
+    const agg = new Map(); // user -> {num,den, effNum, effDen}
     currentData.forEach(r=>{
       const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
-      const t = tareasByFlows(r,flows);
+      const t = tareasFlujoMulti(r,flows);
       o.num += t; o.den += (r.dias_activos||0);
       if(r.efectividad!=='' && r.efectividad!=null){
         const w=(r.correcciones_auditadas||0)||1;
@@ -1323,12 +1320,13 @@
       user, prom: (o.den? o.num/o.den : 0), eff: (o.effDen? o.effNum/o.effDen : null)
     })).sort((a,b)=>b.prom-a.prom);
   }
+
   function buildLideresData(flows){
-    const agg = new Map();
+    const agg = new Map(); // líder -> {num,den, effNum, effDen}
     currentData.forEach(r=>{
       const l=r['líder']; if(!l || l.toLowerCase()==='sin líder') return;
       const o=agg.get(l)||{num:0,den:0,effNum:0,effDen:0};
-      const t = tareasByFlows(r,flows);
+      const t = tareasFlujoMulti(r,flows);
       o.num += t; o.den += (r.dias_activos||0);
       if(r.efectividad!=='' && r.efectividad!=null){
         const w=(r.correcciones_auditadas||0)||1;
@@ -1340,12 +1338,13 @@
       lider, prom:(o.den? o.num/o.den : 0), eff:(o.effDen? o.effNum/o.effDen : null)
     })).sort((a,b)=>b.prom-a.prom);
   }
+
   function buildEvolucionData(flows){
-    const agg = new Map();
+    const agg = new Map(); // week -> {num,den, effNum, effDen}
     currentData.forEach(r=>{
       const w=Number(r.week); if(!Number.isFinite(w)) return;
       const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
-      const t = tareasByFlows(r,flows);
+      const t = tareasFlujoMulti(r,flows);
       o.num+=t; o.den+=(r.dias_activos||0);
       if(r.efectividad!=='' && r.efectividad!=null){
         const wgt=(r.correcciones_auditadas||0)||1;
@@ -1364,14 +1363,16 @@
     }
     return { labels, values, eff };
   }
+
   function buildUbicacionData(flows){
-    const byLoc = new Map();
-    const effLoc = new Map();
-    const antig = {};
+    const byLoc = new Map(); // ciudad -> {num,den}
+    const effLoc = new Map(); // ciudad -> {num,den}
+    const antig = {}; // ciudad -> {sum, n}
+
     currentData.forEach(r=>{
       const c=r.ciudad||'Sin ubicación';
       const o=byLoc.get(c)||{num:0,den:0};
-      const t=tareasByFlows(r,flows);
+      const t=tareasFlujoMulti(r,flows);
       o.num+=t; o.den+=(r.dias_activos||0); byLoc.set(c,o);
 
       if(r.efectividad!=='' && r.efectividad!=null){
@@ -1384,6 +1385,7 @@
       if(!antig[c]) antig[c]={sum:0,n:0};
       if(Number.isFinite(a)){ antig[c].sum+=a; antig[c].n++; }
     });
+
     const labels = Array.from(byLoc.keys()).sort();
     const prom = labels.map(c=>{ const o=byLoc.get(c)||{num:0,den:0}; return o.den? o.num/o.den : 0; });
     const eff = labels.map(c=>{ const e=effLoc.get(c)||{num:0,den:0}; return e.den? 100*e.num/e.den : null; });
@@ -1391,21 +1393,47 @@
     return { labels, prom, eff, antig: antigList };
   }
 
+  function getActiveSectionId(){
+    const sec=[...document.querySelectorAll('.page-section')].find(s=>!s.classList.contains('hidden'));
+    return sec ? sec.id : 'resumen';
+  }
+  function download(filename, blob){ saveAs(blob, filename); }
+  function toCSV(headers, rows){
+    const esc=v=> `"${String(v??'').replace(/"/g,'""')}"`;
+    const head = headers.map(esc).join(',');
+    const body = rows.map(r=> headers.map(h=>esc(r[h])).join(',')).join('\n');
+    return head + '\n' + body;
+  }
+
+  async function exportSectionPNGs(){
+    const id=getActiveSectionId();
+    const canvases=[];
+    if(id==='resumen'){
+      canvases.push(document.getElementById('demandPieChart'));
+      const el=document.getElementById('ninebox-card');
+      const canvas = await html2canvas(el,{scale:2});
+      canvas.toBlob(b=>download('productividad-calidad.png',b));
+    }else if(id==='detalle'){
+      canvases.push(document.getElementById('tasksByUserChart'));
+    }else if(id==='lideres'){
+      canvases.push(document.getElementById('tasksByLeaderChart'));
+    }else if(id==='evolucion'){
+      canvases.push(document.getElementById('weeklyEvolutionChart'));
+    }else if(id==='ubicacion'){
+      canvases.push(document.getElementById('locCombinedChart'));
+    }
+    canvases.forEach((c,i)=>{
+      if(!c) return;
+      const url=c.toDataURL('image/png');
+      fetch(url).then(r=>r.blob()).then(b=>download(`${id}-chart${i+1}.png`, b));
+    });
+  }
+
   async function exportSectionCSV(){
     const id=getActiveSectionId();
     const flows=selectedFlows();
 
     if(id==='resumen'){
-      const demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
-      const enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
-      const tot = demand+enh;
-      const rows1 = [
-        { Flujo:'Demanda', Total:demand, Porcentaje: tot? (demand/tot) : 0 },
-        { Flujo:'Enhancement', Total:enh, Porcentaje: tot? (enh/tot) : 0 }
-      ];
-      const csv1 = toCSV(['Flujo','Total','Porcentaje'], rows1);
-      download('resumen_demanda_enhancement.csv', new Blob([csv1],{type:'text/csv;charset=utf-8'}));
-
       const nb = buildNineboxData(flows);
       const headers=['Caja','Usuarios','Conteo'];
       const rows=[];
@@ -1419,7 +1447,6 @@
           nb.missing.map(m=>({Usuario:m.u, Promedio_Diario: (m.prom==null?'':m.prom), Efectividad:(m.eff==null?'':m.eff)})));
         download('resumen_productividad_calidad_faltantes.csv', new Blob([csv3],{type:'text/csv;charset=utf-8'}));
       }
-
     }else if(id==='detalle'){
       const data = buildUsersPromEff(flows);
       const rows = data.map(d=>({Usuario:d.user, Promedio_Diario:d.prom, Efectividad:d.eff}));
@@ -1429,7 +1456,7 @@
     }else if(id==='lideres'){
       const data = buildLideresData(flows);
       const rows = data.map(d=>({Lider:d.lider, Promedio_Diario:d.prom, Efectividad:d.eff}));
-      const csv = toCSV(['Lider','Promedio_Diario','Efectectividad'], rows);
+      const csv = toCSV(['Lider','Promedio_Diario','Efectividad'], rows);
       download('comparativa_equipo.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
 
     }else if(id==='evolucion'){
@@ -1459,13 +1486,6 @@
       zip.file(name, toCSV(headers, rows));
     }
     if(id==='resumen'){
-      const demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
-      const enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
-      const tot = demand+enh;
-      addCSV('resumen_demanda_enhancement.csv',
-        ['Flujo','Total','Porcentaje'],
-        [{Flujo:'Demanda',Total:demand,Porcentaje:tot?demand/tot:0},{Flujo:'Enhancement',Total:enh,Porcentaje:tot?enh/tot:0}]
-      );
       const nb = buildNineboxData(flows);
       const rows=[]; Object.entries(nb.buckets).forEach(([k,arr])=> rows.push({Caja:k,Usuarios:arr.join(' | '),Conteo:arr.length}));
       addCSV('resumen_productividad_calidad.csv', ['Caja','Usuarios','Conteo'], rows);
@@ -1474,46 +1494,36 @@
           nb.missing.map(m=>({Usuario:m.u,Promedio_Diario:(m.prom==null?'':m.prom),Efectividad:(m.eff==null?'':m.eff)})));
       }
       const el=document.getElementById('ninebox-card');
-      if(el){
-        const canvas = await html2canvas(el,{scale:2});
-        const blobNb = await new Promise(res=>canvas.toBlob(res));
-        zip.file('productividad-calidad.png', blobNb);
-      }
+      const canvas = await html2canvas(el,{scale:2});
+      const blobNb = await new Promise(res=>canvas.toBlob(res));
+      zip.file('productividad-calidad.png', blobNb);
       const c1=document.getElementById('demandPieChart');
-      if(c1){
-        const b1=await (await fetch(c1.toDataURL('image/png'))).blob();
-        zip.file('demanda_enhancement.png', b1);
-      }
+      const b1=await (await fetch(c1.toDataURL('image/png'))).blob();
+      zip.file('demanda_enhancement.png', b1);
 
     }else if(id==='detalle'){
       const data = buildUsersPromEff(flows);
       addCSV('detalle_por_usuario.csv', ['Usuario','Promedio_Diario','Efectividad'],
              data.map(d=>({Usuario:d.user,Promedio_Diario:d.prom,Efectividad:d.eff})));
       const c1=document.getElementById('tasksByUserChart');
-      if(c1){
-        const b1=await (await fetch(c1.toDataURL('image/png'))).blob();
-        zip.file('detalle_prom_efectividad.png', b1);
-      }
+      const b1=await (await fetch(c1.toDataURL('image/png'))).blob();
+      zip.file('detalle_prom_efectividad.png', b1);
 
     }else if(id==='lideres'){
       const data = buildLideresData(flows);
       addCSV('comparativa_equipo.csv', ['Lider','Promedio_Diario','Efectividad'],
              data.map(d=>({Lider:d.lider,Promedio_Diario:d.prom,Efectividad:d.eff})));
       const c=document.getElementById('tasksByLeaderChart');
-      if(c){
-        const b=await (await fetch(c.toDataURL('image/png'))).blob();
-        zip.file('comparativa_equipo.png', b);
-      }
+      const b=await (await fetch(c.toDataURL('image/png'))).blob();
+      zip.file('comparativa_equipo.png', b);
 
     }else if(id==='evolucion'){
       const series=buildEvolucionData(flows);
       addCSV('evolucion_promedio_y_efectividad.csv', ['Semana','Promedio_Diario','Efectividad'],
              series.labels.map((lab,i)=>({Semana:lab,Promedio_Diario:series.values[i],Efectividad:series.eff[i]})));
       const c=document.getElementById('weeklyEvolutionChart');
-      if(c){
-        const b=await (await fetch(c.toDataURL('image/png'))).blob();
-        zip.file('evolucion.png', b);
-      }
+      const b=await (await fetch(c.toDataURL('image/png'))).blob();
+      zip.file('evolucion.png', b);
 
     }else if(id==='ubicacion'){
       const data=buildUbicacionData(flows);
@@ -1522,10 +1532,8 @@
       addCSV('ubicacion_antiguedad.csv',['Ubicacion','Antiguedad_Promedio'],
              data.antig.map(([loc,avg])=>({Ubicacion:loc,Antiguedad_Promedio:avg})));
       const c=document.getElementById('locCombinedChart');
-      if(c){
-        const b=await (await fetch(c.toDataURL('image/png'))).blob();
-        zip.file('ubicacion.png', b);
-      }
+      const b=await (await fetch(c.toDataURL('image/png'))).blob();
+      zip.file('ubicacion.png', b);
     }
 
     const blob = await zip.generateAsync({type:'blob'});
@@ -1533,44 +1541,24 @@
   }
 
   /**********************
-   * GEMINI (prompts + render enriquecido)
+   * GEMINI (prompts actualizados)
    **********************/
-  function filtersSummary() {
-    const f = {
-      q: Array.from(sel.q),
-      mes: Array.from(sel.mes),
-      semana: Array.from(sel.semana),
-      ubic: Array.from(sel.ubic),
-      lider: Array.from(sel.lider),
-      user: Array.from(sel.user),
-      flows: selectedFlows()
-    };
-    return {
-      Trimestre: f.q.join(', ') || 'Todos',
-      Mes: f.mes.join(', ') || 'Todos',
-      Semana: f.semana.join(', ') || 'Todas',
-      Ubicacion: f.ubic.join(', ') || 'Todas',
-      Lider: f.lider.join(', ') || 'Todos',
-      Usuario: f.user.join(', ') || 'Todos',
-      Flujo: f.flows.join(' + ')
-    };
-  }
-
   function buildNineboxPrompt(){
     const flows=selectedFlows();
     const filtros_activos = JSON.stringify(filtersSummary());
-    const total_tareas = currentData.reduce((s,r)=>s+tareasByFlows(r,flows),0);
+    const total_tareas = currentData.reduce((s,r)=>s+tareasFlujoMulti(r,flows),0);
     const promedio_diario = promedioDiario(currentData,flows).toFixed(2);
     const efVals= currentData.map(r=>r.efectividad).filter(v=>v!==''&&v!=null);
     const efectividad = (efVals.length? (100*efVals.reduce((a,b)=>a+b,0)/efVals.length) : 0).toFixed(2);
 
+    // distribución ninebox
     const prodBand=p=>(p>=80?'Alta':p>=70?'Media':'Baja');
     const calBand=e=>(e>=0.90?'Alta':e>=0.75?'Media':'Baja');
     const buckets = { 'Prod Alta / Cal Alta':0,'Prod Alta / Cal Media':0,'Prod Alta / Cal Baja':0,'Prod Media / Cal Alta':0,'Prod Media / Cal Media':0,'Prod Media / Cal Baja':0,'Prod Baja / Cal Alta':0,'Prod Baja / Cal Media':0,'Prod Baja / Cal Baja':0 };
     const map=new Map();
     currentData.forEach(r=>{
       const u=r.usuario; const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
-      o.num += tareasByFlows(r,flows); o.den += (r.dias_activos||0);
+      o.num += tareasFlujoMulti(r,flows); o.den += (r.dias_activos||0);
       if(r.efectividad!=='' && r.efectividad!=null){ o.effSum+=r.efectividad; o.effN++; }
       map.set(u,o);
     });
@@ -1680,57 +1668,30 @@ Sos analista de mejora continua de Catálogo (Netkel). Buscás mantener una oper
   }
 
   function setupGeminiFeatures(){
-    const btnSum = document.getElementById('generate-summary-btn');
-    if(btnSum){
-      btnSum.addEventListener('click', async ()=>{
-        const block = document.getElementById('ninebox-missing');
-        if(!block) return;
-        block.classList.remove('hidden');
-        block.textContent='Generando…';
-        try{
-          const resp = await geminiRequest(buildNineboxPrompt());
-          block.innerHTML = resp; // HTML enriquecido
-        }catch(e){ block.textContent = e.message; }
-      });
-    }
+    document.getElementById('generate-summary-btn').addEventListener('click', async ()=>{
+      const block = document.getElementById('ninebox-missing');
+      block.classList.remove('hidden');
+      block.textContent='Generando…';
+      try{
+        const resp = await geminiRequest(buildNineboxPrompt());
+        block.innerHTML = resp; // render enriquecido si viene en Markdown/HTML
+      }catch(e){ block.textContent = e.message; }
+    });
 
-    const btnInsights = document.getElementById('generate-insights-btn');
-    if(btnInsights){
-      btnInsights.addEventListener('click', async ()=>{
-        const out = document.getElementById('insights-output');
-        if(!out) return;
-        out.classList.remove('hidden');
-        out.textContent = 'Analizando…';
-        try{
-          const resp = await geminiRequest(buildGlobalInsightsPrompt());
-          out.innerHTML = resp; // HTML enriquecido
-        }catch(e){ out.textContent = e.message; }
-      });
-    }
+    document.getElementById('generate-insights-btn').addEventListener('click', async ()=>{
+      const out = document.getElementById('insights-output');
+      out.classList.remove('hidden');
+      out.innerHTML = 'Analizando…';
+      try{
+        const resp = await geminiRequest(buildGlobalInsightsPrompt());
+        out.innerHTML = resp; // **innerHTML** para mostrar formato
+      }catch(e){ out.textContent = e.message; }
+    });
   }
 
   /**********************
    * INIT
    **********************/
-  function setupFilters(){
-    setupAccordions();
-
-    const meses   = MONTHS_ES.filter(m => originalData.some(r=>r.mes===m));
-    const semanas = uniqueSortedNum(originalData.map(r=>r.week)).map(String);
-    const ubic    = uniqueSorted(originalData.map(r=>r.ciudad).filter(Boolean));
-    const usuarios= uniqueSorted(originalData.map(r=>r.usuario));
-    const lideres = uniqueSorted(originalData.map(r=>r['líder']).filter(l => l && l.toLowerCase()!=='sin líder'));
-    const qs      = ['Q1','Q2','Q3','Q4'].filter(q => originalData.some(r=>r.q===q));
-
-    updateFilterOptions('filter-mes', meses);
-    updateFilterOptions('filter-semana', semanas);
-    updateFilterOptions('filter-ubicacion', ubic);
-    updateFilterOptions('filter-usuario', usuarios);
-    updateFilterOptions('filter-lider', lideres);
-    updateFilterOptions('filter-q', qs);
-    updateFilterOptions('filter-flujo', ['mixto','demanda','enhancement']);
-  }
-
   document.addEventListener('DOMContentLoaded', async ()=>{
     try{
       const [tProd,tCal,tBase,tLid] = await Promise.all([
