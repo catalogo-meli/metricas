@@ -37,8 +37,8 @@
     .nb-red{background:#fee2e2}
     .nb-cell[data-bucket]{cursor:pointer}
 
-    /* Filtros en una sola fila (pills sin título) */
-    #filters-row{overflow-x:auto;white-space:nowrap;padding-bottom:.25rem}
+    /* Filtros en 1 fila (pills sin título) */
+    #filters-row{display:flex;gap:.5rem;overflow-x:auto;white-space:nowrap;padding-bottom:.25rem}
     #filters-row::-webkit-scrollbar{height:8px}
     #filters-row::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:9999px}
     .filter-pill{background:#fff;border:1px solid #e2e8f0;border-radius:.75rem;padding:.6rem .8rem;display:inline-flex;align-items:center;gap:.5rem;min-width:190px;max-width:260px;box-shadow:0 1px 2px rgb(0 0 0 / .05);font-size:.95rem}
@@ -110,38 +110,20 @@
           </div>
         </div>
 
-        <!-- Filtros (pills sin título) -->
-        <div id="filters-row" class="flex gap-2 mb-6 pr-2"></div>
+        <!-- Filtros -->
+        <div id="filters-row" class="mb-6 pr-2"></div>
 
         <!-- Secciones -->
         <div id="dashboard-content">
           <!-- Resumen -->
           <section id="resumen" class="page-section">
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-6 mb-6">
-              <div class="kpi-card text-center">
-                <h3 class="text-slate-500 font-medium">Total Tareas</h3>
-                <p id="kpi-total-tareas" class="text-4xl font-bold mt-2"></p>
-              </div>
-              <div class="kpi-card text-center">
-                <h3 class="text-slate-500 font-medium">IDs trabajados</h3>
-                <p id="kpi-ids" class="text-4xl font-bold mt-2"></p>
-              </div>
-              <div class="kpi-card text-center">
-                <h3 class="text-slate-500 font-medium">Promedio Diario</h3>
-                <p id="kpi-promedio-diario" class="text-4xl font-bold mt-2"></p>
-              </div>
-              <div class="kpi-card text-center">
-                <h3 class="text-slate-500 font-medium">% Efectividad</h3>
-                <p id="kpi-efectividad-prom" class="text-4xl font-bold mt-2"></p>
-              </div>
-              <div class="kpi-card text-center">
-                <h3 class="text-slate-500 font-medium">Correcciones Auditadas</h3>
-                <p id="kpi-correcciones" class="text-4xl font-bold mt-2"></p>
-              </div>
-              <div class="kpi-card text-center">
-                <h3 class="text-slate-500 font-medium">Usuarios Activos</h3>
-                <p id="kpi-usuarios" class="text-4xl font-bold mt-2"></p>
-              </div>
+              <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">Total Tareas</h3><p id="kpi-total-tareas" class="text-4xl font-bold mt-2"></p></div>
+              <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">IDs trabajados</h3><p id="kpi-ids" class="text-4xl font-bold mt-2"></p></div>
+              <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">Promedio Diario</h3><p id="kpi-promedio-diario" class="text-4xl font-bold mt-2"></p></div>
+              <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">% Efectividad</h3><p id="kpi-efectividad-prom" class="text-4xl font-bold mt-2"></p></div>
+              <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">Correcciones Auditadas</h3><p id="kpi-correcciones" class="text-4xl font-bold mt-2"></p></div>
+              <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">Usuarios Activos</h3><p id="kpi-usuarios" class="text-4xl font-bold mt-2"></p></div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -179,18 +161,9 @@
                 <div class="chart-container"><canvas id="tasksByUserChart"></canvas></div>
               </div>
               <div class="grid grid-cols-1 gap-4">
-                <div class="kpi-card text-center">
-                  <h3 class="text-slate-500 font-medium">Promedio Diario</h3>
-                  <p id="det-kpi-prom" class="text-4xl font-bold mt-2"></p>
-                </div>
-                <div class="kpi-card text-center">
-                  <h3 class="text-slate-500 font-medium">% Efectividad</h3>
-                  <p id="det-kpi-ef" class="text-4xl font-bold mt-2"></p>
-                </div>
-                <div class="kpi-card text-center">
-                  <h3 class="text-slate-500 font-medium">IDs trabajados</h3>
-                  <p id="det-kpi-ids" class="text-3xl font-bold mt-2"></p>
-                </div>
+                <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">Promedio Diario</h3><p id="det-kpi-prom" class="text-4xl font-bold mt-2"></p></div>
+                <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">% Efectividad</h3><p id="det-kpi-ef" class="text-4xl font-bold mt-2"></p></div>
+                <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">IDs trabajados</h3><p id="det-kpi-ids" class="text-3xl font-bold mt-2"></p></div>
               </div>
             </div>
           </section>
@@ -211,22 +184,10 @@
                 <div class="chart-container"><canvas id="weeklyEvolutionChart"></canvas></div>
               </div>
               <div class="grid grid-cols-1 gap-4">
-                <div class="kpi-card text-center">
-                  <h3 class="text-slate-500 font-medium">Promedio Diario</h3>
-                  <p id="evo-kpi-prom" class="text-4xl font-bold mt-2"></p>
-                </div>
-                <div class="kpi-card text-center">
-                  <h3 class="text-slate-500 font-medium">% Efectividad</h3>
-                  <p id="evo-kpi-ef" class="text-4xl font-bold mt-2"></p>
-                </div>
-                <div class="kpi-card text-center">
-                  <h3 class="text-slate-500 font-medium">IDs trabajados</h3>
-                  <p id="evo-kpi-ids" class="text-3xl font-bold mt-2"></p>
-                </div>
-                <div class="kpi-card text-center">
-                  <h3 class="text-slate-500 font-medium">Usuarios Activos</h3>
-                  <p id="evo-kpi-users" class="text-3xl font-bold mt-2"></p>
-                </div>
+                <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">Promedio Diario</h3><p id="evo-kpi-prom" class="text-4xl font-bold mt-2"></p></div>
+                <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">% Efectividad</h3><p id="evo-kpi-ef" class="text-4xl font-bold mt-2"></p></div>
+                <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">IDs trabajados</h3><p id="evo-kpi-ids" class="text-3xl font-bold mt-2"></p></div>
+                <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">Usuarios Activos</h3><p id="evo-kpi-users" class="text-3xl font-bold mt-2"></p></div>
               </div>
             </div>
           </section>
@@ -385,7 +346,7 @@
     flujo:new Set(['mixto']) // default
   };
 
-  /******** UI FILTROS (sin título) ********/
+  /******** UI FILTROS (pills) ********/
   const filtersDef = [
     {key:'q',      placeholder:'Todos los trimestres'},
     {key:'mes',    placeholder:'Todos los meses'},
@@ -395,7 +356,6 @@
     {key:'usuario',placeholder:'Todos los usuarios'},
     {key:'flujo',  placeholder:'mixto'}
   ];
-  const filterContainers={};
 
   function renderOptions(key, values){
     const opts=document.getElementById(`opts-${key}`); if(!opts) return;
@@ -453,7 +413,6 @@
       refreshDependentFilters(); updateSummary(key); applyFilters();
     });
 
-    filterContainers[key]=wrap;
     return wrap;
   }
 
@@ -490,16 +449,13 @@
     });
 
     // Export dropdown
-    document.getElementById('btn-export').addEventListener('click',(e)=>{
-      e.stopPropagation(); document.getElementById('export-menu').classList.toggle('open');
-    });
-    document.addEventListener('click',(e)=>{
-      const p=document.getElementById('export-menu');
-      if(p && !p.contains(e.target) && !document.getElementById('btn-export').contains(e.target)) p.classList.remove('open');
-    });
-    document.querySelectorAll('#export-menu a').forEach(a=>{
+    const btnExp=document.getElementById('btn-export');
+    const menuExp=document.getElementById('export-menu');
+    btnExp.addEventListener('click',(e)=>{ e.stopPropagation(); menuExp.classList.toggle('open'); });
+    document.addEventListener('click',(e)=>{ if(!menuExp.contains(e.target) && !btnExp.contains(e.target)) menuExp.classList.remove('open'); });
+    menuExp.querySelectorAll('a').forEach(a=>{
       a.addEventListener('click',(e)=>{
-        e.preventDefault(); document.getElementById('export-menu').classList.remove('open');
+        e.preventDefault(); menuExp.classList.remove('open');
         const type=a.getAttribute('data-exp');
         if(type==='csv') exportSectionCSV();
         if(type==='png') exportSectionPNGs();
@@ -515,7 +471,7 @@
     });
   }
 
-  // recalcula opciones válidas excluyendo la clave indicada
+  // datos válidos excluyendo una o varias claves
   function dataFilteredExcept(excepts=new Set()){
     return originalData.filter(r=>{
       const pass=(k,set,val)=>(excepts.has(k) || set.size===0 || set.has(val));
@@ -539,10 +495,12 @@
       if(key==='lider')  values=uniqueSorted(allowed.map(r=>r['líder']).filter(l=>l && l.toLowerCase()!=='sin líder'));
       if(key==='usuario')values=uniqueSorted(allowed.map(r=>r.usuario));
 
+      // Mantener selección que siga siendo válida
       state[key]=new Set([...state[key]].filter(v=>values.includes(v)));
       renderOptions(key, values);
       updateSummary(key);
     });
+    // Flujo (fijo)
     renderOptions('flujo',['mixto','demanda','enhancement']);
     updateSummary('flujo');
   }
@@ -581,10 +539,10 @@
 
   /******** APLICAR ********/
   function applyFilters(){
-    currentData = dataFilteredExcept(new Set()); // (Flujo no reduce currentData; se usa en KPIs/gráficos)
+    currentData = dataFilteredExcept(new Set()); // Flujo NO filtra la base (para que el donut siempre sea Demanda vs Enhancement)
     updateKPIs();
     renderNineBox();
-    renderDemandPie();      // donut siempre Demanda vs Enhancement
+    renderDemandPie();
     renderTasksByUser();
     renderTasksByLeader();
     renderWeeklyEvolution();
@@ -793,7 +751,7 @@
     const promData=labels.map(c=>{ const o=byLoc.get(c); return o.den?o.num/o.den:0; });
     const effData =labels.map(c=>{ const e=effLoc.get(c)||{num:0,den:0}; return e.den?100*e.num/e.den:null; });
 
-    createOrUpdateChart('locCombinedChart',{ data:{ labels, datasets:[barDataset('Prom. diario',promData), lineEffDataset('% Efectividad',effData)] }, options:{ responsive:true, scales:{ y:{position:'left',ticks:{callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}}, y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>`${v.toFixed(0)}%`}, suggestedMin:50,suggestedMax:100}, x:{ticks:{autoSkip:false}} }, plugins:{legend:{display:true}} });
+    createOrUpdateChart('locCombinedChart',{ data:{ labels, datasets:[barDataset('Prom. diario',promData), lineEffDataset('% Efectividad',effData)] }, options:{ responsive:true, scales:{ y:{position:'left',ticks:{callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}}, y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>`${v.toFixed(0)}%`}, suggestedMin:50,suggestedMax:100}, x:{ticks:{ autoSkip:false }} }, plugins:{legend:{display:true}} });
 
     const list=labels.map(loc=>{ const v=antig[loc]||{sum:0,n:0}; const avg=v.n? v.sum/v.n : 0; return [loc,avg]; }).sort((a,b)=>b[1]-a[1]);
     document.getElementById('avg-antiguedad-cards').innerHTML = list.map(([loc,avg])=>`
@@ -810,7 +768,7 @@
 
   function buildNineboxData(){
     const flows=state.flujo; const map=new Map();
-    currentData.forEach(r=>{ const u=r.usuario; const o=map.get(u)||{num:0,den:0,effSum:0,effN:0}; o.num+=tareasPorFlujos(r,flows); o.den+=(r.dias_activos||0); if(r.efectividad!==''&&r.efectividad!=null){o. effSum+=r.efectividad;o.effN++;} map.set(u,o); });
+    currentData.forEach(r=>{ const u=r.usuario; const o=map.get(u)||{num:0,den:0,effSum:0,effN:0}; o.num+=tareasPorFlujos(r,flows); o.den+=(r.dias_activos||0); if(r.efectividad!==''&&r.efectividad!=null){o.effSum+=r.efectividad;o.effN++;} map.set(u,o); });
     const prod=p=>(p>=80?'Alta':p>=70?'Media':'Baja'), cal=e=>(e>=0.90?'Alta':e>=0.75?'Media':'Baja');
     const buckets={ "Prod Alta / Cal Alta":[], "Prod Alta / Cal Media":[], "Prod Alta / Cal Baja":[], "Prod Media / Cal Alta":[], "Prod Media / Cal Media":[], "Prod Media / Cal Baja":[], "Prod Baja / Cal Alta":[], "Prod Baja / Cal Media":[], "Prod Baja / Cal Baja":[] };
     const missing=[];
