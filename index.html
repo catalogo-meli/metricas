@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
@@ -18,54 +18,94 @@
 <!-- Export helpers -->
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 
 <!-- Montserrat -->
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
   :root{
-    --slate-50:#f8fafc; --slate-100:#f1f5f9; --slate-200:#e2e8f0; --slate-300:#cbd5e1; --slate-400:#94a3b8;
-    --slate-500:#64748b; --slate-600:#475569; --slate-700:#334155; --slate-800:#1f2937; --slate-900:#0f172a; --slate-950:#0b1220;
+    --bg: #f1f5f9;            /* slate-100 */
+    --text: #0f172a;          /* slate-900 */
+    --muted: #475569;         /* slate-600 */
+    --card: #ffffff;
+    --border:#e2e8f0;         /* slate-200 */
+    --sidebar-bg:#9aa0a6;     /* gris medio para claro */
+    --sidebar-text:#ffffff;
+    --sidebar-link-hover-bg:#7a7a7a;
+
+    --nb-green:#dcfce7;
+    --nb-yellow:#fef9c3;
+    --nb-orange:#ffedd5;
+    --nb-red:#fee2e2;
+
+    --chart-grid: rgba(0,0,0,.1);
+    --chart-tick: #334155;    /* slate-700 */
   }
-  body{font-family:'Montserrat',sans-serif;}
-  .sidebar-link{transition:all .2s ease-in-out;}
-  .sidebar-link:hover,.sidebar-link.active{background-color:#7a7a7a;color:#fff;transform:translateX(4px);}
-  .kpi-card{background:#fff;border-radius:.75rem;padding:1.5rem;box-shadow:0 4px 6px -1px rgb(0 0 0 / .1),0 2px 4px -2px rgb(0 0 0 / .1);}
+  [data-theme="dark"]{
+    --bg: #0b1220;            /* tinta/azul profundo */
+    --text: #e2e8f0;          /* texto claro */
+    --muted: #94a3b8;         /* slate-400 */
+    --card: #0f172a;          /* slate-900 */
+    --border:#1f2a37;         /* gris profundo */
+    --sidebar-bg:#334155;     /* slate-600/700 */
+    --sidebar-text:#e2e8f0;
+    --sidebar-link-hover-bg:#1f2937; /* slate-800 */
+
+    /* En oscuro mantenemos pasteles para legibilidad */
+    --nb-green:#dcfce7;
+    --nb-yellow:#fef9c3;
+    --nb-orange:#ffedd5;
+    --nb-red:#fee2e2;
+
+    --chart-grid: rgba(148,163,184,.25); /* slate-400 */
+    --chart-tick: #cbd5e1;               /* slate-300 */
+  }
+
+  /* Base */
+  body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);}
+  .kpi-card{background:var(--card);border-radius:.9rem;padding:1.5rem;box-shadow:0 8px 20px -10px rgba(0,0,0,.25);border:1px solid var(--border);}
   .chart-container{height:400px;}
   #mobile-menu{transition:transform .3s ease-in-out;}
 
+  /* Sidebar adaptativa (claro/oscuro) */
+  .sidebar{background:var(--sidebar-bg);color:var(--sidebar-text);}
+  .sidebar-link{transition:all .2s ease-in-out;border-radius:.6rem;padding:.75rem .9rem;display:flex;align-items:center;}
+  .sidebar-link:hover,.sidebar-link.active{background:var(--sidebar-link-hover-bg);color:#fff;transform:translateX(4px);}
+
   /* Nine-box */
-  .nb-cell{display:flex;align-items:center;justify-content:center;height:80px;border-radius:.5rem;border:1px solid var(--slate-200);color:#0b1220;}
-  .nb-hdr{font-weight:600;color:#475569}
+  .nb-cell{display:flex;align-items:center;justify-content:center;height:84px;border-radius:.6rem;border:1px solid var(--border);color:var(--text);}
+  .nb-hdr{font-weight:600;color:var(--muted)}
   .nb-badge{font-size:1.5rem;font-weight:700}
-  .nb-green{background:#dcfce7}
-  .nb-yellow{background:#fef9c3}
-  .nb-orange{background:#ffedd5}
-  .nb-red{background:#fee2e2}
+  .nb-green{background:var(--nb-green)}
+  .nb-yellow{background:var(--nb-yellow)}
+  .nb-orange{background:var(--nb-orange)}
+  .nb-red{background:var(--nb-red)}
   .nb-cell[data-bucket]{cursor:pointer}
 
   /* Pills de filtros */
-  .pill{display:flex;align-items:center;gap:.5rem;background:#fff;border:1px solid var(--slate-200);border-radius:.75rem;padding:.5rem .75rem;box-shadow:0 1px 2px rgb(0 0 0 / .06);position:relative;min-width:230px;outline:none;}
+  .pill{display:flex;align-items:center;gap:.5rem;background:var(--card);border:1px solid var(--border);border-radius:.75rem;padding:.5rem .75rem;box-shadow:0 1px 2px rgb(0 0 0 / .06);position:relative;min-width: 230px;}
   .pill:hover{box-shadow:0 2px 6px rgb(0 0 0 / .08);}
-  .pill:focus-visible{box-shadow:0 0 0 3px rgba(56,189,248,.45);}
-  .pill .label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;color:#334155}
+  .pill .label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;color:var(--muted)}
   .pill .chev{color:#64748b}
-  .menu{position:absolute;z-index:50;top:110%;left:0;min-width:320px;background:#fff;border:1px solid var(--slate-200);border-radius:.75rem;box-shadow:0 18px 30px -12px rgb(0 0 0 / .25);display:none}
+  .menu{position:absolute;z-index:50;top:110%;left:0;min-width:320px;background:var(--card);border:1px solid var(--border);border-radius:.75rem;box-shadow:0 18px 30px -12px rgb(0 0 0 / .25);display:none}
   .menu.open{display:block}
-  .menu .head{display:flex;align-items:center;justify-content:space-between;padding:.6rem .75rem;border-bottom:1px solid var(--slate-200)}
-  .menu .search{width:100%;padding:.5rem .75rem;border:1px solid var(--slate-200);border-radius:.5rem;background:var(--slate-50);font-size:.9rem}
+  .menu .head{display:flex;align-items:center;justify-content:space-between;padding:.6rem .75rem;border-bottom:1px solid var(--border)}
+  .menu .search{width:100%;padding:.5rem .75rem;border:1px solid var(--border);border-radius:.5rem;background:#f8fafc;font-size:.9rem;color:#111827}
+  [data-theme="dark"] .menu .search{background:#0b1220;color:#e2e8f0;border-color:var(--border)}
   .menu .clear{font-size:.85rem;color:#0ea5e9}
   .menu .list{max-height:260px;overflow:auto;padding:.5rem}
   .menu .item{display:flex;align-items:center;gap:.6rem;padding:.4rem .35rem;border-radius:.5rem;cursor:pointer}
-  .menu .item:hover{background:var(--slate-50)}
-  .menu .foot{padding:.6rem .75rem;border-top:1px solid var(--slate-200);font-size:.85rem;color:#64748b}
+  .menu .item:hover{background:#f8fafc}
+  [data-theme="dark"] .menu .item:hover{background:#0b1220}
+  .menu .foot{padding:.6rem .75rem;border-top:1px solid var(--border);font-size:.85rem;color:#64748b}
 
   /* Export dropdown */
   .dropdown{position:relative;display:inline-block;}
-  .dropdown-menu{position:absolute;right:0;top:100%;background:#fff;border:1px solid var(--slate-200);border-radius:.5rem;box-shadow:0 10px 20px rgba(0,0,0,.08);min-width:260px;z-index:50}
+  .dropdown-menu{position:absolute;right:0;top:100%;background:var(--card);border:1px solid var(--border);border-radius:.5rem;box-shadow:0 10px 20px rgba(0,0,0,.18);min-width:260px;z-index:50}
   .dropdown-menu a{display:block;padding:.6rem .8rem;font-size:.95rem;color:#334155}
+  [data-theme="dark"] .dropdown-menu a{color:#e2e8f0}
   .dropdown-menu a:hover{background:#f1f5f9}
+  [data-theme="dark"] .dropdown-menu a:hover{background:#0b1220}
 
   /* IA enriched output */
   .ai-output p{margin-bottom:.75rem;line-height:1.55}
@@ -75,39 +115,16 @@
   .ai-output th{background:#f1f5f9}
   .ai-output code{background:#f3f4f6;padding:.2rem .4rem;border-radius:4px}
 
-  /* Tema oscuro (mejor contraste) */
-  body.dark{background:var(--slate-950);color:#e5e7eb;}
-  body.dark .kpi-card{background:var(--slate-900);border:1px solid var(--slate-800);box-shadow:none;}
-  body.dark .menu, body.dark .dropdown-menu{background:var(--slate-900);border-color:var(--slate-800);}
-  body.dark .pill{background:var(--slate-900);border-color:var(--slate-800);}
-  body.dark .text-slate-700{color:#e2e8f0 !important;}
-  body.dark .bg-white{background:var(--slate-900) !important;}
-  body.dark .menu .item:hover{background:#0b1324;}
-  body.dark .menu .search{background:#0b1324;border-color:var(--slate-800);color:#e5e7eb;}
-  body.dark .menu .head, body.dark .menu .foot{border-color:var(--slate-800);}
-
-  /* Nine-box dark tints + legible */
-  body.dark .nb-cell{border-color:#263246;color:#e5e7eb;}
-  body.dark .nb-green{background:rgba(34,197,94,.18);}
-  body.dark .nb-yellow{background:rgba(234,179,8,.22);}
-  body.dark .nb-orange{background:rgba(249,115,22,.20);}
-  body.dark .nb-red{background:rgba(239,68,68,.22);}
-
-  /* Modal Google Sheets */
-  .modal{position:fixed;inset:0;z-index:60;display:none;}
-  .modal.open{display:block;}
-  .modal .backdrop{position:absolute;inset:0;background:rgba(0,0,0,.5);}
-  .modal .panel{position:relative;margin:6rem auto 0;max-width:40rem;width:90%;background:#fff;border-radius:0.75rem;padding:1.25rem;box-shadow:0 10px 30px rgba(0,0,0,.2);}
-  body.dark .modal .panel{background:var(--slate-900);border:1px solid var(--slate-800);color:#e2e8f0;}
-  .modal input, .modal textarea{width:100%;padding:.6rem .75rem;border:1px solid var(--slate-200);border-radius:.5rem;background:#fff;}
-  body.dark .modal input, body.dark .modal textarea{background:#0b1324;border-color:var(--slate-800);color:#e2e8f0;}
+  /* Botón tema */
+  .btn-ghost{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:.75rem;padding:.55rem .8rem}
+  .btn-ghost:hover{filter:brightness(0.98)}
 </style>
 </head>
 
-<body class="bg-slate-100 text-slate-800">
+<body>
 <div class="flex h-screen overflow-hidden">
   <!-- Sidebar -->
-  <aside class="hidden md:flex w-64 flex-col bg-[#999999] text-white p-4">
+  <aside class="hidden md:flex w-64 flex-col sidebar p-4">
     <div class="flex items-center mb-8">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-3 text-white" viewBox="0 0 20 20" fill="currentColor">
         <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
@@ -115,12 +132,12 @@
       <h1 class="text-2xl font-bold text-white">Catálogo</h1>
     </div>
     <nav id="nav-menu" class="flex-1 space-y-2">
-      <a href="#resumen" class="sidebar-link active flex items-center p-3 rounded-lg">Resumen General</a>
-      <a href="#detalle" class="sidebar-link flex items-center p-3 rounded-lg">Detalle por Usuario</a>
-      <a href="#lideres" class="sidebar-link flex items-center p-3 rounded-lg">Comparativa por Equipo</a>
-      <a href="#evolucion" class="sidebar-link flex items-center p-3 rounded-lg">Evolución Semanal</a>
-      <a href="#ubicacion" class="sidebar-link flex items-center p-3 rounded-lg">Análisis por Ubicación</a>
-      <a href="#analisis" class="sidebar-link flex items-center p-3 rounded-lg">Análisis Inteligente</a>
+      <a href="#resumen" class="sidebar-link active">Resumen General</a>
+      <a href="#detalle" class="sidebar-link">Detalle por Usuario</a>
+      <a href="#lideres" class="sidebar-link">Comparativa por Equipo</a>
+      <a href="#evolucion" class="sidebar-link">Evolución Semanal</a>
+      <a href="#ubicacion" class="sidebar-link">Análisis por Ubicación</a>
+      <a href="#analisis" class="sidebar-link">Análisis Inteligente</a>
     </nav>
   </aside>
 
@@ -129,20 +146,13 @@
     <div class="container mx-auto px-6 py-8">
       <!-- Header -->
       <div class="flex flex-wrap justify-between items-center mb-6 gap-3">
+        <h2 id="page-title" class="text-3xl font-bold" style="color:var(--text)">Resumen General</h2>
         <div class="flex items-center gap-2">
-          <button id="open-mobile-menu" class="md:hidden p-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50" aria-label="Abrir menú">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-700" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M3 6h18M3 12h18M3 18h18"/>
-            </svg>
-          </button>
-          <h2 id="page-title" class="text-3xl font-bold text-slate-700">Resumen General</h2>
-        </div>
-        <div class="flex items-center gap-2">
-          <button id="btn-clear-filters" class="px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-sm">
+          <button id="btn-clear-filters" class="px-3 py-2 rounded-lg btn-ghost text-sm">
             Limpiar todos los filtros
           </button>
-          <button id="theme-toggle" class="px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-sm" aria-pressed="false">
-            🌓
+          <button id="theme-toggle" class="btn-ghost" title="Tema claro/oscuro" aria-label="Alternar tema">
+            <span id="theme-ico">🌙</span>
           </button>
           <div class="dropdown">
             <button id="btn-export" class="px-3 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-sm">
@@ -151,16 +161,16 @@
             <div id="export-menu" class="dropdown-menu hidden">
               <a href="#" data-exp="csv">Exportar datos (CSV)</a>
               <a href="#" data-exp="png">Exportar gráficos (PNG)</a>
-              <a href="#" data-exp="pdf">Exportar sección (PDF)</a>
               <a href="#" data-exp="gsheets">Exportar a Google Sheets</a>
-              <a href="#" id="share-snapshot">Copiar link con filtros</a>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Barra de filtros -->
-      <div id="filters-bar" class="flex flex-wrap gap-3 mb-8"></div>
+      <!-- Barra de filtros (pills en una fila) -->
+      <div id="filters-bar" class="flex flex-wrap gap-3 mb-8">
+        <!-- Se crean dinámicamente -->
+      </div>
 
       <!-- Secciones -->
       <div id="dashboard-content">
@@ -168,28 +178,27 @@
         <section id="resumen" class="page-section">
           <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-6 mb-6">
             <div class="kpi-card text-center">
-              <h3 class="text-slate-500 font-medium">Total Tareas</h3>
+              <h3 class="font-medium" style="color:var(--muted)">Total Tareas</h3>
               <p id="kpi-total-tareas" class="text-4xl font-bold mt-2"></p>
             </div>
             <div class="kpi-card text-center">
-              <h3 class="text-slate-500 font-medium">IDs trabajados</h3>
+              <h3 class="font-medium" style="color:var(--muted)">IDs trabajados</h3>
               <p id="kpi-ids" class="text-4xl font-bold mt-2"></p>
             </div>
             <div class="kpi-card text-center">
-              <h3 class="text-slate-500 font-medium">Promedio Diario</h3>
+              <h3 class="font-medium" style="color:var(--muted)">Promedio Diario</h3>
               <p id="kpi-promedio-diario" class="text-4xl font-bold mt-2"></p>
-              <canvas id="kpi-pd-spark" width="140" height="32" class="mt-2"></canvas>
             </div>
             <div class="kpi-card text-center">
-              <h3 class="text-slate-500 font-medium">% Efectividad</h3>
+              <h3 class="font-medium" style="color:var(--muted)">% Efectividad</h3>
               <p id="kpi-efectividad-prom" class="text-4xl font-bold mt-2"></p>
             </div>
             <div class="kpi-card text-center">
-              <h3 class="text-slate-500 font-medium">Correcciones Auditadas</h3>
+              <h3 class="font-medium" style="color:var(--muted)">Correcciones Auditadas</h3>
               <p id="kpi-correcciones" class="text-4xl font-bold mt-2"></p>
             </div>
             <div class="kpi-card text-center">
-              <h3 class="text-slate-500 font-medium">Usuarios Activos</h3>
+              <h3 class="font-medium" style="color:var(--muted)">Usuarios Activos</h3>
               <p id="kpi-usuarios" class="text-4xl font-bold mt-2"></p>
             </div>
           </div>
@@ -202,11 +211,11 @@
                 <button id="generate-summary-btn" class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition-colors text-sm font-medium">✨ Generar Resumen</button>
               </div>
               <div id="ninebox-grid" class="grid grid-cols-4 gap-2"></div>
-              <p class="mt-3 text-xs text-slate-500">
+              <p class="mt-3 text-xs" style="color:var(--muted)">
                 Productividad: Alta ≥80; Media 70–&lt;80; Baja &lt;70. &nbsp;|&nbsp;
                 Calidad: Alta ≥90%; Media 75%–&lt;90%; Baja &lt;75%.
               </p>
-              <div id="ninebox-missing" class="mt-4 text-sm text-slate-600"></div>
+              <div id="ninebox-missing" class="mt-4 text-sm"></div>
               <div id="ninebox-details" class="mt-4 hidden"></div>
             </div>
 
@@ -216,7 +225,7 @@
               <div class="chart-container relative mx-auto" style="height:320px;max-width:360px">
                 <canvas id="demandPieChart"></canvas>
               </div>
-              <div id="demandTotals" class="mt-3 text-center text-sm text-slate-600"></div>
+              <div id="demandTotals" class="mt-3 text-center text-sm" style="color:var(--muted)"></div>
             </div>
           </div>
         </section>
@@ -230,15 +239,15 @@
             </div>
             <div class="grid grid-cols-1 gap-4">
               <div class="kpi-card text-center">
-                <h3 class="text-slate-500 font-medium">Promedio Diario</h3>
+                <h3 class="font-medium" style="color:var(--muted)">Promedio Diario</h3>
                 <p id="det-kpi-prom" class="text-4xl font-bold mt-2"></p>
               </div>
               <div class="kpi-card text-center">
-                <h3 class="text-slate-500 font-medium">% Efectividad</h3>
+                <h3 class="font-medium" style="color:var(--muted)">% Efectividad</h3>
                 <p id="det-kpi-ef" class="text-4xl font-bold mt-2"></p>
               </div>
               <div class="kpi-card text-center">
-                <h3 class="text-slate-500 font-medium">IDs trabajados</h3>
+                <h3 class="font-medium" style="color:var(--muted)">IDs trabajados</h3>
                 <p id="det-kpi-ids" class="text-3xl font-bold mt-2"></p>
               </div>
             </div>
@@ -262,19 +271,19 @@
             </div>
             <div class="grid grid-cols-1 gap-4">
               <div class="kpi-card text-center">
-                <h3 class="text-slate-500 font-medium">Promedio Diario</h3>
+                <h3 class="font-medium" style="color:var(--muted)">Promedio Diario</h3>
                 <p id="evo-kpi-prom" class="text-4xl font-bold mt-2"></p>
               </div>
               <div class="kpi-card text-center">
-                <h3 class="text-slate-500 font-medium">% Efectividad</h3>
+                <h3 class="font-medium" style="color:var(--muted)">% Efectividad</h3>
                 <p id="evo-kpi-ef" class="text-4xl font-bold mt-2"></p>
               </div>
               <div class="kpi-card text-center">
-                <h3 class="text-slate-500 font-medium">IDs trabajados</h3>
+                <h3 class="font-medium" style="color:var(--muted)">IDs trabajados</h3>
                 <p id="evo-kpi-ids" class="text-3xl font-bold mt-2"></p>
               </div>
               <div class="kpi-card text-center">
-                <h3 class="text-slate-500 font-medium">Usuarios Activos</h3>
+                <h3 class="font-medium" style="color:var(--muted)">Usuarios Activos</h3>
                 <p id="evo-kpi-users" class="text-3xl font-bold mt-2"></p>
               </div>
             </div>
@@ -299,11 +308,11 @@
         <section id="analisis" class="page-section hidden">
           <div class="kpi-card">
             <h3 class="text-xl font-semibold mb-2">Análisis Inteligente con Gemini</h3>
-            <p class="text-slate-600 mb-4">Insights basados en los datos y filtros actuales.</p>
+            <p class="mb-4" style="color:var(--muted)">Insights basados en los datos y filtros actuales.</p>
             <button id="generate-insights-btn" class="bg-sky-600 text-white px-6 py-3 rounded-lg hover:bg-sky-700 transition-colors text-base font-semibold">
               ✨ Analizar Datos y Generar Sugerencias
             </button>
-            <div id="insights-output" class="mt-6 p-4 bg-slate-50 rounded-md border border-slate-200 hidden ai-output"></div>
+            <div id="insights-output" class="mt-6 p-4 rounded-md border hidden ai-output" style="background:#f8fafc;border-color:var(--border)"></div>
           </div>
         </section>
       </div>
@@ -313,11 +322,11 @@
 
 <!-- Menú móvil -->
 <div id="mobile-menu" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden">
-  <aside class="absolute top-0 left-0 h-full w-64 bg-[#999999] text-white p-4 transform -translate-x-full transition-transform duration-300">
+  <aside class="absolute top-0 left-0 h-full w-64 sidebar p-4 transform -translate-x-full transition-transform duration-300">
     <div class="flex justify-between items-center mb-8">
       <h1 class="text-2xl font-bold text-white">Menú</h1>
-      <button id="close-mobile-menu" aria-label="Cerrar menú">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <button id="close-mobile-menu">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
         </svg>
       </button>
@@ -326,47 +335,20 @@
   </aside>
 </div>
 
-<!-- Modal Exportar a Google Sheets -->
-<div id="gsheets-modal" class="modal">
-  <div class="backdrop"></div>
-  <div class="panel">
-    <h3 class="text-xl font-semibold mb-3">Exportar a Google Sheets</h3>
-    <p class="text-sm text-slate-600 mb-3">Usa el Web App de Google Apps Script (cualquiera con el enlace). Tu URL queda guardada en este navegador.</p>
-    <label class="block text-sm mb-1">Webhook URL</label>
-    <input id="gs-webhook" placeholder="https://script.google.com/macros/s/.../exec"/>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-      <div>
-        <label class="block text-sm mb-1">Nombre de hoja (pestaña)</label>
-        <input id="gs-sheet-name" placeholder="Ej: Resumen W37"/>
-      </div>
-      <div>
-        <label class="block text-sm mb-1">Prefijo título de tablas</label>
-        <input id="gs-prefix" placeholder="Catálogo · Export"/>
-      </div>
-    </div>
-    <div class="mt-3">
-      <label class="block text-sm mb-1">Nota (opcional, se escribe arriba)</label>
-      <textarea id="gs-note" rows="2" placeholder="Ej: Export con filtros Q3, flujo mixto."></textarea>
-    </div>
-    <div class="mt-4 flex justify-end gap-2">
-      <button id="gs-cancel" class="px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50">Cancelar</button>
-      <button id="gs-save" class="px-3 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white">Exportar</button>
-    </div>
-    <div id="gs-status" class="mt-3 text-sm"></div>
-  </div>
-</div>
-
 <script>
 /**********************
  * CONFIG
  **********************/
 const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
 const FILES = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
-const PALETTE = { c0:'#86eae9', c1:'#3edad8', c2:'#37c9ef', c3:'#37c9ef', c4:'#2c92d5', c5:'#13538a' };
+
+/* Paleta accesible para claro/oscuro */
+const PALETTE = { c0:'#86eae9', c1:'#35c3bf', c2:'#37c9ef', c3:'#2ea0f4', c4:'#2c92d5', c5:'#13538a' };
 const BAR_BG = 'rgba(55,201,239,0.5)';
 const LINE_ACC = PALETTE.c1;
-/* Default Webhook de GAS provisto por Eze */
-const DEFAULT_GS_WEBHOOK = "https://script.google.com/macros/s/AKfycbxqTzxdY090fV2JWIFxiqAVnkre_dtUw1M09ZMv9mNKYz3GQW-d1ONSP_FIJTswZ9t2qA/exec";
+
+/* Export a Google Sheets (Apps Script) */
+const EXPORT_ENDPOINT = "https://script.google.com/macros/s/AKfycbxqTzxdY090fV2JWIFxiqAVnkre_dtUw1M09ZMv9mNKYz3GQW-d1ONSP_FIJTswZ9t2qA/exec";
 
 Chart.defaults.elements.bar.borderRadius = 6;
 Chart.defaults.elements.line.borderWidth = 4;
@@ -374,96 +356,6 @@ Chart.defaults.elements.point.radius = 3;
 Chart.defaults.elements.point.hoverRadius = 5;
 Chart.defaults.elements.point.borderWidth = 2;
 Chart.defaults.plugins.legend.labels.usePointStyle = true;
-
-/**********************
- * THEME PREFS + SNAPSHOT
- **********************/
-const isDark = ()=> document.body.classList.contains('dark');
-function loadPrefs(){
-  const theme = localStorage.getItem('theme') || 'light';
-  document.body.classList.toggle('dark', theme==='dark');
-  const tbtn = document.getElementById('theme-toggle');
-  if (tbtn) tbtn.setAttribute('aria-pressed', theme==='dark');
-
-  applySnapshotFromURL();
-  const saved = JSON.parse(localStorage.getItem('catalogo-filtros') || 'null');
-  if(saved && !location.hash.includes('s=')){ state.filtros = saved; }
-}
-function savePrefs(){
-  localStorage.setItem('theme', isDark()?'dark':'light');
-  localStorage.setItem('catalogo-filtros', JSON.stringify(state.filtros));
-}
-function applySnapshotFromURL(){
-  const m = location.hash.match(/s=([^&]+)/);
-  if(!m) return;
-  try{
-    state.filtros = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(m[1])))));
-  }catch{}
-}
-function buildSnapshotURL(){
-  const s = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(state.filtros)))));
-  const u = new URL(location.href); u.hash = 's=' + s; return u.toString();
-}
-document.addEventListener('click', (e)=>{
-  if(e.target && e.target.id==='theme-toggle'){
-    document.body.classList.toggle('dark');
-    e.target.setAttribute('aria-pressed', isDark());
-    applyThemeToCharts();
-    savePrefs();
-  }
-  if(e.target && e.target.id==='share-snapshot'){
-    e.preventDefault();
-    const url = buildSnapshotURL();
-    navigator.clipboard.writeText(url);
-  }
-});
-
-/**********************
- * CHART THEME HELPERS
- **********************/
-function chartColors(){
-  if(!isDark()){
-    return {
-      tick:'#334155', grid:'rgba(15,23,42,.08)',
-      legend:'#334155', tooltipBg:'#ffffff', tooltipFg:'#0f172a', tooltipBorder:'#e2e8f0'
-    };
-  }
-  return {
-    tick:'#cbd5e1', grid:'rgba(148,163,184,.20)',
-    legend:'#e2e8f0', tooltipBg:'#0b1324', tooltipFg:'#e5e7eb', tooltipBorder:'#334155'
-  };
-}
-function themedOptions(options={}){
-  const c = chartColors();
-  options.plugins = options.plugins || {};
-  options.plugins.legend = options.plugins.legend || {};
-  options.plugins.legend.labels = options.plugins.legend.labels || {};
-  options.plugins.legend.labels.color = c.legend;
-
-  const tt = options.plugins.tooltip = options.plugins.tooltip || {};
-  tt.backgroundColor = c.tooltipBg;
-  tt.titleColor = c.tooltipFg;
-  tt.bodyColor = c.tooltipFg;
-  tt.borderColor = c.tooltipBorder;
-  tt.borderWidth = 1;
-
-  if(options.scales){
-    for(const k of Object.keys(options.scales)){
-      const ax = options.scales[k] = options.scales[k] || {};
-      ax.ticks = ax.ticks || {};
-      ax.grid = ax.grid || {};
-      ax.ticks.color = c.tick;
-      if(ax.grid) ax.grid.color = c.grid;
-    }
-  }
-  return options;
-}
-function applyThemeToCharts(){
-  Object.values(charts).forEach(ch=>{
-    ch.options = themedOptions(ch.options || {});
-    ch.update('none');
-  });
-}
 
 /**********************
  * HELPERS
@@ -520,7 +412,7 @@ function promedioDiario(rows, f){
   return den ? num/den : 0;
 }
 function setColor(el, color){
-  el.classList.remove('text-red-600','text-yellow-500','text-green-600','text-orange-500');
+  el.classList.remove('text-red-600','text-yellow-500','text-green-600','text-orange-500','text-amber-500');
   if(color) el.classList.add(color);
 }
 
@@ -685,6 +577,7 @@ function pillSummary(key){
   if(sel.length===1) return sel[0];
   return `${sel.length} seleccionados`;
 }
+
 function closeAllMenus(){ document.querySelectorAll('.menu').forEach(m=>m.classList.remove('open')); }
 
 function renderFiltersBar(){
@@ -692,19 +585,13 @@ function renderFiltersBar(){
   const bar = document.getElementById('filters-bar');
   bar.innerHTML = '';
 
-  const debounce=(fn,ms)=>{ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; };
-
   FILTER_ORDER.forEach(key=>{
     const pill = document.createElement('div');
     pill.className = 'pill';
-    pill.setAttribute('tabindex','0');
-    pill.setAttribute('role','combobox');
-    pill.setAttribute('aria-expanded','false');
-
     pill.innerHTML = `
       <span class="label">${pillSummary(key)}</span>
       <span class="chev">▾</span>
-      <div class="menu" role="listbox">
+      <div class="menu">
         <div class="head">
           <input type="text" class="search" placeholder="Buscar..."/>
           <button class="clear">Limpiar</button>
@@ -729,7 +616,7 @@ function renderFiltersBar(){
         item.className = 'item';
         item.innerHTML = `
           <input ${key==='flujo'?'type="radio" name="radio-'+key+'"':'type="checkbox"'} class="opt" id="${id}" value="${v}" ${selected?'checked':''}/>
-          <span class="text-slate-700">${v}</span>
+          <span>${v}</span>
         `;
         list.appendChild(item);
       });
@@ -738,35 +625,19 @@ function renderFiltersBar(){
     buildList();
 
     pill.addEventListener('click', (e)=>{
+      const inside = pill.contains(e.target);
+      if(!inside) return;
       const isControl = e.target.closest('.menu');
       if(isControl) return;
-      const open = menu.classList.contains('open');
-      closeAllMenus();
-      menu.classList.toggle('open', !open);
-      pill.setAttribute('aria-expanded', String(!open));
-    });
-
-    pill.addEventListener('keydown',(e)=>{
-      if(e.key==='Enter' || e.key===' '){
-        e.preventDefault();
-        const open=menu.classList.contains('open');
+      const isChevOrLabel = e.target.closest('.label') || e.target.classList.contains('chev') || e.target===pill;
+      if(isChevOrLabel){
+        const open = menu.classList.contains('open');
         closeAllMenus();
-        menu.classList.toggle('open', !open);
-        pill.setAttribute('aria-expanded', String(!open));
-        if(!open) menu.querySelector('.opt')?.focus();
+        if(!open) menu.classList.add('open');
       }
-      if(e.key==='Escape'){ menu.classList.remove('open'); pill.setAttribute('aria-expanded','false'); }
-      if(e.key==='ArrowDown'){ e.preventDefault(); menu.classList.add('open'); pill.setAttribute('aria-expanded','true'); menu.querySelector('.opt')?.focus(); }
-    });
-    menu.addEventListener('keydown',(e)=>{
-      const items=[...menu.querySelectorAll('.opt')];
-      const idx=items.indexOf(document.activeElement);
-      if(e.key==='ArrowDown'){ e.preventDefault(); (items[idx+1]||items[0])?.focus(); }
-      if(e.key==='ArrowUp'){ e.preventDefault(); (items[idx-1]||items.at(-1))?.focus(); }
-      if(e.key==='Escape'){ e.preventDefault(); menu.classList.remove('open'); pill.focus(); pill.setAttribute('aria-expanded','false'); }
     });
 
-    search.addEventListener('input', debounce(buildList, 120));
+    search.addEventListener('input', buildList);
 
     menu.addEventListener('change', ()=>{
       const inputs = menu.querySelectorAll('.opt');
@@ -797,13 +668,12 @@ function renderFiltersBar(){
 }
 
 /**********************
- * NAV + EXPORT + CLEAR ALL + MENÚ MÓVIL
+ * NAV + EXPORT + CLEAR + THEME
  **********************/
 function setupNavigation(){
   const links=[...document.querySelectorAll('#nav-menu a')];
   const mobile=document.getElementById('mobile-nav-menu');
-  mobile.innerHTML = links.map(a=>`<a href="${a.getAttribute('href')}" class="block p-3 rounded-lg hover:bg-gray-700">${a.textContent}</a>`).join('');
-
+  mobile.innerHTML = links.map(a=>`<a href="${a.getAttribute('href')}" class="block p-3 rounded-lg hover:bg-gray-700 text-white">${a.textContent}</a>`).join('');
   links.forEach(a=>{
     a.addEventListener('click', e=>{
       e.preventDefault();
@@ -819,15 +689,7 @@ function setupNavigation(){
     });
   });
 
-  mobile.querySelectorAll('a').forEach(a=>{
-    a.addEventListener('click', ()=>{
-      const overlay=document.getElementById('mobile-menu');
-      const aside=overlay.querySelector('aside');
-      aside.classList.add('-translate-x-full');
-      setTimeout(()=>overlay.classList.add('hidden'), 300);
-    });
-  });
-
+  // Export dropdown
   document.getElementById('btn-export').addEventListener('click', ()=>{
     document.getElementById('export-menu').classList.toggle('hidden');
   });
@@ -836,44 +698,58 @@ function setupNavigation(){
     if(!dd.contains(e.target) && !document.getElementById('btn-export').contains(e.target)) dd.classList.add('hidden');
   });
   document.querySelectorAll('#export-menu a').forEach(a=>{
-    a.addEventListener('click', (e)=>{
+    a.addEventListener('click', async (e)=>{
       e.preventDefault();
+      document.getElementById('export-menu').classList.add('hidden');
       const type = a.getAttribute('data-exp');
       if(type==='csv') exportSectionCSV();
       if(type==='png') exportSectionPNGs();
-      if(type==='pdf') exportSectionPDF();
-      if(type==='gsheets') openGSheetsModal();
-      document.getElementById('export-menu').classList.add('hidden');
+      if(type==='gsheets') exportToGoogleSheets();
     });
   });
 
+  // Limpiar todos
   document.getElementById('btn-clear-filters').addEventListener('click', ()=>{
     state.filtros = { q:[], mes:[], semana:[], ubic:[], lider:[], usuario:[], flujo:['mixto'] };
     renderFiltersBar();
     applyFilters();
   });
 
-  document.addEventListener('click', (e)=>{
-    if(e.target && e.target.id==='open-mobile-menu'){
-      const overlay = document.getElementById('mobile-menu');
-      const aside = overlay.querySelector('aside');
-      overlay.classList.remove('hidden');
-      requestAnimationFrame(()=> aside.classList.remove('-translate-x-full'));
-    }
+  // Tema
+  const saved = localStorage.getItem('catalogo.theme') || 'light';
+  setTheme(saved);
+  document.getElementById('theme-toggle').addEventListener('click', ()=>{
+    const cur = document.documentElement.getAttribute('data-theme');
+    setTheme(cur==='dark'?'light':'dark');
   });
-  document.getElementById('close-mobile-menu').addEventListener('click', ()=>{
-    const overlay=document.getElementById('mobile-menu');
-    const aside=overlay.querySelector('aside');
-    aside.classList.add('-translate-x-full');
-    setTimeout(()=>overlay.classList.add('hidden'), 300);
-  });
-  document.getElementById('mobile-menu').addEventListener('click', (e)=>{
-    if(e.target.id==='mobile-menu'){
-      const overlay=e.currentTarget;
-      const aside=overlay.querySelector('aside');
-      aside.classList.add('-translate-x-full');
-      setTimeout(()=>overlay.classList.add('hidden'), 300);
+}
+function setTheme(mode){
+  document.documentElement.setAttribute('data-theme', mode);
+  localStorage.setItem('catalogo.theme', mode);
+  document.getElementById('theme-ico').textContent = (mode==='dark'?'☀️':'🌙');
+  applyThemeToCharts();
+}
+function applyThemeToCharts(){
+  const styles = getComputedStyle(document.documentElement);
+  const tick = styles.getPropertyValue('--chart-tick').trim() || '#334155';
+  const grid = styles.getPropertyValue('--chart-grid').trim() || 'rgba(0,0,0,.1)';
+  Chart.defaults.color = tick;
+  Chart.defaults.borderColor = grid;
+  Object.values(charts).forEach(ch=>{
+    if(!ch) return;
+    if(!ch.options.plugins) ch.options.plugins = {};
+    if(!ch.options.plugins.legend) ch.options.plugins.legend = {};
+    if(!ch.options.plugins.legend.labels) ch.options.plugins.legend.labels = {};
+    ch.options.plugins.legend.labels.color = tick;
+    if(ch.options.scales){
+      Object.values(ch.options.scales).forEach(sc=>{
+        if(!sc.ticks) sc.ticks = {};
+        if(!sc.grid) sc.grid = {};
+        sc.ticks.color = tick;
+        sc.grid.color = grid;
+      });
     }
+    ch.update();
   });
 }
 
@@ -902,12 +778,10 @@ function applyFilters(){
   renderByLocation();
   updateEvolutionKPIs();
   updateDetailKPIs();
-
-  savePrefs();
 }
 
 /**********************
- * KPI + RENDER (sparkline, sin deltas)
+ * KPI + RENDER
  **********************/
 function updateKPIs(){
   const f = flujoSel();
@@ -923,13 +797,13 @@ function updateKPIs(){
   const promEl = document.getElementById('kpi-promedio-diario');
   const efEl   = document.getElementById('kpi-efectividad-prom');
 
-  let promColor = (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500';
+  const promColor = (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-amber-500';
   setColor(promEl, promColor);
 
   const efPct = ef*100;
-  let efColor = (efPct<=75) ? 'text-red-600'
+  const efColor = (efPct<=75) ? 'text-red-600'
                 : (efPct<87) ? 'text-orange-500'
-                : (efPct<90) ? 'text-yellow-500'
+                : (efPct<90) ? 'text-amber-500'
                 : 'text-green-600';
   setColor(efEl, efColor);
 
@@ -939,8 +813,6 @@ function updateKPIs(){
   document.getElementById('kpi-correcciones').textContent     = fmt.int(correcc);
   promEl.textContent = fmt.dec(prom);
   efEl.textContent   = fmt.pct(ef);
-
-  renderSparkline();
 }
 
 function updateEvolutionKPIs(){
@@ -953,10 +825,10 @@ function updateEvolutionKPIs(){
 
   const promEl = document.getElementById('evo-kpi-prom');
   const efEl   = document.getElementById('evo-kpi-ef');
-  setColor(promEl, (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500');
+  setColor(promEl, (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-amber-500');
 
   const efPct = ef*100;
-  setColor(efEl, (efPct<=75) ? 'text-red-600' : (efPct<87) ? 'text-orange-500' : (efPct<90) ? 'text-yellow-500' : 'text-green-600');
+  setColor(efEl, (efPct<=75) ? 'text-red-600' : (efPct<87) ? 'text-orange-500' : (efPct<90) ? 'text-amber-500' : 'text-green-600');
 
   promEl.textContent = fmt.dec(prom);
   efEl.textContent   = fmt.pct(ef);
@@ -973,22 +845,20 @@ function updateDetailKPIs(){
 
   const promEl = document.getElementById('det-kpi-prom');
   const efEl   = document.getElementById('det-kpi-ef');
-  setColor(promEl, (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500');
+  setColor(promEl, (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-amber-500');
 
   const efPct = ef*100;
-  setColor(efEl, (efPct<=75) ? 'text-red-600' : (efPct<87) ? 'text-orange-500' : (efPct<90) ? 'text-yellow-500' : 'text-green-600');
+  setColor(efEl, (efPct<=75) ? 'text-red-600' : (efPct<87) ? 'text-orange-500' : (efPct<90) ? 'text-amber-500' : 'text-green-600');
 
   promEl.textContent = fmt.dec(prom);
   efEl.textContent   = fmt.pct(ef);
   document.getElementById('det-kpi-ids').textContent = fmt.int(idsTrab);
 }
 
-/* Chart factory con tema */
 function createOrUpdateChart(id, cfg){
-  cfg.options = themedOptions(cfg.options || {});
-  if(charts[id]){ charts[id].data=cfg.data; charts[id].options=cfg.options; charts[id].update(); return charts[id]; }
+  if(charts[id]){ charts[id].data=cfg.data; charts[id].options=cfg.options||{}; charts[id].update(); return charts[id]; }
   const ctx=document.getElementById(id).getContext('2d');
-  charts[id]=new Chart(ctx,cfg); return charts[id];
+  charts[id]=new Chart(ctx,cfg); applyThemeToCharts(); return charts[id];
 }
 
 function barDataset(label, data){
@@ -1024,37 +894,11 @@ function lineEffDataset(label, data){
   };
 }
 
-/* ---------- Sparkline ---------- */
-let spark;
-function renderSparkline(){
-  const f=flujoSel();
-  const agg = new Map();
-  currentData.forEach(r=>{
-    const o = agg.get(r.week) || {num:0,den:0};
-    o.num += tareasFlujo(r,f);
-    o.den += (r.dias_activos||0);
-    agg.set(r.week,o);
-  });
-  const weeks = [...agg.keys()].sort((a,b)=>a-b).slice(-8);
-  const data  = weeks.map(w=>{ const o=agg.get(w); return o.den? o.num/o.den : 0; });
-  const el = document.getElementById('kpi-pd-spark');
-  if(!el) return;
-  const ctx = el.getContext('2d');
-  if(spark){
-    spark.data.labels = weeks; spark.data.datasets[0].data = data; spark.update(); return;
-  }
-  spark = new Chart(ctx, {
-    type:'line',
-    data:{ labels:weeks, datasets:[{ data, fill:false, tension:.3, borderWidth:2, pointRadius:0, borderColor: LINE_ACC }]},
-    options: themedOptions({ plugins:{ legend:{display:false}, tooltip:{enabled:false} }, scales:{ x:{display:false}, y:{display:false} } })
-  });
-}
-
 /* ---------- Nine-box ---------- */
 function renderNineBox(){
   const f = flujoSel();
 
-  const map = new Map(); // user -> {num,den, effSum, effN}
+  const map = new Map();
   currentData.forEach(r=>{
     const u=r.usuario;
     const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
@@ -1072,8 +916,8 @@ function renderNineBox(){
   const prodBand = p => (p>=80 ? 'alta' : p>=70 ? 'media' : 'baja');
   const calBand  = e => (e>=0.90 ? 'alta' : e>=0.75 ? 'media' : 'baja');
 
-  const rows=['alta','media','baja']; // productividad
-  const cols=['alta','media','baja']; // calidad
+  const rows=['alta','media','baja'];
+  const cols=['alta','media','baja'];
 
   const buckets = {};
   const details = {};
@@ -1134,8 +978,8 @@ function renderNineBox(){
       .sort((a,b)=> (a.u>b.u?1:-1))
       .map(m=>{
         const parts = [];
-        if(m.prom!==null) parts.push(`Promedio Diario: ${m.prom?.toFixed(2)}`);
-        if(m.eff!==null)  parts.push(`% Efectividad: ${(m.eff*100)?.toFixed(2)}%`);
+        if(m.prom!==null) parts.push(`Promedio Diario: ${m.prom.toFixed(2)}`);
+        if(m.eff!==null)  parts.push(`% Efectividad: ${(m.eff*100).toFixed(2)}%`);
         return `• ${m.u} — ${parts.join(' | ') || 'sin datos'}`;
       });
     missDiv.innerHTML = `<div class="font-medium mb-1">Perfiles no incluidos por datos faltantes</div><div class="whitespace-pre-line">${lines.join('\n')}</div>`;
@@ -1167,9 +1011,9 @@ function showNineboxDetails(bucketKey, labelFn){
     </div>`;
 
   const table = `
-    <div class="overflow-x-auto border border-slate-200 rounded-md">
+    <div class="overflow-x-auto border rounded-md" style="border-color:var(--border)">
       <table class="min-w-full text-sm">
-        <thead class="bg-slate-50 text-slate-600">
+        <thead style="background:#f1f5f9;color:#334155">
           <tr>
             <th class="text-left px-3 py-2">Usuario</th>
             <th class="text-right px-3 py-2">Prom. Diario</th>
@@ -1178,7 +1022,7 @@ function showNineboxDetails(bucketKey, labelFn){
         </thead>
         <tbody>
           ${rows.map(r=>`
-            <tr class="border-t">
+            <tr class="border-t" style="border-color:var(--border)">
               <td class="px-3 py-2">${r.usuario}</td>
               <td class="px-3 py-2 text-right">${fmt.dec(r.prom)}</td>
               <td class="px-3 py-2 text-right">${fmt.pct(r.eff)}</td>
@@ -1208,13 +1052,13 @@ function renderDemandPie(){
   createOrUpdateChart('demandPieChart',{
     type:'pie',
     data:{ labels:['Demanda','Enhancement'], datasets:[{ data:[pctD, pctE], backgroundColor:[PALETTE.c0, PALETTE.c4] }] },
-    options: themedOptions({
+    options:{
       responsive:true,
       plugins:{
         legend:{ position:'bottom' },
         tooltip:{ callbacks:{ label:(ctx)=> `${ctx.label}: ${ctx.parsed.toFixed(1)}%` } }
       }
-    })
+    }
   });
 
   const label = f==='mixto' ? 'mixto (total)' : f;
@@ -1226,7 +1070,7 @@ function renderDemandPie(){
 function renderTasksByUser(){
   const f = flujoSel();
 
-  const agg = new Map(); // user -> {num,den, effNum, effDen}
+  const agg = new Map();
   currentData.forEach(r=>{
     const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
     o.num += tareasFlujo(r,f);
@@ -1252,21 +1096,21 @@ function renderTasksByUser(){
         lineEffDataset('% Efectividad', arr.map(x=>x.effPct))
       ]
     },
-    options: themedOptions({
+    options:{
       responsive:true,
       scales:{
         y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
-        y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 },
+        y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v!=null? v.toFixed(0):''}%` }, suggestedMin: 50, suggestedMax: 100 },
         x:{ ticks:{ autoSkip:false, maxRotation:60, minRotation:45 } }
       }
-    })
+    }
   });
 }
 
 /* ---------- Comparativa por equipo ---------- */
 function renderTasksByLeader(){
   const f = flujoSel();
-  const agg = new Map(); // líder -> {num,den, effNum, effDen}
+  const agg = new Map();
   currentData.forEach(r=>{
     const l = r['líder']; if(!l || l.toLowerCase()==='sin líder' || l.toLowerCase()==='sin lider') return;
     const o = agg.get(l) || {num:0,den:0,effNum:0,effDen:0};
@@ -1293,21 +1137,21 @@ function renderTasksByLeader(){
         lineEffDataset('% Efectividad', arr.map(x=>x.effPct))
       ]
     },
-    options: themedOptions({
+    options:{
       responsive:true,
       scales:{
         y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
-        y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 },
+        y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v!=null? v.toFixed(0):''}%` }, suggestedMin: 50, suggestedMax: 100 },
         x:{ ticks:{ autoSkip:false, maxRotation:45 } }
       }
-    })
+    }
   });
 }
 
 /* ---------- Evolución semanal ---------- */
 function renderWeeklyEvolution(){
   const f = flujoSel();
-  const agg = new Map(); // week -> {num,den, effNum, effDen}
+  const agg = new Map();
   currentData.forEach(r=>{
     const w = Number(r.week); if(!Number.isFinite(w)) return;
     const o = agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
@@ -1323,7 +1167,7 @@ function renderWeeklyEvolution(){
 
   const weeks = Array.from(agg.keys());
   if(!weeks.length){
-    createOrUpdateChart('weeklyEvolutionChart',{type:'line',data:{labels:[],datasets:[]},options:themedOptions({})});
+    createOrUpdateChart('weeklyEvolutionChart',{type:'line',data:{labels:[],datasets:[]},options:{}});
     return;
   }
   const minW=Math.min(...weeks), maxW=Math.max(...weeks);
@@ -1342,24 +1186,24 @@ function renderWeeklyEvolution(){
         lineEffDataset('% Efectividad', effValues)
       ]
     },
-    options: themedOptions({
+    options:{
       responsive:true,
       plugins:{ legend:{display:true} },
       scales:{
         x:{ ticks:{autoSkip:false,maxRotation:0} },
         y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
-        y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 }
+        y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v!=null? v.toFixed(0):''}%` }, suggestedMin: 50, suggestedMax: 100 }
       }
-    })
+    }
   });
 }
 
 /* ---------- Ubicación ---------- */
 function renderByLocation(){
   const f = flujoSel();
-  const byLoc = new Map(); // ciudad -> {num,den}
-  const effLoc = new Map(); // ciudad -> {num,den}
-  const antig = {}; // ciudad -> {sum, n}
+  const byLoc = new Map();
+  const effLoc = new Map();
+  const antig = {};
 
   currentData.forEach(r=>{
     const c=r.ciudad||'Sin ubicación';
@@ -1394,17 +1238,18 @@ function renderByLocation(){
         lineEffDataset('% Efectividad', effData)
       ]
     },
-    options: themedOptions({
+    options:{
       responsive:true,
       scales:{
         y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
-        y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 },
+        y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v!=null? v.toFixed(0):''}%` }, suggestedMin: 50, suggestedMax: 100 },
         x:{ ticks:{ autoSkip:false } }
       },
       plugins:{ legend:{display:true} }
-    })
+    }
   });
 
+  // Antigüedad tarjetas
   const list = labels.map(loc=>{
     const v=antig[loc]||{sum:0,n:0}; const avg=v.n? v.sum/v.n : 0;
     return [loc, avg];
@@ -1414,7 +1259,7 @@ function renderByLocation(){
   grid.innerHTML = list.map(([loc,avg])=>`
     <div class="kpi-card">
       <div class="flex items-baseline justify-between">
-        <div class="text-slate-500 font-medium">${loc}</div>
+        <div class="font-medium" style="color:var(--muted)">${loc}</div>
         <div class="text-3xl font-bold">${fmt.dec(avg)}</div>
       </div>
     </div>
@@ -1422,7 +1267,7 @@ function renderByLocation(){
 }
 
 /**********************
- * EXPORTS (PNG / CSV / PDF)
+ * EXPORTS
  **********************/
 function getActiveSectionId(){
   const sec=[...document.querySelectorAll('.page-section')].find(s=>!s.classList.contains('hidden'));
@@ -1442,7 +1287,7 @@ async function exportSectionPNGs(){
   if(id==='resumen'){
     canvases.push(document.getElementById('demandPieChart'));
     const el=document.getElementById('ninebox-card');
-    const canvas = await html2canvas(el,{scale:2, backgroundColor: isDark()? '#0f172a' : '#ffffff'});
+    const canvas = await html2canvas(el,{scale:2});
     canvas.toBlob(b=>download('productividad-calidad.png',b));
   }else if(id==='detalle'){
     canvases.push(document.getElementById('tasksByUserChart'));
@@ -1459,6 +1304,7 @@ async function exportSectionPNGs(){
     fetch(url).then(r=>r.blob()).then(b=>download(`${id}-chart${i+1}.png`, b));
   });
 }
+
 async function exportSectionCSV(){
   const id=getActiveSectionId();
   const f=flujoSel();
@@ -1475,71 +1321,45 @@ async function exportSectionCSV(){
     ];
     const csv1 = toCSV(['Flujo','Total','Porcentaje'], rows1);
     download('resumen_demanda_enhancement.csv', new Blob([csv1],{type:'text/csv;charset=utf-8'}));
-  }else if(id==='detalle'){
-    const f = flujoSel();
-    const agg = new Map();
-    currentData.forEach(r=>{
-      const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
-      o.num += tareasFlujo(r,f); o.den += (r.dias_activos||0);
-      if(r.efectividad!=='' && r.efectividad!=null){ const w=(r.correcciones_auditadas||0)||1; o.effNum+=r.efectividad*w; o.effDen+=w; }
-      agg.set(u,o);
-    });
-    const rows = Array.from(agg.entries()).map(([u,o])=>({ Usuario:u, Promedio:o.den?o.num/o.den:0, Efectividad: o.effDen? o.effNum/o.effDen : '' }));
-    const csv = toCSV(['Usuario','Promedio','Efectividad'], rows);
-    download('detalle_por_usuario.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
   }
 }
-async function exportSectionPDF(){
-  const id=getActiveSectionId();
-  const el = document.querySelector(`#${id}`);
-  const canvas = await html2canvas(el,{scale:2, backgroundColor: isDark()? '#0f172a' : '#ffffff'});
-  const imgData = canvas.toDataURL('image/png');
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF('p','mm','a4');
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  const ratio = Math.min(pageWidth/canvas.width*canvas.height, pageHeight) / canvas.height;
-  const w = canvas.width*ratio, h=canvas.height*ratio;
-  pdf.addImage(imgData,'PNG', (pageWidth-w)/2, 10, w, h);
-  pdf.save(`${id}.pdf`);
+
+/* Export directo a Google Sheets (Apps Script Web App) */
+async function exportToGoogleSheets(){
+  const btn = document.getElementById('btn-export');
+  const old = btn.textContent;
+  btn.textContent = 'Exportando…';
+  btn.disabled = true;
+
+  const payload = {
+    timestamp: new Date().toISOString(),
+    filtros: filtersSummary(),
+    flujo: flujoSel(),
+    rows: currentData
+  };
+
+  try{
+    const r = await fetch(EXPORT_ENDPOINT, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify(payload),
+      mode:'cors'
+    });
+    // Apps Script puede devolver HTML/Texto/JSON; mostramos texto crudo si existe:
+    const text = await r.text().catch(()=> '');
+    alert(r.ok ? (text || 'Exportado a Google Sheets ✅') : ('Error al exportar: ' + (text || r.status)));
+  }catch(e){
+    alert('No pude exportar (revisá CORS en Apps Script). Detalle: ' + e.message);
+  }finally{
+    btn.textContent = old;
+    btn.disabled = false;
+  }
 }
 
 /**********************
- * EXPORT → GOOGLE SHEETS (Apps Script Web App)
+ * GEMINI (prompts)
  **********************/
-function openGSheetsModal(){
-  const modal = document.getElementById('gsheets-modal');
-  const url = localStorage.getItem('gs_webhook') || DEFAULT_GS_WEBHOOK;
-  const sheet = localStorage.getItem('gs_sheet') || '';
-  const prefix = localStorage.getItem('gs_prefix') || 'Catálogo · Export';
-
-  document.getElementById('gs-webhook').value = url;
-  document.getElementById('gs-sheet-name').value = sheet || defaultSheetName();
-  document.getElementById('gs-prefix').value = prefix;
-  document.getElementById('gs-note').value = '';
-
-  modal.classList.add('open');
-
-  document.getElementById('gs-cancel').onclick = ()=> modal.classList.remove('open');
-  document.querySelector('#gsheets-modal .backdrop').onclick = ()=> modal.classList.remove('open');
-  document.getElementById('gs-save').onclick = ()=> exportToGoogleSheets();
-}
-function defaultSheetName(){
-  const id=getActiveSectionId();
-  const d=new Date();
-  const y=d.getFullYear(); const w=weekNumber(d);
-  return `${capitalize(id)} · W${String(w).padStart(2,'0')} ${y}`;
-}
-function weekNumber(d){
-  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-  return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
-}
-function capitalize(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
-
-function buildFilterSummary(){
+function filtersSummary() {
   const f = state.filtros;
   return {
     Trimestre: f.q.join(' | ') || '',
@@ -1551,219 +1371,6 @@ function buildFilterSummary(){
     Flujo: f.flujo[0] || 'mixto'
   };
 }
-
-function aggregateForSection(){
-  const id=getActiveSectionId();
-  const f=flujoSel();
-  const tables=[];
-
-  // Tabla 0: KPIs resumen
-  const vals = currentData.map(r=>r.efectividad).filter(v=>v!=='' && v!=null);
-  const kpi = {
-    'Total Tareas': currentData.reduce((s,r)=> s + tareasFlujo(r,f), 0),
-    'IDs trabajados': currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0),
-    'Usuarios activos': new Set(currentData.map(r=>r.usuario)).size,
-    'Correcciones auditadas': currentData.reduce((s,r)=> s + (r.correcciones_auditadas||0), 0),
-    'Promedio diario': promedioDiario(currentData,f),
-    '% Efectividad': vals.length ? (100*vals.reduce((a,b)=>a+b,0)/vals.length) : 0
-  };
-  tables.push({
-    title: 'KPIs Resumen',
-    headers: ['KPI','Valor'],
-    rows: Object.entries(kpi).map(([k,v])=>[k, typeof v==='number'? Number(v.toFixed(2)) : v ])
-  });
-
-  if(id==='resumen'){
-    let demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
-    let enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
-    if(f==='demanda'){ enh=0; }
-    if(f==='enhancement'){ demand=0; }
-    const tot = demand+enh;
-    tables.push({
-      title:'Demanda vs Enhancement',
-      headers:['Flujo','Total','Porcentaje'],
-      rows:[
-        ['Demanda',demand, tot? +(100*demand/tot).toFixed(2) : 0],
-        ['Enhancement',enh, tot? +(100*enh/tot).toFixed(2) : 0]
-      ]
-    });
-
-    const dist = nineboxDistribution();
-    tables.push({
-      title:'Nine-box · Conteo de perfiles',
-      headers:['Cuadrante','Cantidad'],
-      rows:Object.entries(dist).map(([k,v])=>[k,v])
-    });
-  }
-
-  if(id==='detalle'){
-    const perUser = aggregateBy('usuario');
-    tables.push({
-      title:'Detalle por Usuario',
-      headers:['Usuario','Promedio diario','% Efectividad'],
-      rows: perUser.map(x=>[x.key, Number(x.prom.toFixed(2)), x.efPct!=null? Number(x.efPct.toFixed(2)): null ])
-    });
-  }
-
-  if(id==='lideres'){
-    const perLider = aggregateBy('líder', v => v && !/^sin\s+l[ií]der$/i.test(v));
-    tables.push({
-      title:'Comparativa por Equipo (Líder)',
-      headers:['Líder','Promedio diario','% Efectividad'],
-      rows: perLider.map(x=>[x.key, Number(x.prom.toFixed(2)), x.efPct!=null? Number(x.efPct.toFixed(2)): null ])
-    });
-  }
-
-  if(id==='evolucion'){
-    const perWeek = aggregateBy('week', null, true);
-    tables.push({
-      title:'Evolución Semanal',
-      headers:['Semana','Promedio diario','% Efectividad'],
-      rows: perWeek.map(x=>['W'+String(x.key).padStart(2,'0'), Number(x.prom.toFixed(2)), x.efPct!=null? Number(x.efPct.toFixed(2)) : null ])
-    });
-  }
-
-  if(id==='ubicacion'){
-    const perLoc = aggregateBy('ciudad', v=>v||'Sin ubicación');
-    const antig = avgAntigByLocation();
-    tables.push({
-      title:'Rendimiento por Ubicación',
-      headers:['Ubicación','Promedio diario','% Efectividad'],
-      rows: perLoc.map(x=>[x.key||'Sin ubicación', Number(x.prom.toFixed(2)), x.efPct!=null? Number(x.efPct.toFixed(2)) : null ])
-    });
-    tables.push({
-      title:'Antigüedad Promedio (meses)',
-      headers:['Ubicación','Antigüedad promedio'],
-      rows: antig
-    });
-  }
-
-  return tables;
-}
-function nineboxDistribution(){
-  const f = flujoSel();
-  const buckets = { 
-    'Prod Alta / Cal Alta':0,'Prod Alta / Cal Media':0,'Prod Alta / Cal Baja':0,
-    'Prod Media / Cal Alta':0,'Prod Media / Cal Media':0,'Prod Media / Cal Baja':0,
-    'Prod Baja / Cal Alta':0,'Prod Baja / Cal Media':0,'Prod Baja / Cal Baja':0
-  };
-  const prodBand=p=>(p>=80?'Alta':p>=70?'Media':'Baja');
-  const calBand=e=>(e>=0.90?'Alta':e>=0.75?'Media':'Baja');
-  const map=new Map();
-  currentData.forEach(r=>{
-    const u=r.usuario; const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
-    o.num += tareasFlujo(r,f); o.den += (r.dias_activos||0);
-    if(r.efectividad!=='' && r.efectividad!=null){ o.effSum+=r.efectividad; o.effN++; }
-    map.set(u,o);
-  });
-  Array.from(map.values()).forEach(o=>{
-    const prom = o.den?o.num/o.den:null, eff=o.effN?o.effSum/o.effN:null;
-    if(prom==null||eff==null) return;
-    buckets[`Prod ${prodBand(prom)} / Cal ${calBand(eff)}`]++;
-  });
-  return buckets;
-}
-function aggregateBy(key, filterFn, numericKey=false){
-  const f=flujoSel();
-  const agg = new Map(); // key -> {num,den, effNum, effDen}
-  currentData.forEach(r=>{
-    const k = r[key];
-    if(filterFn && !filterFn(k)) return;
-    const o = agg.get(k) || {num:0,den:0,effNum:0,effDen:0};
-    o.num += tareasFlujo(r,f);
-    o.den += (r.dias_activos||0);
-    if(r.efectividad!=='' && r.efectividad!=null){
-      const w=(r.correcciones_auditadas||0)||1;
-      o.effNum += r.efectividad*w; o.effDen += w;
-    }
-    agg.set(k,o);
-  });
-  const arr = Array.from(agg.entries()).map(([k,o])=>{
-    const prom = o.den? o.num/o.den : 0;
-    const efPct = o.effDen? (100*o.effNum/o.effDen) : null;
-    return { key:k, prom, efPct };
-  });
-  arr.sort((a,b)=> numericKey ? (a.key - b.key) : (b.prom - a.prom));
-  return arr;
-}
-function avgAntigByLocation(){
-  const map = new Map(); // loc -> {sum,n}
-  currentData.forEach(r=>{
-    const loc=r.ciudad||'Sin ubicación';
-    const a = Number(r.antigüedad||0);
-    if(!Number.isFinite(a)) return;
-    const o = map.get(loc)||{sum:0,n:0};
-    o.sum+=a; o.n++; map.set(loc,o);
-  });
-  return Array.from(map.entries())
-    .map(([loc,o])=>[loc, o.n? Number((o.sum/o.n).toFixed(2)) : 0])
-    .sort((a,b)=>b[1]-a[1]);
-}
-
-async function exportToGoogleSheets(){
-  const modal = document.getElementById('gsheets-modal');
-  const statusEl = document.getElementById('gs-status');
-  const btn = document.getElementById('gs-save');
-  const webhook = (document.getElementById('gs-webhook').value || '').trim();
-  const sheetName = (document.getElementById('gs-sheet-name').value || '').trim() || defaultSheetName();
-  const prefix = (document.getElementById('gs-prefix').value || 'Catálogo · Export').trim();
-  const note = (document.getElementById('gs-note').value || '').trim();
-
-  if(!/^https:\/\/script\.google\.com\/macros\/s\/[^\/]+\/exec$/.test(webhook)){
-    statusEl.textContent = 'URL inválida. Debe ser https://script.google.com/macros/s/.../exec';
-    statusEl.className = 'mt-3 text-sm text-red-600';
-    return;
-  }
-
-  btn.disabled = true; btn.textContent = 'Enviando…';
-  statusEl.textContent = 'Enviando datos al Web App…';
-  statusEl.className = 'mt-3 text-sm text-slate-600';
-
-  const payload = {
-    sheet: sheetName,
-    prefix,
-    note,
-    section: getActiveSectionId(),
-    timestamp: new Date().toISOString(),
-    filters: buildFilterSummary(),
-    tables: aggregateForSection()
-  };
-
-  try{
-    localStorage.setItem('gs_webhook', webhook);
-    localStorage.setItem('gs_sheet', sheetName);
-    localStorage.setItem('gs_prefix', prefix);
-
-    const r = await fetch(webhook, {
-      method:'POST',
-      headers:{ 'Content-Type':'text/plain' }, // menor fricción CORS
-      body: JSON.stringify(payload)
-    });
-    const text = await r.text();
-    let data;
-    try { data = JSON.parse(text); } catch { data = { ok:r.ok, raw:text }; }
-
-    if(!r.ok){
-      statusEl.textContent = `Error HTTP ${r.status}: ${text}`;
-      statusEl.className = 'mt-3 text-sm text-red-600';
-    }else{
-      const url = data.url || data.spreadsheetUrl || data.sheetUrl || '';
-      statusEl.innerHTML = `Listo. ${url ? `<a class="text-sky-600 underline" href="${url}" target="_blank" rel="noopener">Abrir en Google Sheets</a>` : 'Revisá tu Google Drive.'}`;
-      statusEl.className = 'mt-3 text-sm text-green-600';
-      setTimeout(()=> modal.classList.remove('open'), 1500);
-    }
-  }catch(e){
-    statusEl.textContent = 'Fallo al enviar: ' + (e.message || e);
-    statusEl.className = 'mt-3 text-sm text-red-600';
-  }finally{
-    btn.disabled = false; btn.textContent = 'Exportar';
-  }
-}
-
-/**********************
- * GEMINI (prompts)
- **********************/
-function filtersSummary() { return buildFilterSummary(); }
 function buildNineboxPrompt(){
   const f=flujoSel();
   const filtros_activos = JSON.stringify(filtersSummary());
@@ -1791,29 +1398,38 @@ function buildNineboxPrompt(){
 
   return `🔹 Prompt 1: *Análisis Nine-box con foco en Productividad x Calidad*
 
-Actuá como analista operativo de Catálogo. Objetivo: sostener o elevar Promedio Diario (target ≥80) con % Efectividad ≥90%.
+Actuá como analista operativo de Catálogo (Netkel). Tu objetivo es identificar focos de mejora en productividad sin comprometer la calidad.
 
-📊 Filtros: ${filtros_activos}
+🎯 Objetivo: Sostener o elevar Promedio Diario (target ≥80) con % Efectividad ≥90%.
+
+📊 Filtros activos: ${filtros_activos}
 📈 KPIs:
 • Total tareas: ${total_tareas}
 • Prom. Diario: ${promedio_diario}
 • % Efectividad: ${efectividad}%
 
-📦 Distribución actual (Nine-box):
+📦 Distribución actual de perfiles (Nine-box Prod x Calidad):
 ${distribucion_ninebox}
 
 🛑 Importante:
-• Una alta concentración en “Prod Alta / Cal Alta” es positiva.
+• Una alta concentración en “Prod Alta / Cal Alta” es positiva. No lo señales como problema.
 • No generes alertas si no hay perfiles en cuadrantes problemáticos.
-• Enfocá el análisis SOLO en “Prod Alta / Cal Baja” y “Prod Baja / Cal Alta”.
+• Enfocá el análisis SOLO en cuadrantes con baja calidad: “Prod Alta / Cal Baja” y “Prod Baja / Cal Alta”.
 
 🧩 Instrucciones:
-1) 4–6 hallazgos accionables.
-2) 3 acciones para perfiles fuera de target (BTC, feedback 1:1, checklist, acompañamiento, plan 3 semanas) con responsable y plazo.
-3) Diferenciá enfoque para “Prod Alta / Cal Baja” vs “Prod Baja / Cal Alta”.
+1. Listá 4 a 6 hallazgos RELEVANTES y accionables (sin suposiciones sin data).
+2. Proponé 3 acciones concretas solo para perfiles fuera de target (según la tabla LOW actual).
+   - Usá solo herramientas internas: BTC, feedback 1:1, checklist, acompañamiento individual, plan 3 semanas.
+3. En la sección de diferenciación, explicá qué harías si hubiera perfiles en:
+   - “Prod Alta / Cal Baja” → foco en aumentar calidad
+   - “Prod Baja / Cal Alta” → foco en aumentar productividad
 
-Formato: bullets claros, sin inventar datos.`;
+📝 Formato:
+• Bullets claros
+• Cada acción debe incluir responsable y plazo
+• No inventes datos. Sé empático y específico`;
 }
+
 function buildGlobalInsightsPrompt(){
   const f=flujoSel();
   const filtros_activos = JSON.stringify(filtersSummary());
@@ -1823,23 +1439,44 @@ function buildGlobalInsightsPrompt(){
   const efVals= currentData.map(r=>r.efectividad).filter(v=>v!==''&&v!=null);
   const ef = (efVals.length? (100*efVals.reduce((a,b)=>a+b,0)/efVals.length) : 0).toFixed(2);
 
-  return `🔹 Prompt 2: *Análisis Global*
+  return `🔹 Prompt 2: *Análisis Global para Coordinación*
 
-Targets: PD ≥80, Efectividad ≥90%.
+Sos analista de mejora continua de Catálogo (Netkel). Buscás mantener una operación productiva sin sacrificar calidad (targets: PD ≥80, Efectividad ≥90%).
 
-📊 Filtros: ${filtros_activos}
+📊 Filtros aplicados: ${filtros_activos}
+📌 Datos clave:
 • Usuarios activos: ${usuarios}
 • IDs trabajados: ${ids}
 • Prom. Diario: ${prom}
 • % Efectividad: ${ef}
 
-Enfocar en: baja calidad recurrente, perfiles en plan de trabajo, desvíos sostenidos <90%.
+🛑 Consideraciones:
+• Si la mayoría está on target, es positivo. No señales como problema.
+• No recomiendes revisar métricas, metodología o distribución si no hay señales claras.
+• Enfocá el análisis en:
+   - Casos recurrentes de baja calidad
+   - Perfiles en plan de trabajo (Low Grave / Low Moderado)
+   - Desvíos sostenidos <90%
 
-Pedir:
-1) 4 bullets: qué va bien / qué mejorar (con data).
-2) Identificar LOW ocasional vs recurrente.
-3) 3–5 acciones (BTC con casos, feedback 1:1 por error frecuente, checklist personalizada, plan 3 semanas, acompañamiento). Formato: Perfil → acción → plazo → responsable.`;
+🧠 Qué necesito:
+1. Foto general en 4 bullets: qué va bien / qué podría mejorar (solo si hay data)
+2. Identificá perfiles LOW:
+   - Ocasionales: bajan 1 semana y recuperan
+   - Recurrentes: bajan sostenidamente
+3. Proponé 3–5 acciones reales usando solo:
+   - BTC con casos
+   - Feedback 1:1 por error frecuente
+   - Checklist personalizada
+   - Plan 3 semanas (según categoría)
+   - Acompañamiento individual
+
+📢 Formato:
+• Bullets concretos
+• Perfiles LOW → acción específica → plazo → responsable
+• No inventes ni generalices
+• Tono interno, claro y accionable`;
 }
+
 async function geminiRequest(prompt) {
   if (!GEMINI_PROXY_URL) return "Configura GEMINI_PROXY_URL.";
   const attempts = [{ prompt: String(prompt) }, { contents: [{ parts: [{ text: String(prompt) }]}] }];
@@ -1856,6 +1493,7 @@ async function geminiRequest(prompt) {
   }
   throw lastErr || new Error('Gemini request failed');
 }
+
 function setupGeminiFeatures(){
   document.getElementById('generate-summary-btn').addEventListener('click', async ()=>{
     const block = document.getElementById('ninebox-missing');
@@ -1883,7 +1521,6 @@ function setupGeminiFeatures(){
  **********************/
 document.addEventListener('DOMContentLoaded', async ()=>{
   try{
-    loadPrefs();
     const [tProd,tCal,tBase,tLid] = await Promise.all([
       fetchCSVFile(FILES.productividad),
       fetchCSVFile(FILES.calidad),
