@@ -1,63 +1,84 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Catálogo · Dashboard de Métricas</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Catálogo · Dashboard de Métricas</title>
 
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Chart.js + adapter fechas -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-  <!-- PapaParse -->
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <!-- Export helpers -->
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Montserrat -->
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Chart.js + adapter fechas -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 
-  <style>
-    body { font-family: 'Montserrat', sans-serif; }
-    .sidebar-link{transition:all .2s ease-in-out;}
-    .sidebar-link:hover,.sidebar-link.active{background:#7a7a7a;color:#fff;transform:translateX(4px);}
-    .kpi-card{background:#fff;border-radius:.75rem;padding:1.25rem;box-shadow:0 4px 6px -1px rgb(0 0 0/.1),0 2px 4px -2px rgb(0 0 0/.1);transition:transform .2s,box-shadow .2s;}
-    .kpi-card:hover{transform:translateY(-2px);box-shadow:0 10px 15px -3px rgb(0 0 0/.1),0 4px 6px -4px rgb(0 0 0/.1);}
-    .chart-container{height:400px}
-    /* Nine-box */
-    .nb-cell{display:flex;align-items:center;justify-content:center;height:80px;border-radius:.5rem;border:1px solid rgb(226 232 240)}
-    .nb-hdr{font-weight:600;color:#475569}
-    .nb-badge{font-size:1.5rem;font-weight:700}
-    .nb-green{background:#dcfce7}.nb-yellow{background:#fef9c3}.nb-orange{background:#ffedd5}.nb-red{background:#fee2e2}
-    .nb-cell[data-bucket]{cursor:pointer}
-    /* Dropdown chips (filtros) */
-    .chip{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e2e8f0;border-radius:.75rem;padding:.65rem .9rem;min-height:44px;box-shadow:0 1px 1px rgb(0 0 0/.03)}
-    .chip:hover{border-color:#cbd5e1}
-    .menu{position:absolute;z-index:50;top:100%;left:0;right:0;background:#fff;border:1px solid #e2e8f0;border-radius:.75rem;margin-top:.35rem;box-shadow:0 12px 20px rgba(0,0,0,.08)}
-    .menu-body{max-height:260px;overflow:auto}
-    .menu-item{display:flex;align-items:center;gap:.6rem;padding:.55rem .8rem}
-    .menu-item:hover{background:#f8fafc}
-    .menu-head{display:flex;align-items:center;justify-content:space-between;padding:.55rem .8rem;border-bottom:1px solid #e2e8f0}
-    .menu-foot{padding:.45rem .8rem;border-top:1px solid #e2e8f0;font-size:.85rem;color:#64748b}
-    /* AI output rich */
-    .ai-output p{margin-bottom:.75rem;line-height:1.55}
-    .ai-output ul{list-style:disc;margin-left:1.5rem;margin-bottom:1rem}
-    .ai-output table{width:100%;border-collapse:collapse;margin-top:1rem}
-    .ai-output th,.ai-output td{border:1px solid #cbd5e1;padding:.5rem;text-align:left}
-    .ai-output th{background:#f1f5f9}
-    .ai-output code{background:#f3f4f6;padding:.2rem .4rem;border-radius:4px}
-    #insights-output{white-space:normal}
-  </style>
+<!-- PapaParse -->
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+<!-- Export helpers -->
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<!-- Montserrat -->
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  body{font-family:'Montserrat',sans-serif;}
+  .sidebar-link{transition:all .2s ease-in-out;}
+  .sidebar-link:hover,.sidebar-link.active{background-color:#7a7a7a;color:#fff;transform:translateX(4px);}
+  .kpi-card{background:#fff;border-radius:.75rem;padding:1.5rem;box-shadow:0 4px 6px -1px rgb(0 0 0 / .1),0 2px 4px -2px rgb(0 0 0 / .1);}
+  .chart-container{height:400px;}
+  #mobile-menu{transition:transform .3s ease-in-out;}
+  /* Nine-box */
+  .nb-cell{display:flex;align-items:center;justify-content:center;height:80px;border-radius:.5rem;border:1px solid rgb(226 232 240);}
+  .nb-hdr{font-weight:600;color:#475569}
+  .nb-badge{font-size:1.5rem;font-weight:700}
+  .nb-green{background:#dcfce7}
+  .nb-yellow{background:#fef9c3}
+  .nb-orange{background:#ffedd5}
+  .nb-red{background:#fee2e2}
+  .nb-cell[data-bucket]{cursor:pointer}
+
+  /* Pills de filtros */
+  .pill{display:flex;align-items:center;gap:.5rem;background:#fff;border:1px solid #e2e8f0;border-radius:.75rem;padding:.5rem .75rem;box-shadow:0 1px 2px rgb(0 0 0 / .06);position:relative;min-width: 230px;}
+  .pill:hover{box-shadow:0 2px 6px rgb(0 0 0 / .08);}
+  .pill .label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;color:#334155}
+  .pill .chev{color:#64748b}
+  .menu{position:absolute;z-index:50;top:110%;left:0;min-width:320px;background:#fff;border:1px solid #e2e8f0;border-radius:.75rem;box-shadow:0 18px 30px -12px rgb(0 0 0 / .25);display:none}
+  .menu.open{display:block}
+  .menu .head{display:flex;align-items:center;justify-content:space-between;padding:.6rem .75rem;border-bottom:1px solid #e2e8f0}
+  .menu .search{width:100%;padding:.5rem .75rem;border:1px solid #e2e8f0;border-radius:.5rem;background:#f8fafc;font-size:.9rem}
+  .menu .clear{font-size:.85rem;color:#0ea5e9}
+  .menu .list{max-height:260px;overflow:auto;padding:.5rem}
+  .menu .item{display:flex;align-items:center;gap:.6rem;padding:.4rem .35rem;border-radius:.5rem;cursor:pointer}
+  .menu .item:hover{background:#f8fafc}
+  .menu .foot{padding:.6rem .75rem;border-top:1px solid #e2e8f0;font-size:.85rem;color:#64748b}
+
+  /* Export dropdown */
+  .dropdown{position:relative;display:inline-block;}
+  .dropdown-menu{position:absolute;right:0;top:100%;background:#fff;border:1px solid #e2e8f0;border-radius:.5rem;box-shadow:0 10px 20px rgba(0,0,0,.08);min-width:260px;z-index:50}
+  .dropdown-menu a{display:block;padding:.6rem .8rem;font-size:.95rem;color:#334155}
+  .dropdown-menu a:hover{background:#f1f5f9}
+
+  /* IA enriched output */
+  .ai-output p{margin-bottom:.75rem;line-height:1.55}
+  .ai-output ul{list-style:disc;margin-left:1.5rem;margin-bottom:1rem}
+  .ai-output table{width:100%;border-collapse:collapse;margin-top:1rem}
+  .ai-output th,.ai-output td{border:1px solid #cbd5e1;padding:.5rem;text-align:left}
+  .ai-output th{background:#f1f5f9}
+  .ai-output code{background:#f3f4f6;padding:.2rem .4rem;border-radius:4px}
+</style>
 </head>
+
 <body class="bg-slate-100 text-slate-800">
 <div class="flex h-screen overflow-hidden">
   <!-- Sidebar -->
   <aside class="hidden md:flex w-64 flex-col bg-[#999999] text-white p-4">
     <div class="flex items-center mb-8">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-3 text-white" viewBox="0 0 20 20" fill="currentColor"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+      </svg>
       <h1 class="text-2xl font-bold text-white">Catálogo</h1>
     </div>
     <nav id="nav-menu" class="flex-1 space-y-2">
@@ -76,33 +97,26 @@
       <!-- Header -->
       <div class="flex flex-wrap justify-between items-center mb-6 gap-3">
         <h2 id="page-title" class="text-3xl font-bold text-slate-700">Resumen General</h2>
-
         <div class="flex items-center gap-2">
           <button id="btn-clear-filters" class="px-3 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-sm">
             Limpiar todos los filtros
           </button>
-
-          <div class="relative">
-            <button id="btn-export" class="px-3 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-sm">Exportar</button>
-            <div id="export-menu" class="dropdown-menu hidden absolute right-0 top-10 bg-white border border-slate-200 rounded-md shadow-xl min-w-[220px]">
-              <a href="#" data-exp="csv" class="block px-3 py-2 hover:bg-slate-50 text-slate-700">Exportar datos (CSV)</a>
-              <a href="#" data-exp="sheets" class="block px-3 py-2 hover:bg-slate-50 text-slate-700">Exportar a Google Sheets</a>
-              <a href="#" data-exp="png" class="block px-3 py-2 hover:bg-slate-50 text-slate-700">Exportar gráficos (PNG)</a>
-              <a href="#" data-exp="zip" class="block px-3 py-2 hover:bg-slate-50 text-slate-700">Exportar sección (ZIP)</a>
+          <div class="dropdown">
+            <button id="btn-export" class="px-3 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-sm">
+              Exportar
+            </button>
+            <div id="export-menu" class="dropdown-menu hidden">
+              <a href="#" data-exp="csv">Exportar datos (CSV)</a>
+              <a href="#" data-exp="png">Exportar gráficos (PNG)</a>
+              <a href="#" data-exp="zip">Exportar sección (ZIP)</a>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- FILTROS (horizontales, multi-select con scroll) -->
-      <div id="filters-row" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3 mb-6">
-        <div id="f-q"></div>
-        <div id="f-mes"></div>
-        <div id="f-semana"></div>
-        <div id="f-ubic"></div>
-        <div id="f-lider"></div>
-        <div id="f-usuario"></div>
-        <div id="f-flujo"></div>
+      <!-- Barra de filtros (pills en una fila) -->
+      <div id="filters-bar" class="flex flex-wrap gap-3 mb-8">
+        <!-- Se crean dinámicamente -->
       </div>
 
       <!-- Secciones -->
@@ -141,9 +155,7 @@
             <div id="ninebox-card" class="kpi-card">
               <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Productividad - Calidad</h3>
-                <button id="generate-summary-btn" class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition-colors text-sm font-medium">
-                  ✨ Generar Resumen
-                </button>
+                <button id="generate-summary-btn" class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition-colors text-sm font-medium">✨ Generar Resumen</button>
               </div>
               <div id="ninebox-grid" class="grid grid-cols-4 gap-2"></div>
               <p class="mt-3 text-xs text-slate-500">
@@ -255,13 +267,15 @@
   </main>
 </div>
 
-<!-- Menú móvil (reutiliza links) -->
+<!-- Menú móvil -->
 <div id="mobile-menu" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden">
   <aside class="absolute top-0 left-0 h-full w-64 bg-[#999999] text-white p-4 transform -translate-x-full transition-transform duration-300">
     <div class="flex justify-between items-center mb-8">
       <h1 class="text-2xl font-bold text-white">Menú</h1>
       <button id="close-mobile-menu">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
       </button>
     </div>
     <nav id="mobile-nav-menu" class="flex-1 space-y-2"></nav>
@@ -274,9 +288,6 @@
  **********************/
 const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
 const FILES = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
-const SHEETS_WEBHOOK_URL = ""; // opcional
-
-// Paleta
 const PALETTE = { c0:'#86eae9', c1:'#3edad8', c2:'#37c9ef', c3:'#37c9ef', c4:'#2c92d5', c5:'#13538a' };
 const BAR_BG = 'rgba(55,201,239,0.5)';
 const LINE_ACC = PALETTE.c1;
@@ -335,13 +346,20 @@ const fmt = {
   dec: x => (x ?? 0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})
 };
 
+const flujoSel = ()=> (state.filtros.flujo[0] || 'mixto');
+const tareasFlujo = (r, f) => f==='demanda' ? (r.tareas_demanda||0) : f==='enhancement' ? (r.tareas_enhancement||0) : (r.total_tareas||0);
+function promedioDiario(rows, f){
+  const den = rows.reduce((s,r)=> s + (r.dias_activos||0), 0);
+  const num = rows.reduce((s,r)=> s + tareasFlujo(r,f), 0);
+  return den ? num/den : 0;
+}
 function setColor(el, color){
   el.classList.remove('text-red-600','text-yellow-500','text-green-600','text-orange-500');
   if(color) el.classList.add(color);
 }
 
 /**********************
- * BUILD CONSOLIDADO
+ * CONSOLIDADO
  **********************/
 function buildWeeklyRows(prod, cal, base, lideres){
   const P = prod.map(r=>({
@@ -371,8 +389,9 @@ function buildWeeklyRows(prod, cal, base, lideres){
   const liderPorUser = new Map();
   lideres.forEach(r=>{
     const user = correoAUsuario(pick(r,['usuario','user']));
-    let lider  = pick(r,['líder','lider']) || 'Sin líder';
-    if(user) liderPorUser.set(user, lider); // << NO filtramos "Sin líder"
+    let lider  = pick(r,['líder','lider']) || '';
+    if(String(lider||'').toLowerCase()==='sin líder' || String(lider||'').toLowerCase()==='sin lider') return;
+    if(user) liderPorUser.set(user, lider);
   });
 
   const weeks = new Map();
@@ -397,6 +416,7 @@ function buildWeeklyRows(prod, cal, base, lideres){
     const dKey = `${r.fecha.getFullYear()}-${String(r.fecha.getMonth()+1).padStart(2,'0')}-${String(r.fecha.getDate()).padStart(2,'0')}`;
     o.dias.add(dKey);
   }
+
   for(const r of C){
     const pref = `${r.user}|${r.week}|`;
     for(const key of weeks.keys()){
@@ -407,11 +427,12 @@ function buildWeeklyRows(prod, cal, base, lideres){
       }
     }
   }
+
   const rows = Array.from(weeks.values()).sort((a,b)=>a.week-b.week).map(o=>{
     const prom = o.dias.size ? (o.total/o.dias.size) : '';
     const pEf  = o.idsCal>0 ? (1 - (o.errCal/o.idsCal)) : '';
     return {
-      week:o.week, mes:o.mes, mesIndex:o.mesIndex, usuario:o.user, 'líder':o.lider, ciudad:o.ciudad, antigüedad:o.antig,
+      week:o.week, mes:o.mes, mesIndex:o.mesIndex, usuario:o.user, líder:o.lider, ciudad:o.ciudad, antigüedad:o.antig,
       promedio_diario: prom, efectividad:pEf,
       tareas_demanda:o.demand, tareas_enhancement:o.enh, total_tareas:o.total,
       ids_trabajados:o.idsWork, correcciones_auditadas:o.idsCal, dias_activos:o.dias.size,
@@ -422,212 +443,181 @@ function buildWeeklyRows(prod, cal, base, lideres){
 }
 
 /**********************
- * ESTADO GLOBAL
+ * ESTADO
  **********************/
 let originalData = [];
 let currentData  = [];
 const charts = {};
 let nineboxDetailsData = {};
 
-/**********************
- * UI: MultiSelect component
- **********************/
-function closeAllMenus(){ document.querySelectorAll('.menu[data-open="1"]').forEach(m=>{ m.dataset.open='0'; m.classList.add('hidden'); }); }
-document.addEventListener('click', (e)=>{
-  const isChip = e.target.closest('.chip'); const isMenu = e.target.closest('.menu');
-  if(!isChip && !isMenu) closeAllMenus();
-});
-
-function MultiSelect({mountId, placeholder='Todas', onChange=()=>{}, single=false}){
-  const mount = document.getElementById(mountId);
-  mount.innerHTML = `
-    <div class="relative">
-      <button class="chip w-full text-left" type="button">
-        <span class="truncate block pr-3">${placeholder}</span>
-        <svg class="h-5 w-5 text-slate-500 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.25 8.29a.75.75 0 01-.02-1.08z" clip-rule="evenodd"/></svg>
-      </button>
-      <div class="menu hidden" data-open="0">
-        <div class="menu-head">
-          <span class="text-slate-600 text-sm">${placeholder}</span>
-          <button class="text-sky-600 text-sm hover:underline" data-action="clear">Limpiar</button>
-        </div>
-        <div class="menu-body" data-body></div>
-        <div class="menu-foot text-xs">Seleccioná ${single?'una opción':'una o más opciones'}</div>
-      </div>
-    </div>
-  `;
-  const chip = mount.querySelector('button.chip');
-  const menu = mount.querySelector('.menu');
-  const body = mount.querySelector('[data-body]');
-  const labelSpan = chip.querySelector('span');
-
-  let options = [];   // array de strings
-  let selected = new Set(); // valores seleccionados
-
-  chip.addEventListener('click', ()=>{
-    const opened = menu.dataset.open==='1';
-    closeAllMenus();
-    if(!opened){ menu.dataset.open='1'; menu.classList.remove('hidden'); }
-  });
-  menu.querySelector('[data-action="clear"]').addEventListener('click', ()=>{
-    if(single){ selected = new Set(options.length? [options[0]]: []); } else { selected.clear(); }
-    renderLabel(); onChange(get());
-  });
-
-  function renderBody(){
-    body.innerHTML = options.map(v=>`
-      <label class="menu-item cursor-pointer">
-        <input type="${single?'radio':'checkbox'}" name="${mountId}-opt" value="${v}" ${selected.has(v)?'checked':''} class="accent-sky-600">
-        <span class="truncate">${v||'(vacío)'}</span>
-      </label>
-    `).join('');
-    body.querySelectorAll('input').forEach(inp=>{
-      inp.addEventListener('change', ()=>{
-        if(single){ selected = new Set([inp.value]); closeAllMenus(); }
-        else { inp.checked ? selected.add(inp.value) : selected.delete(inp.value); }
-        renderLabel(); onChange(get());
-      });
-    });
+const state = {
+  filtros: {
+    q: [],
+    mes: [],
+    semana: [],
+    ubic: [],
+    lider: [],
+    usuario: [],
+    flujo: ['mixto'] // única selección
   }
-  function renderLabel(){
-    const arr = Array.from(selected);
-    if(single){
-      labelSpan.textContent = arr[0] ?? placeholder;
-    }else if(arr.length===0){
-      labelSpan.textContent = placeholder;
-    }else if(arr.length<=2){
-      labelSpan.textContent = arr.join(', ');
-    }else{
-      labelSpan.textContent = `${arr.length} seleccionados`;
-    }
-  }
-  function setOptions(list){
-    options = list.slice();
-    if(single){
-      // si no hay selección, setear primera o placeholder
-      if(options.length && !selected.size) selected = new Set([options[0]]);
-      // si lo seleccionado ya no existe, resetear a primera
-      const curr = Array.from(selected)[0];
-      if(curr && !options.includes(curr)) selected = new Set([options[0]||'']);
-    }else{
-      // limpiar seleccionados que ya no existan
-      selected.forEach(v=>{ if(!options.includes(v)) selected.delete(v); });
-    }
-    renderBody(); renderLabel();
-  }
-  function setSelected(list){
-    selected = new Set(list||[]);
-    renderBody(); renderLabel();
-  }
-  function get(){ return single ? (Array.from(selected)[0]||'') : Array.from(selected); }
-
-  return { setOptions, setSelected, get, mount };
-}
-
-/**********************
- * FILTROS (estado + dependencia)
- **********************/
-const filtros = {
-  q:      null, // array
-  mes:    null, // array
-  semana: null, // array
-  ubic:   null, // array
-  lider:  null, // array (incluye "Sin líder")
-  usuario:null, // array
-  flujo:  'mixto' // single
 };
-let UI = {}; // refs a componentes
 
-function uniqueSorted(arr){ return Array.from(new Set(arr)).sort((a,b)=> String(a).localeCompare(String(b),'es')); }
+/**********************
+ * UI FILTROS (pills)
+ **********************/
+const FILTER_ORDER = ['q','mes','semana','ubic','lider','usuario','flujo'];
+const FILTER_LABEL = {
+  q:'Todos los trimestres',
+  mes:'Todos los meses',
+  semana:'Todas las semanas',
+  ubic:'Todas las ubicaciones',
+  lider:'Todos los líderes',
+  usuario:'Todos los usuarios',
+  flujo:'mixto'
+};
+
+function uniqueSorted(arr){ return Array.from(new Set(arr)).sort(); }
 function uniqueSortedNum(arr){ return Array.from(new Set(arr)).sort((a,b)=>a-b); }
 
-function filteredOriginalDataExcept(exceptKey){
-  const v = {
-    q: filtros.q||[],
-    mes: filtros.mes||[],
-    semana: filtros.semana||[],
-    ubic: filtros.ubic||[],
-    lider: filtros.lider||[],
-    usuario: filtros.usuario||[]
-  };
+function filteredOriginalDataExcept(exceptKeys){
+  const v = state.filtros;
+  const exc = new Set([].concat(exceptKeys||[]));
   return originalData.filter(r =>
-    (exceptKey==='q'      || v.q.length===0      || v.q.includes(r.q)) &&
-    (exceptKey==='mes'    || v.mes.length===0    || v.mes.includes(r.mes)) &&
-    (exceptKey==='semana' || v.semana.length===0 || v.semana.includes(String(r.week))) &&
-    (exceptKey==='ubic'   || v.ubic.length===0   || v.ubic.includes(r.ciudad||'Sin ubicación')) &&
-    (exceptKey==='lider'  || v.lider.length===0  || v.lider.includes(r['líder']||'Sin líder')) &&
-    (exceptKey==='usuario'|| v.usuario.length===0|| v.usuario.includes(r.usuario))
+    (exc.has('mes')    || v.mes.length===0    || v.mes.includes(r.mes)) &&
+    (exc.has('semana') || v.semana.length===0 || v.semana.includes(String(r.week))) &&
+    (exc.has('ubic')   || v.ubic.length===0   || v.ubic.includes(r.ciudad)) &&
+    (exc.has('usuario')|| v.usuario.length===0|| v.usuario.includes(r.usuario)) &&
+    (exc.has('lider')  || v.lider.length===0  || v.lider.includes(r['líder'])) &&
+    (exc.has('q')      || v.q.length===0      || v.q.includes(r.q))
   );
 }
 
-function refreshDependentFilters(){
-  // Q
-  { const allowed = filteredOriginalDataExcept('q');
-    const qs = ['Q1','Q2','Q3','Q4'].filter(q => allowed.some(r=>r.q===q));
-    UI.q.setOptions(qs);
-  }
-  // Mes
-  { const allowed = filteredOriginalDataExcept('mes');
-    const meses = MONTHS_ES.filter(m => allowed.some(r=>r.mes===m));
-    UI.mes.setOptions(meses);
-  }
-  // Semana
-  { const allowed = filteredOriginalDataExcept('semana');
-    const semanas = uniqueSortedNum(allowed.map(r=>r.week)).map(String);
-    UI.semana.setOptions(semanas);
-  }
-  // Ubicación
-  { const allowed = filteredOriginalDataExcept('ubic');
-    const ubic = uniqueSorted(allowed.map(r=>r.ciudad||'Sin ubicación'));
-    UI.ubic.setOptions(ubic);
-  }
-  // Líder
-  { const allowed = filteredOriginalDataExcept('lider');
-    const lideres = uniqueSorted(allowed.map(r=>r['líder']||'Sin líder'));
-    UI.lider.setOptions(lideres); // << incluimos "Sin líder"
-  }
-  // Usuario
-  { const allowed = filteredOriginalDataExcept('usuario');
-    const usuarios = uniqueSorted(allowed.map(r=>r.usuario));
-    UI.usuario.setOptions(usuarios);
-  }
-  // Flujo (single)
-  UI.flujo.setOptions(['mixto','demanda','enhancement']);
+function computeFilterOptions(){
+  // Calcula opciones válidas respetando exclusión entre Q↔Mes↔Semana
+  const forQ = filteredOriginalDataExcept('q');
+  const forMes = filteredOriginalDataExcept('mes');
+  const forSemana = filteredOriginalDataExcept('semana');
+  const forUbic = filteredOriginalDataExcept('ubic');
+  const forLider = filteredOriginalDataExcept('lider');
+  const forUser = filteredOriginalDataExcept('usuario');
+
+  const opts = {
+    q: ['Q1','Q2','Q3','Q4'].filter(q => forQ.some(r=>r.q===q)),
+    mes: MONTHS_ES.filter(m => forMes.some(r=>r.mes===m)),
+    semana: uniqueSortedNum(forSemana.map(r=>r.week)).map(String),
+    ubic: uniqueSorted(forUbic.map(r=>r.ciudad).filter(Boolean)),
+    lider: uniqueSorted(forLider.map(r=>r['líder']).filter(l => l && l.toLowerCase()!=='sin líder' && l.toLowerCase()!=='sin lider')),
+    usuario: uniqueSorted(forUser.map(r=>r.usuario)),
+    flujo: ['mixto','demanda','enhancement'] // fijo
+  };
+  return opts;
 }
 
-function applyFilters(){
-  filtros.q      = UI.q.get();
-  filtros.mes    = UI.mes.get();
-  filtros.semana = UI.semana.get();
-  filtros.ubic   = UI.ubic.get();
-  filtros.lider  = UI.lider.get();
-  filtros.usuario= UI.usuario.get();
-  filtros.flujo  = UI.flujo.get();
+function pillSummary(key){
+  const sel = state.filtros[key];
+  if(key==='flujo') return sel[0] || FILTER_LABEL[key];
+  if(!sel.length) return FILTER_LABEL[key];
+  if(sel.length===1) return sel[0];
+  return `${sel.length} seleccionados`;
+}
 
-  refreshDependentFilters();
+function closeAllMenus(){ document.querySelectorAll('.menu').forEach(m=>m.classList.remove('open')); }
 
-  currentData = originalData.filter(r =>
-    ((filtros.q?.length||0)===0      || filtros.q.includes(r.q)) &&
-    ((filtros.mes?.length||0)===0    || filtros.mes.includes(r.mes)) &&
-    ((filtros.semana?.length||0)===0 || filtros.semana.includes(String(r.week))) &&
-    ((filtros.ubic?.length||0)===0   || filtros.ubic.includes(r.ciudad||'Sin ubicación')) &&
-    ((filtros.lider?.length||0)===0  || filtros.lider.includes(r['líder']||'Sin líder')) &&
-    ((filtros.usuario?.length||0)===0|| filtros.usuario.includes(r.usuario))
-  );
+function renderFiltersBar(){
+  const opts = computeFilterOptions();
+  const bar = document.getElementById('filters-bar');
+  bar.innerHTML = '';
 
-  updateKPIs();
-  renderNineBox();
-  renderDemandPie();
-  renderTasksByUser();
-  renderTasksByLeader();
-  renderWeeklyEvolution();
-  renderByLocation();
-  updateEvolutionKPIs();
-  updateDetailKPIs();
+  FILTER_ORDER.forEach(key=>{
+    const pill = document.createElement('div');
+    pill.className = 'pill';
+    pill.innerHTML = `
+      <span class="label">${pillSummary(key)}</span>
+      <span class="chev">▾</span>
+      <div class="menu">
+        <div class="head">
+          <input type="text" class="search" placeholder="Buscar..."/>
+          <button class="clear">Limpiar</button>
+        </div>
+        <div class="list"></div>
+        <div class="foot text-xs">${key==='flujo' ? 'Elegí uno' : 'Selección múltiple'}</div>
+      </div>
+    `;
+    bar.appendChild(pill);
+
+    const menu = pill.querySelector('.menu');
+    const list = menu.querySelector('.list');
+    const search = menu.querySelector('.search');
+
+    // Construir items
+    function buildList(){
+      list.innerHTML = '';
+      const values = opts[key].filter(v => String(v).toLowerCase().includes(search.value.trim().toLowerCase()));
+      values.forEach(v=>{
+        const id = `${key}-${v}`.replace(/\s+/g,'_');
+        const selected = (key==='flujo') ? (state.filtros.flujo[0]===v) : state.filtros[key].includes(v);
+        const item = document.createElement('label');
+        item.className = 'item';
+        item.innerHTML = `
+          <input ${key==='flujo'?'type="radio" name="radio-'+key+'"':'type="checkbox"'} class="opt" id="${id}" value="${v}" ${selected?'checked':''}/>
+          <span class="text-slate-700">${v}</span>
+        `;
+        list.appendChild(item);
+      });
+      // scroll estética
+      list.style.scrollbarWidth = 'thin';
+    }
+    buildList();
+
+    // Interacción
+    pill.addEventListener('click', (e)=>{
+      const inside = pill.contains(e.target);
+      if(!inside) return;
+      const isControl = e.target.closest('.menu');
+      if(isControl) return; // ya está abierto
+      const isChevOrLabel = e.target.closest('.label') || e.target.classList.contains('chev') || e.target===pill;
+      if(isChevOrLabel){
+        const open = menu.classList.contains('open');
+        closeAllMenus();
+        if(!open) menu.classList.add('open');
+      }
+    });
+
+    search.addEventListener('input', buildList);
+
+    // change handler
+    menu.addEventListener('change', (e)=>{
+      const inputs = menu.querySelectorAll('.opt');
+      if(key==='flujo'){
+        const v = Array.from(inputs).find(i=>i.checked)?.value || 'mixto';
+        state.filtros.flujo = [v];
+      }else{
+        const selected = Array.from(inputs).filter(i=>i.checked).map(i=>i.value);
+        state.filtros[key] = selected;
+      }
+      pill.querySelector('.label').textContent = pillSummary(key);
+      applyFilters();
+    });
+
+    // limpiar individual
+    menu.querySelector('.clear').addEventListener('click',(e)=>{
+      e.stopPropagation();
+      if(key==='flujo'){ state.filtros.flujo=['mixto']; }
+      else state.filtros[key]=[];
+      pill.querySelector('.label').textContent = pillSummary(key);
+      renderFiltersBar(); // re-render para refrescar checks y dependencias
+      applyFilters();
+    });
+  });
+
+  // cerrar al click fuera
+  document.addEventListener('click', (ev)=>{
+    if(!bar.contains(ev.target)) closeAllMenus();
+  }, { once:true });
 }
 
 /**********************
- * NAV + Export + Limpieza
+ * NAV + EXPORT + CLEAR ALL
  **********************/
 function setupNavigation(){
   const links=[...document.querySelectorAll('#nav-menu a')];
@@ -642,75 +632,75 @@ function setupNavigation(){
       links.forEach(x=>x.classList.remove('active')); a.classList.add('active');
       document.getElementById('page-title').textContent=a.textContent;
       if(target==='#detalle'){ renderTasksByUser(); updateDetailKPIs(); }
-      if(target==='#lideres')      renderTasksByLeader();
-      if(target==='#evolucion'){   renderWeeklyEvolution(); updateEvolutionKPIs(); }
-      if(target==='#ubicacion')    renderByLocation();
+      if(target==='#lideres') renderTasksByLeader();
+      if(target==='#evolucion'){ renderWeeklyEvolution(); updateEvolutionKPIs(); }
+      if(target==='#ubicacion') renderByLocation();
     });
   });
 
-  // Menú móvil
-  const mobBtn=document.getElementById('mobile-menu-button');
-  const mob=document.getElementById('mobile-menu');
-  const mobClose=document.getElementById('close-mobile-menu');
-  if(mobBtn){ mobBtn.addEventListener('click', ()=>{ mob.classList.remove('hidden'); mob.querySelector('aside').classList.remove('-translate-x-full'); }); }
-  if(mobClose){ mobClose.addEventListener('click', ()=>{ mob.querySelector('aside').classList.add('-translate-x-full'); setTimeout(()=>mob.classList.add('hidden'),200); }); }
-
-  // Export
-  const expBtn=document.getElementById('btn-export');
-  const expMenu=document.getElementById('export-menu');
-  expBtn.addEventListener('click', ()=> expMenu.classList.toggle('hidden'));
-  document.addEventListener('click', (e)=>{ if(!expMenu.contains(e.target) && !expBtn.contains(e.target)) expMenu.classList.add('hidden'); });
+  // Export dropdown
+  document.getElementById('btn-export').addEventListener('click', ()=>{
+    document.getElementById('export-menu').classList.toggle('hidden');
+  });
+  document.addEventListener('click', (e)=>{
+    const dd = document.getElementById('export-menu');
+    if(!dd.contains(e.target) && !document.getElementById('btn-export').contains(e.target)) dd.classList.add('hidden');
+  });
   document.querySelectorAll('#export-menu a').forEach(a=>{
     a.addEventListener('click', (e)=>{
       e.preventDefault();
-      expMenu.classList.add('hidden');
-      const type=a.getAttribute('data-exp');
+      document.getElementById('export-menu').classList.add('hidden');
+      const type = a.getAttribute('data-exp');
       if(type==='csv') exportSectionCSV();
       if(type==='png') exportSectionPNGs();
       if(type==='zip') exportSectionZIP();
-      if(type==='sheets') exportToGoogleSheets();
     });
   });
 
-  // Limpiar TODOS
+  // Limpiar todos
   document.getElementById('btn-clear-filters').addEventListener('click', ()=>{
-    UI.q.setSelected([]); UI.mes.setSelected([]); UI.semana.setSelected([]);
-    UI.ubic.setSelected([]); UI.lider.setSelected([]); UI.usuario.setSelected([]);
-    UI.flujo.setSelected(['mixto']);
+    state.filtros = { q:[], mes:[], semana:[], ubic:[], lider:[], usuario:[], flujo:['mixto'] };
+    renderFiltersBar();
     applyFilters();
   });
 }
 
 /**********************
- * Construcción filtros UI
+ * APLICAR FILTROS
  **********************/
-function setupFilters(){
-  UI.q       = MultiSelect({ mountId:'f-q',       placeholder:'Todos los trimestres', onChange:applyFilters });
-  UI.mes     = MultiSelect({ mountId:'f-mes',     placeholder:'Todos los meses',      onChange:applyFilters });
-  UI.semana  = MultiSelect({ mountId:'f-semana',  placeholder:'Todas las semanas',    onChange:applyFilters });
-  UI.ubic    = MultiSelect({ mountId:'f-ubic',    placeholder:'Todas las ubicaciones',onChange:applyFilters });
-  UI.lider   = MultiSelect({ mountId:'f-lider',   placeholder:'Todos los líderes',    onChange:applyFilters });
-  UI.usuario = MultiSelect({ mountId:'f-usuario', placeholder:'Todos los usuarios',   onChange:applyFilters });
-  UI.flujo   = MultiSelect({ mountId:'f-flujo',   placeholder:'mixto', onChange:applyFilters, single:true });
+function applyFilters(){
+  // recalcular data filtrada
+  const f = state.filtros;
+  currentData = originalData.filter(r =>
+    (f.mes.length===0    || f.mes.includes(r.mes)) &&
+    (f.semana.length===0 || f.semana.includes(String(r.week))) &&
+    (f.ubic.length===0   || f.ubic.includes(r.ciudad)) &&
+    (f.usuario.length===0|| f.usuario.includes(r.usuario)) &&
+    (f.lider.length===0  || f.lider.includes(r['líder'])) &&
+    (f.q.length===0      || f.q.includes(r.q))
+  );
 
-  refreshDependentFilters();
-  // default: flujo 'mixto'
-  UI.flujo.setSelected(['mixto']);
+  // actualizar opciones dependientes para que no aparezcan inválidas
+  renderFiltersBar();
+
+  // refrescar UI
+  updateKPIs();
+  renderNineBox();
+  renderDemandPie();
+  renderTasksByUser();
+  renderTasksByLeader();
+  renderWeeklyEvolution();
+  renderByLocation();
+  updateEvolutionKPIs();
+  updateDetailKPIs();
 }
 
 /**********************
- * KPIs + RENDER
+ * KPI + RENDER
  **********************/
-const flujoSel = ()=> (filtros.flujo||'mixto').toLowerCase();
-const tareasFlujo = (r, f) => f==='demanda' ? (r.tareas_demanda||0) : f==='enhancement' ? (r.tareas_enhancement||0) : (r.total_tareas||0);
-function promedioDiario(rows, f){
-  const den = rows.reduce((s,r)=> s + (r.dias_activos||0), 0);
-  const num = rows.reduce((s,r)=> s + tareasFlujo(r,f), 0);
-  return den ? num/den : 0;
-}
-
 function updateKPIs(){
   const f = flujoSel();
+
   const totalFlujo = currentData.reduce((s,r)=> s + tareasFlujo(r,f), 0);
   const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
   const usuarios = new Set(currentData.map(r=>r.usuario)).size;
@@ -726,7 +716,10 @@ function updateKPIs(){
   setColor(promEl, promColor);
 
   const efPct = ef*100;
-  let efColor = (efPct<=75) ? 'text-red-600' : (efPct<87) ? 'text-orange-500' : (efPct<90) ? 'text-yellow-500' : 'text-green-600';
+  let efColor = (efPct<=75) ? 'text-red-600'
+                : (efPct<87) ? 'text-orange-500'
+                : (efPct<90) ? 'text-yellow-500'
+                : 'text-green-600';
   setColor(efEl, efColor);
 
   document.getElementById('kpi-total-tareas').textContent     = fmt.int(totalFlujo);
@@ -737,7 +730,7 @@ function updateKPIs(){
   efEl.textContent   = fmt.pct(ef);
 }
 
-// KPIs Evolución
+// KPIs a la derecha del gráfico en "Evolución Semanal"
 function updateEvolutionKPIs(){
   const f = flujoSel();
   const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
@@ -759,7 +752,7 @@ function updateEvolutionKPIs(){
   document.getElementById('evo-kpi-users').textContent = fmt.int(usuarios);
 }
 
-// KPIs Detalle
+// KPIs a la derecha del gráfico en "Detalle por Usuario"
 function updateDetailKPIs(){
   const f = flujoSel();
   const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
@@ -786,21 +779,48 @@ function createOrUpdateChart(id, cfg){
 }
 
 function barDataset(label, data){
-  return { type:'bar', label, data, yAxisID:'y', backgroundColor: BAR_BG, borderColor:'rgba(0,0,0,0)', order:1, barPercentage:.8, categoryPercentage:.8 };
+  return {
+    type:'bar',
+    label,
+    data,
+    yAxisID:'y',
+    backgroundColor: BAR_BG,
+    borderColor: 'rgba(0,0,0,0)',
+    order: 1,
+    barPercentage: 0.8,
+    categoryPercentage: 0.8
+  };
 }
 function lineEffDataset(label, data){
-  return { type:'line', label, data, yAxisID:'y1', borderColor: LINE_ACC, backgroundColor: LINE_ACC, order:2, fill:false, tension:.25, pointRadius:3, pointHoverRadius:5, pointBackgroundColor:'#fff', pointBorderColor:LINE_ACC, borderWidth:3, spanGaps:true };
+  return {
+    type:'line',
+    label,
+    data,
+    yAxisID:'y1',
+    borderColor: LINE_ACC,
+    backgroundColor: LINE_ACC,
+    order: 2,
+    fill: false,
+    tension: 0.25,
+    pointRadius: 3,
+    pointHoverRadius: 5,
+    pointBackgroundColor: '#ffffff',
+    pointBorderColor: LINE_ACC,
+    borderWidth: 3,
+    spanGaps: true
+  };
 }
 
 /* ---------- Nine-box ---------- */
 function renderNineBox(){
   const f = flujoSel();
+
   const map = new Map(); // user -> {num,den, effSum, effN}
   currentData.forEach(r=>{
     const u=r.usuario;
     const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
     o.num += tareasFlujo(r,f); o.den += (r.dias_activos||0);
-    if(r.efectividad!=='' && r.efectividad!=null){ o.effSum+=r.efectividad; o.effN++; }
+    if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){ o.effSum+=r.efectividad; o.effN++; }
     map.set(u,o);
   });
 
@@ -813,13 +833,18 @@ function renderNineBox(){
   const prodBand = p => (p>=80 ? 'alta' : p>=70 ? 'media' : 'baja');
   const calBand  = e => (e>=0.90 ? 'alta' : e>=0.75 ? 'media' : 'baja');
 
-  const rows=['alta','media','baja'], cols=['alta','media','baja'];
-  const buckets = {}, details={}; rows.forEach(r=>cols.forEach(c=>{ buckets[`${r}-${c}`]=[]; details[`${r}-${c}`]=[]; }));
+  const rows=['alta','media','baja']; // productividad
+  const cols=['alta','media','baja']; // calidad
+
+  const buckets = {};
+  const details = {};
+  rows.forEach(r=>cols.forEach(c=>{ buckets[`${r}-${c}`]=[]; details[`${r}-${c}`]=[]; }));
 
   const missing = [];
   users.forEach(x=>{
-    if(x.prom===null || x.eff===null){ missing.push(x); }
-    else{
+    if(x.prom===null || x.eff===null){
+      missing.push(x);
+    }else{
       const key = `${prodBand(x.prom)}-${calBand(x.eff)}`;
       buckets[key].push(x.u);
       details[key].push({usuario:x.u, prom:x.prom, eff:x.eff});
@@ -848,7 +873,9 @@ function renderNineBox(){
     html += hdrCell('Prod. '+label(r));
     cols.forEach(c=>{
       const arr = buckets[`${r}-${c}`]||[];
-      html += `<div class="nb-cell ${cellClass(r,c)}" data-bucket="${r}-${c}" title="Prod ${label(r)} / Calidad ${label(c)}"><span class="nb-badge">${arr.length}</span></div>`;
+      html += `<div class="nb-cell ${cellClass(r,c)}" data-bucket="${r}-${c}" title="Prod ${label(r)} / Calidad ${label(c)}">
+                <span class="nb-badge">${arr.length}</span>
+              </div>`;
     });
   });
   grid.innerHTML = html;
@@ -856,83 +883,123 @@ function renderNineBox(){
   nineboxDetailsData = details;
 
   grid.onclick = (ev)=>{
-    const cell = ev.target.closest('.nb-cell[data-bucket]'); if(!cell) return;
-    const key = cell.getAttribute('data-bucket'); showNineboxDetails(key, label);
+    const cell = ev.target.closest('.nb-cell[data-bucket]');
+    if(!cell) return;
+    const key = cell.getAttribute('data-bucket');
+    showNineboxDetails(key, label);
   };
 
   const missDiv = document.getElementById('ninebox-missing');
   if(missing.length){
-    const lines = missing.sort((a,b)=> (a.u>b.u?1:-1)).map(m=>{
-      const parts = [];
-      if(m.prom!==null) parts.push(`Promedio Diario: ${m.prom.toFixed(2)}`);
-      if(m.eff!==null)  parts.push(`% Efectividad: ${(m.eff*100).toFixed(2)}%`);
-      return `• ${m.u} — ${parts.join(' | ') || 'sin datos'}`;
-    });
+    const lines = missing
+      .sort((a,b)=> (a.u>b.u?1:-1))
+      .map(m=>{
+        const parts = [];
+        if(m.prom!==null) parts.push(`Promedio Diario: ${m.prom.toFixed(2)}`);
+        if(m.eff!==null)  parts.push(`% Efectividad: ${(m.eff*100).toFixed(2)}%`);
+        return `• ${m.u} — ${parts.join(' | ') || 'sin datos'}`;
+      });
     missDiv.innerHTML = `<div class="font-medium mb-1">Perfiles no incluidos por datos faltantes</div><div class="whitespace-pre-line">${lines.join('\n')}</div>`;
-  }else missDiv.innerHTML = '';
+  }else{
+    missDiv.innerHTML = '';
+  }
 }
+
 function showNineboxDetails(bucketKey, labelFn){
   const box = document.getElementById('ninebox-details');
   const rows = (nineboxDetailsData[bucketKey]||[]).slice().sort((a,b)=>b.prom-a.prom);
   const [prod, cal] = bucketKey.split('-').map(labelFn);
+  if(!rows.length){
+    box.innerHTML = `
+      <div class="flex items-center justify-between mb-2">
+        <div class="font-semibold">Prod. ${prod} / Calidad ${cal}</div>
+        <button class="text-slate-500 hover:text-slate-700 text-sm" id="nb-close">Cerrar</button>
+      </div>
+      <div class="text-slate-500 text-sm">Sin perfiles en este cuadrante para los filtros actuales.</div>`;
+    box.classList.remove('hidden');
+    document.getElementById('nb-close').onclick = ()=> box.classList.add('hidden');
+    return;
+  }
+
   const header = `
     <div class="flex items-center justify-between mb-2">
       <div class="font-semibold">Prod. ${prod} / Calidad ${cal} — <span class="text-slate-500 font-normal">${rows.length} perfiles</span></div>
       <button class="text-slate-500 hover:text-slate-700 text-sm" id="nb-close">Cerrar</button>
     </div>`;
-  const table = rows.length? `
+
+  const table = `
     <div class="overflow-x-auto border border-slate-200 rounded-md">
       <table class="min-w-full text-sm">
-        <thead class="bg-slate-50 text-slate-600"><tr><th class="text-left px-3 py-2">Usuario</th><th class="text-right px-3 py-2">Prom. Diario</th><th class="text-right px-3 py-2">% Efectividad</th></tr></thead>
-        <tbody>${rows.map(r=>`<tr class="border-t"><td class="px-3 py-2">${r.usuario}</td><td class="px-3 py-2 text-right">${fmt.dec(r.prom)}</td><td class="px-3 py-2 text-right">${fmt.pct(r.eff)}</td></tr>`).join('')}</tbody>
+        <thead class="bg-slate-50 text-slate-600">
+          <tr>
+            <th class="text-left px-3 py-2">Usuario</th>
+            <th class="text-right px-3 py-2">Prom. Diario</th>
+            <th class="text-right px-3 py-2">% Efectividad</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(r=>`
+            <tr class="border-t">
+              <td class="px-3 py-2">${r.usuario}</td>
+              <td class="px-3 py-2 text-right">${fmt.dec(r.prom)}</td>
+              <td class="px-3 py-2 text-right">${fmt.pct(r.eff)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
       </table>
-    </div>` : `<div class="text-slate-500 text-sm">Sin perfiles en este cuadrante para los filtros actuales.</div>`;
-  box.innerHTML = header + table; box.classList.remove('hidden');
+    </div>`;
+
+  box.innerHTML = header + table;
+  box.classList.remove('hidden');
   document.getElementById('nb-close').onclick = ()=> box.classList.add('hidden');
 }
 
 /* ---------- Demanda vs Enhancement ---------- */
 function renderDemandPie(){
-  const demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
-  const enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
-  const tot = demand+enh;
+  // Siempre muestra demanda vs enhancement; si flujo != mixto, muestra solo ese subconjunto
+  let demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
+  let enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
   const f = flujoSel();
+  if(f==='demanda'){ enh = 0; }
+  if(f==='enhancement'){ demand = 0; }
 
-  let labels, data, txt;
-  if(f==='mixto'){
-    const pctD = tot? (100*demand/tot) : 0;
-    const pctE = tot? (100*enh   /tot) : 0;
-    labels = ['Demanda','Enhancement'];
-    data   = [pctD, pctE];
-    txt    = `Total Demanda: ${fmt.int(demand)} — Total Enhancement: ${fmt.int(enh)}`;
-  }else if(f==='demanda'){
-    labels = ['Demanda (total)']; data=[100]; txt=`Total (demanda): ${fmt.int(demand)}`;
-  }else{
-    labels = ['Enhancement (total)']; data=[100]; txt=`Total (enhancement): ${fmt.int(enh)}`;
-  }
+  const tot = demand+enh;
+  const pctD = tot? (100*demand/tot) : 0;
+  const pctE = tot? (100*enh   /tot) : 0;
 
   createOrUpdateChart('demandPieChart',{
     type:'pie',
-    data:{ labels, datasets:[{ data, backgroundColor: f==='mixto'?[PALETTE.c0, PALETTE.c4]:[PALETTE.c2] }] },
-    options:{ responsive:true, plugins:{ legend:{ position:'bottom' }, tooltip:{ callbacks:{ label:(ctx)=> `${ctx.label}: ${ctx.parsed.toFixed(1)}%` } } } }
+    data:{ labels:['Demanda','Enhancement'], datasets:[{ data:[pctD, pctE], backgroundColor:[PALETTE.c0, PALETTE.c4] }] },
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{ position:'bottom' },
+        tooltip:{ callbacks:{ label:(ctx)=> `${ctx.label}: ${ctx.parsed.toFixed(1)}%` } }
+      }
+    }
   });
-  document.getElementById('demandTotals').textContent = txt;
+
+  const label = f==='mixto' ? 'mixto (total)' : f;
+  document.getElementById('demandTotals').textContent =
+    `Total ${label}: ${fmt.int(tot)} — Demanda: ${fmt.int(demand)} | Enhancement: ${fmt.int(enh)}`;
 }
 
 /* ---------- Detalle por usuario ---------- */
 function renderTasksByUser(){
   const f = flujoSel();
-  const agg = new Map();
+
+  const agg = new Map(); // user -> {num,den, effNum, effDen}
   currentData.forEach(r=>{
     const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
     o.num += tareasFlujo(r,f);
     o.den += (r.dias_activos||0);
-    if(r.efectividad!=='' && r.efectividad!=null){
+    if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
       const w=(r.correcciones_auditadas||0)||1;
       o.effNum += r.efectividad*w; o.effDen += w;
     }
     agg.set(u,o);
   });
+
   const arr = Array.from(agg.entries()).map(([u,o])=>{
     const prom = o.den? o.num/o.den : 0;
     const effPct = o.effDen? (100*o.effNum/o.effDen) : null;
@@ -942,7 +1009,10 @@ function renderTasksByUser(){
   createOrUpdateChart('tasksByUserChart',{
     data:{
       labels:arr.map(x=>x.user),
-      datasets:[ barDataset('Prom. diario', arr.map(x=>x.prom)), lineEffDataset('% Efectividad', arr.map(x=>x.effPct)) ]
+      datasets:[
+        barDataset('Prom. diario', arr.map(x=>x.prom)),
+        lineEffDataset('% Efectividad', arr.map(x=>x.effPct))
+      ]
     },
     options:{
       responsive:true,
@@ -960,11 +1030,11 @@ function renderTasksByLeader(){
   const f = flujoSel();
   const agg = new Map(); // líder -> {num,den, effNum, effDen}
   currentData.forEach(r=>{
-    const l = r['líder'] || 'Sin líder';
+    const l = r['líder']; if(!l || l.toLowerCase()==='sin líder' || l.toLowerCase()==='sin lider') return;
     const o = agg.get(l) || {num:0,den:0,effNum:0,effDen:0};
     o.num += tareasFlujo(r,f);
     o.den += (r.dias_activos||0);
-    if(r.efectividad!=='' && r.efectividad!=null){
+    if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
       const w = (r.correcciones_auditadas || 0) || 1;
       o.effNum += r.efectividad * w;
       o.effDen += w;
@@ -980,7 +1050,10 @@ function renderTasksByLeader(){
   createOrUpdateChart('tasksByLeaderChart',{
     data:{
       labels:arr.map(x=>x.lider),
-      datasets:[ barDataset('Prom. diario', arr.map(x=>x.prom)), lineEffDataset('% Efectividad', arr.map(x=>x.effPct)) ]
+      datasets:[
+        barDataset('Prom. diario', arr.map(x=>x.prom)),
+        lineEffDataset('% Efectividad', arr.map(x=>x.effPct))
+      ]
     },
     options:{
       responsive:true,
@@ -1002,7 +1075,7 @@ function renderWeeklyEvolution(){
     const o = agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
     o.num += tareasFlujo(r,f);
     o.den += (r.dias_activos||0);
-    if(r.efectividad!=='' && r.efectividad!=null){
+    if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
       const weight = (r.correcciones_auditadas||0)||1;
       o.effNum += r.efectividad*weight;
       o.effDen += weight;
@@ -1024,9 +1097,16 @@ function renderWeeklyEvolution(){
     effValues.push(o.effDen? 100*o.effNum/o.effDen : null);
   }
   createOrUpdateChart('weeklyEvolutionChart',{
-    data:{ labels, datasets:[ barDataset('Prom. diario', promValues), lineEffDataset('% Efectividad', effValues) ] },
+    data:{
+      labels,
+      datasets:[
+        barDataset('Prom. diario', promValues),
+        lineEffDataset('% Efectividad', effValues)
+      ]
+    },
     options:{
-      responsive:true, plugins:{ legend:{display:true} },
+      responsive:true,
+      plugins:{ legend:{display:true} },
       scales:{
         x:{ ticks:{autoSkip:false,maxRotation:0} },
         y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
@@ -1048,11 +1128,12 @@ function renderByLocation(){
     const o=byLoc.get(c)||{num:0,den:0};
     o.num += tareasFlujo(r,f); o.den += (r.dias_activos||0); byLoc.set(c,o);
 
-    if(r.efectividad!=='' && r.efectividad!=null){
+    if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
       const w=(r.correcciones_auditadas||0)||1;
       const e=effLoc.get(c)||{num:0,den:0};
       e.num += r.efectividad*w; e.den += w; effLoc.set(c,e);
     }
+
     const a = Number(r.antigüedad||0);
     if(!antig[c]) antig[c]={sum:0,n:0};
     if(Number.isFinite(a)){ antig[c].sum+=a; antig[c].n++; }
@@ -1068,17 +1149,25 @@ function renderByLocation(){
   const effData  = labels.map(c=>{ const e=effLoc.get(c)||{num:0,den:0}; return e.den? 100*e.num/e.den : null; });
 
   createOrUpdateChart('locCombinedChart',{
-    data:{ labels, datasets:[ barDataset('Prom. diario', promData), lineEffDataset('% Efectividad', effData) ] },
+    data:{
+      labels,
+      datasets:[
+        barDataset('Prom. diario', promData),
+        lineEffDataset('% Efectividad', effData)
+      ]
+    },
     options:{
       responsive:true,
       scales:{
         y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
         y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 },
         x:{ ticks:{ autoSkip:false } }
-      }, plugins:{ legend:{display:true} }
+      },
+      plugins:{ legend:{display:true} }
     }
   });
 
+  // Antigüedad tarjetas
   const list = labels.map(loc=>{
     const v=antig[loc]||{sum:0,n:0}; const avg=v.n? v.sum/v.n : 0;
     return [loc, avg];
@@ -1096,7 +1185,7 @@ function renderByLocation(){
 }
 
 /**********************
- * EXPORTS (idéntico a versión previa)
+ * EXPORTS (resumen)
  **********************/
 function getActiveSectionId(){
   const sec=[...document.querySelectorAll('.page-section')].find(s=>!s.classList.contains('hidden'));
@@ -1109,6 +1198,7 @@ function toCSV(headers, rows){
   const body = rows.map(r=> headers.map(h=>esc(r[h])).join(',')).join('\n');
   return head + '\n' + body;
 }
+
 async function exportSectionPNGs(){
   const id=getActiveSectionId();
   const canvases=[];
@@ -1117,213 +1207,59 @@ async function exportSectionPNGs(){
     const el=document.getElementById('ninebox-card');
     const canvas = await html2canvas(el,{scale:2});
     canvas.toBlob(b=>download('productividad-calidad.png',b));
-  }else if(id==='detalle'){ canvases.push(document.getElementById('tasksByUserChart'));
-  }else if(id==='lideres'){ canvases.push(document.getElementById('tasksByLeaderChart'));
-  }else if(id==='evolucion'){ canvases.push(document.getElementById('weeklyEvolutionChart'));
-  }else if(id==='ubicacion'){ canvases.push(document.getElementById('locCombinedChart')); }
-  canvases.forEach((c,i)=>{ if(!c) return; const url=c.toDataURL('image/png'); fetch(url).then(r=>r.blob()).then(b=>download(`${id}-chart${i+1}.png`, b)); });
+  }else if(id==='detalle'){
+    canvases.push(document.getElementById('tasksByUserChart'));
+  }else if(id==='lideres'){
+    canvases.push(document.getElementById('tasksByLeaderChart'));
+  }else if(id==='evolucion'){
+    canvases.push(document.getElementById('weeklyEvolutionChart'));
+  }else if(id==='ubicacion'){
+    canvases.push(document.getElementById('locCombinedChart'));
+  }
+  canvases.forEach((c,i)=>{
+    if(!c) return;
+    const url=c.toDataURL('image/png');
+    fetch(url).then(r=>r.blob()).then(b=>download(`${id}-chart${i+1}.png`, b));
+  });
 }
+
 async function exportSectionCSV(){
-  const id=getActiveSectionId(); const f=flujoSel();
+  const id=getActiveSectionId();
+  const f=flujoSel();
+
   if(id==='resumen'){
-    const demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
-    const enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
+    let demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
+    let enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
+    if(f==='demanda'){ enh=0; }
+    if(f==='enhancement'){ demand=0; }
     const tot = demand+enh;
     const rows1 = [
       { Flujo:'Demanda', Total:demand, Porcentaje: tot? (demand/tot) : 0 },
       { Flujo:'Enhancement', Total:enh, Porcentaje: tot? (enh/tot) : 0 }
     ];
-    download('resumen_demanda_enhancement.csv', new Blob([toCSV(['Flujo','Total','Porcentaje'], rows1)],{type:'text/csv;charset=utf-8'}));
+    const csv1 = toCSV(['Flujo','Total','Porcentaje'], rows1);
+    download('resumen_demanda_enhancement.csv', new Blob([csv1],{type:'text/csv;charset=utf-8'}));
+  }else if(id==='detalle'){
+    // …
+  }
+}
 
-    const nb = buildNineboxData(f);
-    const headers=['Caja','Usuarios','Conteo'];
-    const rows=[]; Object.entries(nb.buckets).forEach(([k,arr])=> rows.push({Caja:k,Usuarios:arr.join(' | '),Conteo:arr.length}));
-    download('resumen_productividad_calidad.csv', new Blob([toCSV(headers, rows)],{type:'text/csv;charset=utf-8'}));
-    if(nb.missing.length){
-      const rowsM = nb.missing.map(m=>({Usuario:m.u, Promedio_Diario:(m.prom==null?'':m.prom), Efectividad:(m.eff==null?'':m.eff)}));
-      download('resumen_productividad_calidad_faltantes.csv', new Blob([toCSV(['Usuario','Promedio_Diario','Efectividad'], rowsM)],{type:'text/csv;charset=utf-8'}));
-    }
-  }else if(id==='detalle'){
-    const data = buildUsersPromEff(f);
-    download('detalle_por_usuario.csv', new Blob([toCSV(['Usuario','Promedio_Diario','Efectividad'], data.map(d=>({Usuario:d.user,Promedio_Diario:d.prom,Efectividad:d.eff})))],{type:'text/csv;charset=utf-8'}));
-  }else if(id==='lideres'){
-    const data = buildLideresData(f);
-    download('comparativa_equipo.csv', new Blob([toCSV(['Lider','Promedio_Diario','Efectividad'], data.map(d=>({Lider:d.lider,Promedio_Diario:d.prom,Efectividad:d.eff})))],{type:'text/csv;charset=utf-8'}));
-  }else if(id==='evolucion'){
-    const series = buildEvolucionData(f);
-    const rows = series.labels.map((lab,i)=>({Semana:lab, Promedio_Diario:series.values[i], Efectividad:series.eff[i]}));
-    download('evolucion_promedio_y_efectividad.csv', new Blob([toCSV(['Semana','Promedio_Diario','Efectividad'], rows)],{type:'text/csv;charset=utf-8'}));
-  }else if(id==='ubicacion'){
-    const data = buildUbicacionData(f);
-    const rows = data.labels.map((lab,i)=>({Ubicacion:lab, Promedio_Diario:data.prom[i], Efectividad:data.eff[i]}));
-    download('ubicacion_prom_y_efectividad.csv', new Blob([toCSV(['Ubicacion','Promedio_Diario','Efectividad'], rows)],{type:'text/csv;charset=utf-8'}));
-    const rows2 = data.antig.map(([loc,avg])=>({Ubicacion:loc, Antiguedad_Promedio:avg}));
-    download('ubicacion_antiguedad.csv', new Blob([toCSV(['Ubicacion','Antiguedad_Promedio'], rows2)],{type:'text/csv;charset=utf-8'}));
-  }
-}
-async function exportSectionZIP(){
-  const id=getActiveSectionId(); const f=flujoSel(); const zip=new JSZip();
-  const addCSV=(name,headers,rows)=> zip.file(name,toCSV(headers,rows));
-  if(id==='resumen'){
-    const demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
-    const enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
-    const tot = demand+enh;
-    addCSV('resumen_demanda_enhancement.csv',['Flujo','Total','Porcentaje'],[{Flujo:'Demanda',Total:demand,Porcentaje:tot?demand/tot:0},{Flujo:'Enhancement',Total:enh,Porcentaje:tot?enh/tot:0}]);
-    const nb = buildNineboxData(f);
-    const rows=[]; Object.entries(nb.buckets).forEach(([k,arr])=> rows.push({Caja:k,Usuarios:arr.join(' | '),Conteo:arr.length}));
-    addCSV('resumen_productividad_calidad.csv',['Caja','Usuarios','Conteo'],rows);
-    if(nb.missing.length){
-      addCSV('resumen_productividad_calidad_faltantes.csv',['Usuario','Promedio_Diario','Efectividad'],
-        nb.missing.map(m=>({Usuario:m.u,Promedio_Diario:(m.prom==null?'':m.prom),Efectividad:(m.eff==null?'':m.eff)})));
-    }
-    const el=document.getElementById('ninebox-card'); const canvas = await html2canvas(el,{scale:2}); const blobNb = await new Promise(res=>canvas.toBlob(res));
-    zip.file('productividad-calidad.png', blobNb);
-    const c1=document.getElementById('demandPieChart'); const b1=await (await fetch(c1.toDataURL('image/png'))).blob();
-    zip.file('demanda_enhancement.png', b1);
-  }else if(id==='detalle'){
-    const data = buildUsersPromEff(f);
-    addCSV('detalle_por_usuario.csv',['Usuario','Promedio_Diario','Efectividad'], data.map(d=>({Usuario:d.user,Promedio_Diario:d.prom,Efectividad:d.eff})));
-    const c1=document.getElementById('tasksByUserChart'); const b1=await (await fetch(c1.toDataURL('image/png'))).blob();
-    zip.file('detalle_prom_efectividad.png', b1);
-  }else if(id==='lideres'){
-    const data = buildLideresData(f);
-    addCSV('comparativa_equipo.csv',['Lider','Promedio_Diario','Efectividad'], data.map(d=>({Lider:d.lider,Promedio_Diario:d.prom,Efectividad:d.eff})));
-    const c=document.getElementById('tasksByLeaderChart'); const b=await (await fetch(c.toDataURL('image/png'))).blob();
-    zip.file('comparativa_equipo.png', b);
-  }else if(id==='evolucion'){
-    const series=buildEvolucionData(f);
-    addCSV('evolucion_promedio_y_efectividad.csv',['Semana','Promedio_Diario','Efectividad'], series.labels.map((lab,i)=>({Semana:lab,Promedio_Diario:series.values[i],Efectividad:series.eff[i]})));
-    const c=document.getElementById('weeklyEvolutionChart'); const b=await (await fetch(c.toDataURL('image/png'))).blob();
-    zip.file('evolucion.png', b);
-  }else if(id==='ubicacion'){
-    const data=buildUbicacionData(f);
-    addCSV('ubicacion_prom_y_efectividad.csv',['Ubicacion','Promedio_Diario','Efectividad'], data.labels.map((lab,i)=>({Ubicacion:lab,Promedio_Diario:data.prom[i],Efectividad:data.eff[i]})));
-    addCSV('ubicacion_antiguedad.csv',['Ubicacion','Antiguedad_Promedio'], data.antig.map(([loc,avg])=>({Ubicacion:loc,Antiguedad_Promedio:avg})));
-    const c=document.getElementById('locCombinedChart'); const b=await (await fetch(c.toDataURL('image/png'))).blob();
-    zip.file('ubicacion.png', b);
-  }
-  const blob = await zip.generateAsync({type:'blob'}); download(`export_${id}.zip`, blob);
-}
+async function exportSectionZIP(){ /* opcional: igual que antes si lo usás */ }
 
 /**********************
- * Helpers para export builders
- **********************/
-function buildNineboxData(f) {
-  const map = new Map();
-  currentData.forEach(r=>{
-    const u=r.usuario; const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
-    const t = (f==='demanda') ? (r.tareas_demanda||0) : (f==='enhancement') ? (r.tareas_enhancement||0) : (r.total_tareas||0);
-    o.num += t; o.den += (r.dias_activos||0);
-    if(r.efectividad!=='' && r.efectividad!=null){ o.effSum+=r.efectividad; o.effN++; }
-    map.set(u,o);
-  });
-  const prodBand = p => (p>=80 ? 'Alta' : p>=70 ? 'Media' : 'Baja');
-  const calBand  = e => (e>=0.90 ? 'Alta' : e>=0.75 ? 'Media' : 'Baja');
-  const buckets = {
-    "Prod Alta / Cal Alta":[], "Prod Alta / Cal Media":[], "Prod Alta / Cal Baja":[],
-    "Prod Media / Cal Alta":[], "Prod Media / Cal Media":[], "Prod Media / Cal Baja":[],
-    "Prod Baja / Cal Alta":[], "Prod Baja / Cal Media":[], "Prod Baja / Cal Baja":[]
-  };
-  const missing=[];
-  Array.from(map.entries()).forEach(([u,o])=>{
-    const prom = o.den? o.num/o.den : null;
-    const eff  = o.effN? o.effSum/o.effN : null;
-    if(prom==null || eff==null){ missing.push({u, prom, eff}); return; }
-    const caja = `Prod ${prodBand(prom)} / Cal ${calBand(eff)}`;
-    buckets[caja].push(u);
-  });
-  return { buckets, missing };
-}
-function buildUsersPromEff(f){
-  const agg = new Map();
-  currentData.forEach(r=>{
-    const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
-    const t = (f==='demanda') ? (r.tareas_demanda||0) : (f==='enhancement') ? (r.tareas_enhancement||0) : (r.total_tareas||0);
-    o.num += t; o.den += (r.dias_activos||0);
-    if(r.efectividad!=='' && r.efectividad!=null){
-      const w=(r.correcciones_auditadas||0)||1;
-      o.effNum += r.efectividad*w; o.effDen += w;
-    }
-    agg.set(u,o);
-  });
-  return Array.from(agg.entries()).map(([user,o])=>({ user, prom:(o.den? o.num/o.den : 0), eff:(o.effDen? o.effNum/o.effDen : null) })).sort((a,b)=>b.prom-a.prom);
-}
-function buildLideresData(f){
-  const agg = new Map();
-  currentData.forEach(r=>{
-    const l=r['líder']||'Sin líder';
-    const o=agg.get(l)||{num:0,den:0,effNum:0,effDen:0};
-    const t = (f==='demanda') ? (r.tareas_demanda||0) : (f==='enhancement') ? (r.tareas_enhancement||0) : (r.total_tareas||0);
-    o.num+=t; o.den+=(r.dias_activos||0);
-    if(r.efectividad!=='' && r.efectividad!=null){
-      const w=(r.correcciones_auditadas||0)||1;
-      o.effNum+=r.efectividad*w; o.effDen+=w;
-    }
-    agg.set(l,o);
-  });
-  return Array.from(agg.entries()).map(([lider,o])=>({ lider, prom:(o.den? o.num/o.den : 0), eff:(o.effDen? o.effNum/o.effDen : null) })).sort((a,b)=>b.prom-a.prom);
-}
-function buildEvolucionData(f){
-  const agg = new Map();
-  currentData.forEach(r=>{
-    const w=Number(r.week); if(!Number.isFinite(w)) return;
-    const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
-    const t=(f==='demanda') ? (r.tareas_demanda||0) : (f==='enhancement') ? (r.tareas_enhancement||0) : (r.total_tareas||0);
-    o.num+=t; o.den+=(r.dias_activos||0);
-    if(r.efectividad!=='' && r.efectividad!=null){
-      const wgt=(r.correcciones_auditadas||0)||1;
-      o.effNum+=r.efectividad*wgt; o.effDen+=wgt;
-    }
-    agg.set(w,o);
-  });
-  const weeks=Array.from(agg.keys());
-  const minW=Math.min(...weeks), maxW=Math.max(...weeks);
-  const labels=[], values=[], eff=[];
-  for(let w=minW; w<=maxW; w++){
-    const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
-    labels.push('W'+String(w).padStart(2,'0'));
-    values.push(o.den? o.num/o.den : 0);
-    eff.push(o.effDen? 100*o.effNum/o.effDen : null);
-  }
-  return { labels, values, eff };
-}
-function buildUbicacionData(f){
-  const byLoc = new Map(); const effLoc = new Map(); const antig = {};
-  currentData.forEach(r=>{
-    const c=r.ciudad||'Sin ubicación';
-    const o=byLoc.get(c)||{num:0,den:0};
-    const t=(f==='demanda') ? (r.tareas_demanda||0) : (f==='enhancement') ? (r.tareas_enhancement||0) : (r.total_tareas||0);
-    o.num+=t; o.den+=(r.dias_activos||0); byLoc.set(c,o);
-    if(r.efectividad!=='' && r.efectividad!=null){
-      const w=(r.correcciones_auditadas||0)||1;
-      const e=effLoc.get(c)||{num:0,den:0};
-      e.num+=r.efectividad*w; e.den+=w; effLoc.set(c,e);
-    }
-    const a = Number(r.antigüedad||0);
-    if(!antig[c]) antig[c]={sum:0,n:0};
-    if(Number.isFinite(a)){ antig[c].sum+=a; antig[c].n++; }
-  });
-  const labels = Array.from(byLoc.keys()).sort();
-  const prom = labels.map(c=>{ const o=byLoc.get(c)||{num:0,den:0}; return o.den? o.num/o.den : 0; });
-  const eff = labels.map(c=>{ const e=effLoc.get(c)||{num:0,den:0}; return e.den? 100*e.num/e.den : null; });
-  const antigList = labels.map(c=>{ const v=antig[c]||{sum:0,n:0}; return [c, v.n? v.sum/v.n : 0]; });
-  return { labels, prom, eff, antig: antigList };
-}
-
-/**********************
- * GEMINI (prompts actualizados, salida HTML)
+ * GEMINI (prompts actualizados)
  **********************/
 function filtersSummary() {
-  const arr = {
-    Trimestre: UI.q.get(),
-    Mes: UI.mes.get(),
-    Semana: UI.semana.get(),
-    Ubicacion: UI.ubic.get(),
-    Lider: UI.lider.get(),
-    Usuario: UI.usuario.get(),
-    Flujo: UI.flujo.get()
+  const f = state.filtros;
+  return {
+    Trimestre: f.q.join(' | ') || '',
+    Mes: f.mes.join(' | ') || '',
+    Semana: f.semana.join(' | ') || '',
+    Ubicacion: f.ubic.join(' | ') || '',
+    Lider: f.lider.join(' | ') || '',
+    Usuario: f.usuario.join(' | ') || '',
+    Flujo: f.flujo[0] || 'mixto'
   };
-  return arr;
 }
 function buildNineboxPrompt(){
   const f=flujoSel();
@@ -1383,6 +1319,7 @@ ${distribucion_ninebox}
 • Cada acción debe incluir responsable y plazo
 • No inventes datos. Sé empático y específico`;
 }
+
 function buildGlobalInsightsPrompt(){
   const f=flujoSel();
   const filtros_activos = JSON.stringify(filtersSummary());
@@ -1446,18 +1383,26 @@ async function geminiRequest(prompt) {
   }
   throw lastErr || new Error('Gemini request failed');
 }
+
 function setupGeminiFeatures(){
   document.getElementById('generate-summary-btn').addEventListener('click', async ()=>{
     const block = document.getElementById('ninebox-missing');
-    block.classList.remove('hidden'); block.innerHTML='Generando…';
-    try{ const resp = await geminiRequest(buildNineboxPrompt()); block.innerHTML = resp; }
-    catch(e){ block.textContent = e.message; }
+    block.classList.remove('hidden');
+    block.innerHTML = 'Generando…';
+    try{
+      const resp = await geminiRequest(buildNineboxPrompt());
+      block.innerHTML = resp; // enriquecido
+    }catch(e){ block.textContent = e.message; }
   });
+
   document.getElementById('generate-insights-btn').addEventListener('click', async ()=>{
     const out = document.getElementById('insights-output');
-    out.classList.remove('hidden'); out.innerHTML='Analizando…';
-    try{ const resp = await geminiRequest(buildGlobalInsightsPrompt()); out.innerHTML = resp; }
-    catch(e){ out.textContent = e.message; }
+    out.classList.remove('hidden');
+    out.innerHTML = 'Analizando…';
+    try{
+      const resp = await geminiRequest(buildGlobalInsightsPrompt());
+      out.innerHTML = resp; // enriquecido
+    }catch(e){ out.textContent = e.message; }
   });
 }
 
@@ -1479,7 +1424,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 
     originalData = buildWeeklyRows(prod, cal, base, lids);
 
-    setupFilters();
+    renderFiltersBar();
     setupNavigation();
     setupGeminiFeatures();
 
