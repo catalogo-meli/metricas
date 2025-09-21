@@ -20,7 +20,7 @@
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <!-- Montserrat -->
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
   :root{
@@ -118,10 +118,21 @@
   html.dark .nb-red{background:#3f0d12;color:#fecaca;border-color:#b91c1c}
   .nb-cell[data-bucket]{cursor:pointer}
 
-  /* KPI numbers */
-  .kpi-title{color:var(--muted);font-weight:600}
-  .kpi-number{font-size:2.75rem;font-weight:800;line-height:1.1}
-  /* color helpers applied by JS */
+  /* KPI text */
+  .kpi-title{color:var(--muted);font-weight:700;letter-spacing:.2px}
+  /* ——— Ajuste tipográfico para que no “salte” ni sobresalga ——— */
+  .kpi-number{
+    display:block;
+    font-weight:800;
+    line-height:1.05;
+    font-variant-numeric: tabular-nums;
+    letter-spacing:.5px;
+    white-space:nowrap;           /* nunca salta de línea */
+    overflow:hidden;              /* evita desbordes feos */
+    text-overflow:ellipsis;
+    /* Tamaño adaptativo controlado */
+    font-size:clamp(1.85rem, 2.1vw, 2.25rem);
+  }
   .t-ok{color:var(--ok)}
   .t-warn{color:var(--warn)}
   .t-bad{color:var(--bad)}
@@ -414,7 +425,6 @@ function applyThemeToCharts(){
   BAR_BG = hexToRgba(getCss('--c2'), .45);
   Object.values(charts).forEach(ch=>{
     if(!ch) return;
-    // recolor datasets
     ch.data.datasets.forEach(ds=>{
       if(ds.type==='line'){
         ds.borderColor = LINE_ACC;
@@ -429,7 +439,6 @@ function applyThemeToCharts(){
         ds.borderColor = getCss('--bg');
       }
     });
-    // recolor scales
     if(ch.options && ch.options.scales){
       for(const k of Object.keys(ch.options.scales)){
         const sc = ch.options.scales[k];
@@ -439,7 +448,6 @@ function applyThemeToCharts(){
         sc.grid.color = grid;
       }
     }
-    // legend
     if(ch.options && ch.options.plugins && ch.options.plugins.legend && ch.options.plugins.legend.labels){
       ch.options.plugins.legend.labels.color = getCss('--chart-legend');
     }
@@ -711,7 +719,6 @@ function renderFiltersBar(){
     const list = menu.querySelector('.list');
     const search = menu.querySelector('.search');
 
-    // Construir items
     function buildList(){
       list.innerHTML = '';
       const values = opts[key].filter(v => String(v).toLowerCase().includes(search.value.trim().toLowerCase()));
@@ -730,12 +737,11 @@ function renderFiltersBar(){
     }
     buildList();
 
-    // Interacción
     pill.addEventListener('click', (e)=>{
       const inside = pill.contains(e.target);
       if(!inside) return;
       const isControl = e.target.closest('.menu');
-      if(isControl) return; // ya está abierto
+      if(isControl) return;
       const isChevOrLabel = e.target.closest('.label') || e.target.classList.contains('chev') || e.target===pill;
       if(isChevOrLabel){
         const open = menu.classList.contains('open');
@@ -746,8 +752,7 @@ function renderFiltersBar(){
 
     search.addEventListener('input', buildList);
 
-    // change handler
-    menu.addEventListener('change', (e)=>{
+    menu.addEventListener('change', ()=>{
       const inputs = menu.querySelectorAll('.opt');
       if(key==='flujo'){
         const v = Array.from(inputs).find(i=>i.checked)?.value || 'mixto';
@@ -760,18 +765,16 @@ function renderFiltersBar(){
       applyFilters();
     });
 
-    // limpiar individual
     menu.querySelector('.clear').addEventListener('click',(e)=>{
       e.stopPropagation();
       if(key==='flujo'){ state.filtros.flujo=['mixto']; }
       else state.filtros[key]=[];
       pill.querySelector('.label').textContent = pillSummary(key);
-      renderFiltersBar(); // re-render
+      renderFiltersBar();
       applyFilters();
     });
   });
 
-  // cerrar al click fuera
   document.addEventListener('click', (ev)=>{
     if(!bar.contains(ev.target)) closeAllMenus();
   }, { once:true });
@@ -799,7 +802,6 @@ function setupNavigation(){
     });
   });
 
-  // Export dropdown
   document.getElementById('btn-export').addEventListener('click', ()=>{
     document.getElementById('export-menu').classList.toggle('hidden');
   });
@@ -818,14 +820,12 @@ function setupNavigation(){
     });
   });
 
-  // Limpiar todos
   document.getElementById('btn-clear-filters').addEventListener('click', ()=>{
     state.filtros = { q:[], mes:[], semana:[], ubic:[], lider:[], usuario:[], flujo:['mixto'] };
     renderFiltersBar();
     applyFilters();
   });
 
-  // Theme toggle
   const saved = localStorage.getItem('theme') || 'light';
   setTheme(saved);
   document.getElementById('btn-theme').addEventListener('click', ()=>{
@@ -838,7 +838,6 @@ function setupNavigation(){
  * APLICAR FILTROS
  **********************/
 function applyFilters(){
-  // recalcular data filtrada
   const f = state.filtros;
   currentData = originalData.filter(r =>
     (f.mes.length===0    || f.mes.includes(r.mes)) &&
@@ -849,10 +848,8 @@ function applyFilters(){
     (f.q.length===0      || f.q.includes(r.q))
   );
 
-  // actualizar opciones dependientes
   renderFiltersBar();
 
-  // refrescar UI
   updateKPIs();
   renderNineBox();
   renderDemandPie();
@@ -899,7 +896,6 @@ function updateKPIs(){
   efEl.textContent   = fmt.pct(ef);
 }
 
-// KPIs a la derecha del gráfico en "Evolución Semanal"
 function updateEvolutionKPIs(){
   const f = flujoSel();
   const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
@@ -921,7 +917,6 @@ function updateEvolutionKPIs(){
   document.getElementById('evo-kpi-users').textContent = fmt.int(usuarios);
 }
 
-// KPIs a la derecha del gráfico en "Detalle por Usuario"
 function updateDetailKPIs(){
   const f = flujoSel();
   const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
@@ -1337,7 +1332,6 @@ function renderByLocation(){
     }
   });
 
-  // Antigüedad tarjetas
   const list = labels.map(loc=>{
     const v=antig[loc]||{sum:0,n:0}; const avg=v.n? v.sum/v.n : 0;
     return [loc, avg];
@@ -1410,7 +1404,6 @@ async function exportSectionCSV(){
     const csv1 = toCSV(['Flujo','Total','Porcentaje'], rows1);
     download('resumen_demanda_enhancement.csv', new Blob([csv1],{type:'text/csv;charset=utf-8'}));
   }else{
-    // exporta tabla base filtrada
     const headers = ['week','mes','usuario','líder','ciudad','antigüedad','promedio_diario','efectividad','tareas_demanda','tareas_enhancement','total_tareas','ids_trabajados','correcciones_auditadas','dias_activos','q'];
     const csv = toCSV(headers, currentData);
     download(`export_${id}.csv`, new Blob([csv],{type:'text/csv;charset=utf-8'}));
@@ -1432,7 +1425,6 @@ async function exportSectionToGoogleSheets(){
     meta:{ exportedAt: new Date().toISOString() }
   };
 
-  // Intento normal + fallback no-cors (por si el GAS no devuelve los headers CORS)
   try{
     const res = await fetch(GAS_SHEETS_URL,{
       method:'POST',
@@ -1508,21 +1500,16 @@ ${distribucion_ninebox}
 
 🛑 Importante:
 • Una alta concentración en “Prod Alta / Cal Alta” es positiva. No lo señales como problema.
-• No generes alertas si no hay perfiles en cuadrantes problemáticos.
-• Enfocá el análisis SOLO en cuadrantes con baja calidad: “Prod Alta / Cal Baja” y “Prod Baja / Cal Alta”.
+• Enfocá SOLO cuadrantes con baja calidad.
 
 🧩 Instrucciones:
-1. Listá 4 a 6 hallazgos RELEVANTES y accionables (sin suposiciones sin data).
-2. Proponé 3 acciones concretas solo para perfiles fuera de target (según la tabla LOW actual).
-   - Usá solo herramientas internas: BTC, feedback 1:1, checklist, acompañamiento individual, plan 3 semanas.
-3. En la sección de diferenciación, explicá qué harías si hubiera perfiles en:
-   - “Prod Alta / Cal Baja” → foco en aumentar calidad
-   - “Prod Baja / Cal Alta” → foco en aumentar productividad
+1. 4–6 hallazgos relevantes y accionables.
+2. 3 acciones concretas solo para perfiles fuera de target usando: BTC, feedback 1:1, checklist, acompañamiento individual, plan 3 semanas.
+3. Diferenciación:
+   - “Prod Alta / Cal Baja” → subir calidad
+   - “Prod Baja / Cal Alta” → subir productividad
 
-📝 Formato:
-• Bullets claros
-• Cada acción debe incluir responsable y plazo
-• No inventes datos. Sé empático y específico`;
+Formato: bullets, responsable y plazo, sin inventar datos.`;
 }
 
 function buildGlobalInsightsPrompt(){
@@ -1536,39 +1523,18 @@ function buildGlobalInsightsPrompt(){
 
   return `🔹 Prompt 2: *Análisis Global para Coordinación*
 
-Sos analista de mejora continua de Catálogo (Netkel). Buscás mantener una operación productiva sin sacrificar calidad (targets: PD ≥80, Efectividad ≥90%).
+Targets: PD ≥80, Efectividad ≥90%.
 
-📊 Filtros aplicados: ${filtros_activos}
-📌 Datos clave:
-• Usuarios activos: ${usuarios}
-• IDs trabajados: ${ids}
-• Prom. Diario: ${prom}
-• % Efectividad: ${ef}
+Filtros: ${filtros_activos}
+Usuarios activos: ${usuarios}
+IDs trabajados: ${ids}
+Promedio Diario: ${prom}
+% Efectividad: ${ef}
 
-🛑 Consideraciones:
-• Si la mayoría está on target, es positivo. No señales como problema.
-• No recomiendes revisar métricas o distribución si no hay señales claras.
-• Enfocá el análisis en:
-   - Casos recurrentes de baja calidad
-   - Perfiles en plan de trabajo (Low Grave / Low Moderado)
-   - Desvíos sostenidos <90%
-
-🧠 Qué necesito:
-1. Foto general en 4 bullets: qué va bien / qué podría mejorar (solo si hay data)
-2. Identificá perfiles LOW:
-   - Ocasionales: bajan 1 semana y recuperan
-   - Recurrentes: bajan sostenidamente
-3. Proponé 3–5 acciones reales usando solo:
-   - BTC con casos
-   - Feedback 1:1 por error frecuente
-   - Checklist personalizada
-   - Plan 3 semanas (según categoría)
-   - Acompañamiento individual
-
-📢 Formato:
-• Bullets concretos
-• Perfiles LOW → acción específica → plazo → responsable
-• Sin vaguedades`;
+Pedir:
+1) Foto general (4 bullets) — qué va bien / qué mejorar si hay evidencia.
+2) Perfiles LOW: ocasionales vs recurrentes.
+3) 3–5 acciones reales (BTC, 1:1 por error, checklist, plan 3 semanas, acompañamiento). Formato: perfil → acción → plazo → responsable.`;
 }
 
 async function geminiRequest(prompt) {
@@ -1595,7 +1561,7 @@ function setupGeminiFeatures(){
     block.innerHTML = 'Generando…';
     try{
       const resp = await geminiRequest(buildNineboxPrompt());
-      block.innerHTML = resp; // enriquecido
+      block.innerHTML = resp;
     }catch(e){ block.textContent = e.message; }
   });
 
@@ -1605,7 +1571,7 @@ function setupGeminiFeatures(){
     out.innerHTML = 'Analizando…';
     try{
       const resp = await geminiRequest(buildGlobalInsightsPrompt());
-      out.innerHTML = resp; // enriquecido
+      out.innerHTML = resp;
     }catch(e){ out.textContent = e.message; }
   });
 }
@@ -1633,7 +1599,6 @@ function toast(msg){
  **********************/
 document.addEventListener('DOMContentLoaded', async ()=>{
   try{
-    // Theme first (so initial paint uses right colors)
     const saved = localStorage.getItem('theme') || 'light';
     setTheme(saved);
 
