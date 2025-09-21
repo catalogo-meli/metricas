@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Catálogo · Dashboard de Métricas</title>
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Chart.js + date adapter -->
+  <!-- Chart.js + adapter fechas -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
   <!-- PapaParse -->
@@ -21,9 +21,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    body{font-family:'Montserrat',sans-serif}
-    .sidebar-link{transition:all .2s}
-    .sidebar-link:hover,.sidebar-link.active{background:#7a7a7a;color:#fff;transform:translateX(4px)}
+    body { font-family: 'Montserrat', sans-serif; }
+    .sidebar-link { transition: all .2s ease-in-out; }
+    .sidebar-link:hover, .sidebar-link.active { background-color:#7a7a7a; color:#fff; transform: translateX(4px); }
     .kpi-card{background:#fff;border-radius:.75rem;padding:1.25rem;box-shadow:0 4px 6px -1px rgb(0 0 0 / .1),0 2px 4px -2px rgb(0 0 0 / .1)}
     .chart-container{height:400px}
 
@@ -37,30 +37,47 @@
     .nb-red{background:#fee2e2}
     .nb-cell[data-bucket]{cursor:pointer}
 
-    /* Filtros en 1 fila (pills sin título) */
-    #filters-row{display:flex;gap:.5rem;overflow-x:auto;white-space:nowrap;padding-bottom:.25rem}
-    #filters-row::-webkit-scrollbar{height:8px}
-    #filters-row::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:9999px}
-    .filter-pill{background:#fff;border:1px solid #e2e8f0;border-radius:.75rem;padding:.6rem .8rem;display:inline-flex;align-items:center;gap:.5rem;min-width:190px;max-width:260px;box-shadow:0 1px 2px rgb(0 0 0 / .05);font-size:.95rem}
-    .filter-pill:hover{box-shadow:0 2px 6px rgb(0 0 0 / .07)}
-    .filter-value{color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
-    .caret{color:#64748b;font-size:.95rem}
-    .panel{position:absolute;z-index:50;top:110%;left:0;background:#fff;border:1px solid #e2e8f0;border-radius:.75rem;box-shadow:0 20px 50px rgba(2,12,27,.15);width:300px;max-height:18rem;display:none}
-    .panel.open{display:block}
-    .panel-header{position:sticky;top:0;background:#fff;border-bottom:1px solid #e2e8f0;padding:.6rem .75rem;display:flex;align-items:center;justify-content:space-between;font-size:.95rem}
-    .panel-body{padding:.45rem .45rem .7rem .45rem;max-height:14.5rem;overflow:auto}
-    .opt-row{display:flex;align-items:center;gap:.55rem;padding:.4rem .5rem;border-radius:.5rem}
-    .opt-row:hover{background:#f8fafc}
-    .opt-row input{width:1rem;height:1rem}
-    .filter-clear{color:#0ea5e9;font-weight:600}
+    /* Export dropdown (simple) */
+    .dropdown{position:relative;display:inline-block;}
+    .dropdown-menu{position:absolute;right:0;top:110%;background:#fff;border:1px solid #e2e8f0;border-radius:.75rem;box-shadow:0 20px 50px rgba(2,12,27,.15);min-width:260px;z-index:50}
+    .dropdown-menu a{display:block;padding:.6rem .8rem;font-size:.95rem;color:#334155}
+    .dropdown-menu a:hover{background:#f1f5f9}
+
+    /* --- Filtros: controles tipo "select" con dropdown de checkboxes --- */
+    #filters-grid { display:grid; grid-template-columns: repeat(1,minmax(0,1fr)); gap:1rem; }
+    @media (min-width:640px){ #filters-grid{ grid-template-columns: repeat(2,minmax(0,1fr)); } }
+    @media (min-width:1024px){ #filters-grid{ grid-template-columns: repeat(7,minmax(0,1fr)); } }
+
+    .filter-wrap{ position:relative; }
+    .filter-btn{
+      width:100%; background:#fff; border:1px solid #e2e8f0; border-radius:.75rem;
+      padding:.6rem .8rem; display:flex; align-items:center; justify-content:space-between;
+      box-shadow:0 1px 2px rgb(0 0 0 / .05); font-size:.95rem; color:#334155;
+    }
+    .filter-btn:hover{ box-shadow:0 2px 6px rgb(0 0 0 / .07); }
+    .filter-value{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .caret{ color:#64748b; margin-left:.5rem; font-size:.9rem; }
+
+    .filter-panel{
+      position:absolute; z-index:50; top:110%; left:0; right:0;
+      background:#fff; border:1px solid #e2e8f0; border-radius:.75rem;
+      box-shadow:0 20px 50px rgba(2,12,27,.15); display:none;
+    }
+    .filter-panel.open{ display:block; }
+    .fp-head{ position:sticky; top:0; background:#fff; border-bottom:1px solid #e2e8f0; padding:.55rem .75rem; display:flex; align-items:center; justify-content:space-between; font-size:.9rem; }
+    .fp-body{ padding:.45rem; max-height:16rem; overflow:auto; }
+    .opt-row{ display:flex; align-items:center; gap:.55rem; padding:.4rem .5rem; border-radius:.5rem; }
+    .opt-row:hover{ background:#f8fafc; }
+    .opt-row input{ width:1rem; height:1rem; }
+    .filter-clear{ color:#0ea5e9; font-weight:600; }
 
     /* IA enriquecido */
-    .ai-output p{margin-bottom:.75rem;line-height:1.5}
-    .ai-output ul{list-style:disc;margin-left:1.5rem;margin-bottom:1rem}
-    .ai-output table{width:100%;border-collapse:collapse;margin-top:1rem}
-    .ai-output th,.ai-output td{border:1px solid #cbd5e1;padding:.5rem;text-align:left}
-    .ai-output th{background:#f1f5f9}
-    .ai-output code{background:#f3f4f6;padding:.2rem .4rem;border-radius:4px}
+    .ai-output p { margin-bottom: 0.75rem; line-height: 1.5; }
+    .ai-output ul { list-style: disc; margin-left: 1.5rem; margin-bottom: 1rem; }
+    .ai-output table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    .ai-output th, .ai-output td { border: 1px solid #cbd5e1; padding: 0.5rem; text-align: left; }
+    .ai-output th { background-color: #f1f5f9; }
+    .ai-output code { background: #f3f4f6; padding: 0.2rem 0.4rem; border-radius: 4px; }
   </style>
 </head>
 
@@ -96,34 +113,52 @@
               Limpiar todos los filtros
             </button>
 
-            <div class="relative">
-              <button id="btn-export" class="px-3 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-sm">Exportar</button>
-              <div id="export-menu" class="panel right-0 left-auto w-64">
-                <div class="panel-body">
-                  <a href="#" data-exp="csv" class="block px-2 py-1.5 rounded hover:bg-slate-50">Exportar datos (CSV)</a>
-                  <a href="#" data-exp="sheets" class="block px-2 py-1.5 rounded hover:bg-slate-50">Exportar a Google Sheets</a>
-                  <a href="#" data-exp="png" class="block px-2 py-1.5 rounded hover:bg-slate-50">Exportar gráficos (PNG)</a>
-                  <a href="#" data-exp="zip" class="block px-2 py-1.5 rounded hover:bg-slate-50">Exportar sección (ZIP)</a>
-                </div>
+            <div class="dropdown">
+              <button id="btn-export" class="px-3 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-sm">
+                Exportar
+              </button>
+              <div id="export-menu" class="dropdown-menu hidden">
+                <a href="#" data-exp="csv">Exportar datos (CSV)</a>
+                <a href="#" data-exp="sheets">Exportar a Google Sheets</a>
+                <a href="#" data-exp="png">Exportar gráficos (PNG)</a>
+                <a href="#" data-exp="zip">Exportar sección (ZIP)</a>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Filtros -->
-        <div id="filters-row" class="mb-6 pr-2"></div>
+        <!-- Filtros (en una fila, sin títulos) -->
+        <div id="filters-grid" class="mb-8"></div>
 
         <!-- Secciones -->
         <div id="dashboard-content">
           <!-- Resumen -->
           <section id="resumen" class="page-section">
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-6 mb-6">
-              <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">Total Tareas</h3><p id="kpi-total-tareas" class="text-4xl font-bold mt-2"></p></div>
-              <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">IDs trabajados</h3><p id="kpi-ids" class="text-4xl font-bold mt-2"></p></div>
-              <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">Promedio Diario</h3><p id="kpi-promedio-diario" class="text-4xl font-bold mt-2"></p></div>
-              <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">% Efectividad</h3><p id="kpi-efectividad-prom" class="text-4xl font-bold mt-2"></p></div>
-              <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">Correcciones Auditadas</h3><p id="kpi-correcciones" class="text-4xl font-bold mt-2"></p></div>
-              <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">Usuarios Activos</h3><p id="kpi-usuarios" class="text-4xl font-bold mt-2"></p></div>
+              <div class="kpi-card text-center">
+                <h3 class="text-slate-500 font-medium">Total Tareas</h3>
+                <p id="kpi-total-tareas" class="text-4xl font-bold mt-2"></p>
+              </div>
+              <div class="kpi-card text-center">
+                <h3 class="text-slate-500 font-medium">IDs trabajados</h3>
+                <p id="kpi-ids" class="text-4xl font-bold mt-2"></p>
+              </div>
+              <div class="kpi-card text-center">
+                <h3 class="text-slate-500 font-medium">Promedio Diario</h3>
+                <p id="kpi-promedio-diario" class="text-4xl font-bold mt-2"></p>
+              </div>
+              <div class="kpi-card text-center">
+                <h3 class="text-slate-500 font-medium">% Efectividad</h3>
+                <p id="kpi-efectividad-prom" class="text-4xl font-bold mt-2"></p>
+              </div>
+              <div class="kpi-card text-center">
+                <h3 class="text-slate-500 font-medium">Correcciones Auditadas</h3>
+                <p id="kpi-correcciones" class="text-4xl font-bold mt-2"></p>
+              </div>
+              <div class="kpi-card text-center">
+                <h3 class="text-slate-500 font-medium">Usuarios Activos</h3>
+                <p id="kpi-usuarios" class="text-4xl font-bold mt-2"></p>
+              </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -161,9 +196,18 @@
                 <div class="chart-container"><canvas id="tasksByUserChart"></canvas></div>
               </div>
               <div class="grid grid-cols-1 gap-4">
-                <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">Promedio Diario</h3><p id="det-kpi-prom" class="text-4xl font-bold mt-2"></p></div>
-                <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">% Efectividad</h3><p id="det-kpi-ef" class="text-4xl font-bold mt-2"></p></div>
-                <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">IDs trabajados</h3><p id="det-kpi-ids" class="text-3xl font-bold mt-2"></p></div>
+                <div class="kpi-card text-center">
+                  <h3 class="text-slate-500 font-medium">Promedio Diario</h3>
+                  <p id="det-kpi-prom" class="text-4xl font-bold mt-2"></p>
+                </div>
+                <div class="kpi-card text-center">
+                  <h3 class="text-slate-500 font-medium">% Efectividad</h3>
+                  <p id="det-kpi-ef" class="text-4xl font-bold mt-2"></p>
+                </div>
+                <div class="kpi-card text-center">
+                  <h3 class="text-slate-500 font-medium">IDs trabajados</h3>
+                  <p id="det-kpi-ids" class="text-3xl font-bold mt-2"></p>
+                </div>
               </div>
             </div>
           </section>
@@ -184,10 +228,22 @@
                 <div class="chart-container"><canvas id="weeklyEvolutionChart"></canvas></div>
               </div>
               <div class="grid grid-cols-1 gap-4">
-                <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">Promedio Diario</h3><p id="evo-kpi-prom" class="text-4xl font-bold mt-2"></p></div>
-                <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">% Efectividad</h3><p id="evo-kpi-ef" class="text-4xl font-bold mt-2"></p></div>
-                <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">IDs trabajados</h3><p id="evo-kpi-ids" class="text-3xl font-bold mt-2"></p></div>
-                <div class="kpi-card text-center"><h3 class="text-slate-500 font-medium">Usuarios Activos</h3><p id="evo-kpi-users" class="text-3xl font-bold mt-2"></p></div>
+                <div class="kpi-card text-center">
+                  <h3 class="text-slate-500 font-medium">Promedio Diario</h3>
+                  <p id="evo-kpi-prom" class="text-4xl font-bold mt-2"></p>
+                </div>
+                <div class="kpi-card text-center">
+                  <h3 class="text-slate-500 font-medium">% Efectividad</h3>
+                  <p id="evo-kpi-ef" class="text-4xl font-bold mt-2"></p>
+                </div>
+                <div class="kpi-card text-center">
+                  <h3 class="text-slate-500 font-medium">IDs trabajados</h3>
+                  <p id="evo-kpi-ids" class="text-3xl font-bold mt-2"></p>
+                </div>
+                <div class="kpi-card text-center">
+                  <h3 class="text-slate-500 font-medium">Usuarios Activos</h3>
+                  <p id="evo-kpi-users" class="text-3xl font-bold mt-2"></p>
+                </div>
               </div>
             </div>
           </section>
@@ -223,7 +279,9 @@
   </div>
 
   <script>
-  /******** CONFIG ********/
+  /**********************
+   * CONFIG
+   **********************/
   const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
   const FILES = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
   const SHEETS_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxqTzxdY090fV2JWIFxiqAVnkre_dtUw1M09ZMv9mNKYz3GQW-d1ONSP_FIJTswZ9t2qA/exec";
@@ -239,33 +297,71 @@
   Chart.defaults.elements.point.borderWidth = 2;
   Chart.defaults.plugins.legend.labels.usePointStyle = true;
 
-  /******** HELPERS ********/
+  /**********************
+   * HELPERS
+   **********************/
   const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   const Q_OF_MONTH_INDEX = m => 'Q' + (Math.floor(m/3)+1);
 
-  function ghURL(file){ const b=`?v=${Date.now()}`; return [`/metricas/${file}${b}`,`https://raw.githubusercontent.com/catalogo-meli/metricas/main/${file}${b}`] }
-  async function fetchCSVFile(file){ let r=await fetch(ghURL(file)[0],{cache:'no-store'}); if(!r.ok) r=await fetch(ghURL(file)[1],{cache:'no-store'}); if(!r.ok) throw new Error(`No pude cargar ${file}. HTTP ${r.status}`); return r.text(); }
-  function parseCSV(text){ const p=Papa.parse(text,{header:true,skipEmptyLines:true,delimitersToGuess:[',',';','\t','|']}); return p.data.map(row=>{const o={}; for(const [k,v] of Object.entries(row)) o[k]=normalizeValue(v); return o;}); }
-  function normalizeValue(v){ if(v==null) return v; if(typeof v!=='string') return v; const t=v.trim(); if(!t) return ''; if(t.endsWith('%')){const n=Number(t.replace('%','').replace(/\./g,'').replace(',','.')); return Number.isFinite(n)?n/100:t} if(/^-?\d{1,3}(\.\d{3})*,\d+$/.test(t)){const n=Number(t.replace(/\./g,'').replace(',','.')); return Number.isFinite(n)?n:t} if(/^-?\d+(\.\d+)?$/.test(t)){const n=Number(t); return Number.isFinite(n)?n:t} return t; }
-  function parseDateAny(val){ if(val==null||val==='') return null; if(typeof val==='number'){const ms=Math.round((val-25569)*86400*1000); const d=new Date(ms); return isNaN(d.getTime())?null:d;} const s=String(val).trim(); const m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/); if(m){const d=Number(m[1]),mo=Number(m[2])-1,y=Number(m[3].length===2?'20'+m[3]:m[3]); const dt=new Date(y,mo,d); return isNaN(dt.getTime())?null:dt;} const dt=new Date(s); return isNaN(dt.getTime())?null:dt;}
+  function ghURL(file){
+    const bust = `?v=${Date.now()}`;
+    return [ `/metricas/${file}${bust}`, `https://raw.githubusercontent.com/catalogo-meli/metricas/main/${file}${bust}` ];
+  }
+  async function fetchCSVFile(file){
+    const [u1,u2] = ghURL(file);
+    let r = await fetch(u1,{cache:'no-store'});
+    if(!r.ok) r = await fetch(u2,{cache:'no-store'});
+    if(!r.ok) throw new Error(`No pude cargar ${file}. HTTP ${r.status}`);
+    return r.text();
+  }
+  function parseCSV(text){
+    const parsed = Papa.parse(text,{ header:true, skipEmptyLines:true, delimitersToGuess:[',',';','\t','|'] });
+    return parsed.data.map(row=>{ const out={}; for(const [k,v] of Object.entries(row)) out[k]=normalizeValue(v); return out; });
+  }
+  function normalizeValue(v){
+    if(v===null||v===undefined) return v;
+    if(typeof v!=='string') return v;
+    const t=v.trim(); if(!t) return '';
+    if(t.endsWith('%')){ const n=Number(t.replace('%','').replace(/\./g,'').replace(',','.')); return Number.isFinite(n)? n/100 : t; }
+    if(/^-?\d{1,3}(\.\d{3})*,\d+$/.test(t)){ const n=Number(t.replace(/\./g,'').replace(',','.')); return Number.isFinite(n)? n : t; }
+    if(/^-?\d+(\.\d+)?$/.test(t)){ const n=Number(t); return Number.isFinite(n)? n : t; }
+    return t;
+  }
+  function parseDateAny(val){
+    if(val===null||val===undefined||val==='') return null;
+    if(typeof val==='number'){ const ms=Math.round((val-25569)*86400*1000); const d=new Date(ms); return isNaN(d.getTime())? null : d; }
+    const s=String(val).trim(); const m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+    if(m){ const d=Number(m[1]), mo=Number(m[2])-1, y=Number(m[3].length===2?'20'+m[3]:m[3]); const dt=new Date(y,mo,d); return isNaN(dt.getTime())? null : dt; }
+    const dt=new Date(s); return isNaN(dt.getTime())? null : dt;
+  }
   function pick(row,needles){ const keys=Object.keys(row); for(const n of needles){ const k=keys.find(k=>k.toLowerCase().includes(n)); if(k) return row[k]; } }
   function correoAUsuario(mail){ if(!mail) return ''; return String(mail).toLowerCase().replace(/\s/g,'').replace(/@mercadolibre\.com/i,''); }
 
-  const fmt={ int:n=>(n??0).toLocaleString('es-AR'), pct:x=>(x??0).toLocaleString('es-AR',{style:'percent',minimumFractionDigits:2,maximumFractionDigits:2}), dec:x=>(x??0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) };
+  const fmt = {
+    int: n => (n ?? 0).toLocaleString('es-AR'),
+    pct: x => (x ?? 0).toLocaleString('es-AR',{style:'percent',minimumFractionDigits:2,maximumFractionDigits:2}),
+    dec: x => (x ?? 0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})
+  };
 
-  // Flujo multi
+  // Flujo helpers (multi selección con "mixto")
   function tareasPorFlujos(r, flows){
     if(flows.has('mixto') || flows.size===0) return (r.total_tareas||0);
-    let s=0; if(flows.has('demanda')) s+=(r.tareas_demanda||0); if(flows.has('enhancement')) s+=(r.tareas_enhancement||0); return s;
+    let s=0; if(flows.has('demanda')) s+=(r.tareas_demanda||0); if(flows.has('enhancement')) s+=(r.tareas_enhancement||0);
+    return s;
   }
   function promedioDiario(rows, flows){
-    const den=rows.reduce((a,r)=>a+(r.dias_activos||0),0);
-    const num=rows.reduce((a,r)=>a+tareasPorFlujos(r,flows),0);
-    return den? num/den : 0;
+    const den = rows.reduce((a,r)=>a+(r.dias_activos||0),0);
+    const num = rows.reduce((a,r)=>a+tareasPorFlujos(r,flows),0);
+    return den ? num/den : 0;
   }
-  function setColor(el,color){ el.classList.remove('text-red-600','text-yellow-500','text-green-600','text-orange-500'); if(color) el.classList.add(color); }
+  function setColor(el, color){
+    el.classList.remove('text-red-600','text-yellow-500','text-green-600','text-orange-500');
+    if(color) el.classList.add(color);
+  }
 
-  /******** CONSOLIDADO ********/
+  /**********************
+   * CONSOLIDADO
+   **********************/
   function buildWeeklyRows(prod, cal, base, lideres){
     const P = prod.map(r=>({
       fecha: parseDateAny(pick(r,['fecha'])),
@@ -293,7 +389,8 @@
 
     const liderPorUser = new Map();
     lideres.forEach(r=>{
-      const user = correoAUsuario(pick(r,['usuario','user'])); let lider = pick(r,['líder','lider']) || '';
+      const user = correoAUsuario(pick(r,['usuario','user']));
+      let lider  = pick(r,['líder','lider']) || '';
       if(String(lider||'').toLowerCase()==='sin líder') return;
       if(user) liderPorUser.set(user, lider);
     });
@@ -301,25 +398,33 @@
     const weeks = new Map();
     for(const r of P){
       const y=r.fecha.getFullYear(), m=r.fecha.getMonth();
-      const key=`${r.user}|${r.week}|${y}-${String(m+1).padStart(2,'0')}`;
+      const ym=`${y}-${String(m+1).padStart(2,'0')}`;
+      const key=`${r.user}|${r.week}|${ym}`;
       if(!weeks.has(key)){
-        const perf=perfiles.get(r.user)||{}; const ingreso=perf.ingreso,hoy=new Date();
-        const finAnt=(ingreso&&ingreso<=hoy)?hoy:ingreso||hoy;
+        const perf = perfiles.get(r.user)||{};
+        const ingreso = perf.ingreso, hoy=new Date();
+        const finAnt = (ingreso && ingreso<=hoy)? hoy : ingreso || hoy;
         const antig = ingreso ? Math.max(0,(finAnt.getFullYear()-ingreso.getFullYear())*12+(finAnt.getMonth()-ingreso.getMonth())) : '';
-        weeks.set(key,{week:r.week, mes:MONTHS_ES[m], mesIndex:m, user:r.user, lider:liderPorUser.get(r.user)||'Sin líder', ciudad:perf.ciudad||'', antig, dias:new Set(), demand:0, enh:0, total:0, idsWork:0, idsCal:0, errCal:0});
+        weeks.set(key,{
+          week:r.week, mes:MONTHS_ES[m], mesIndex:m,
+          user:r.user, líder:liderPorUser.get(r.user)||'Sin líder',
+          ciudad:perf.ciudad||'', antig,
+          dias:new Set(), demand:0, enh:0, total:0, idsWork:0, idsCal:0, errCal:0
+        });
       }
       const o=weeks.get(key);
       o.demand+=r.dem; o.enh+=r.enh; o.total+=r.total; o.idsWork+=r.idsW;
-      const dKey=`${r.fecha.getFullYear()}-${String(r.fecha.getMonth()+1).padStart(2,'0')}-${String(r.fecha.getDate()).padStart(2,'0')}`;
+      const dKey = `${r.fecha.getFullYear()}-${String(r.fecha.getMonth()+1).padStart(2,'0')}-${String(r.fecha.getDate()).padStart(2,'0')}`;
       o.dias.add(dKey);
     }
 
     for(const r of C){
-      const pref=`${r.user}|${r.week}|`;
+      const pref = `${r.user}|${r.week}|`;
       for(const key of weeks.keys()){
         if(key.startsWith(pref)){
-          const o=weeks.get(key);
-          o.idsCal+=r.idsC; o.errCal+=r.err;
+          const o = weeks.get(key);
+          o.idsCal += r.idsC;
+          o.errCal += r.err;
         }
       }
     }
@@ -328,8 +433,8 @@
       const prom = o.dias.size ? (o.total/o.dias.size) : '';
       const pEf  = o.idsCal>0 ? (1 - (o.errCal/o.idsCal)) : '';
       return {
-        week:o.week, mes:o.mes, mesIndex:o.mesIndex, usuario:o.user, 'líder':o.lider, ciudad:o.ciudad, antigüedad:o.antig,
-        promedio_diario:prom, efectividad:pEf,
+        week:o.week, mes:o.mes, mesIndex:o.mesIndex, usuario:o.user, líder:o.lider, ciudad:o.ciudad, antigüedad:o.antig,
+        promedio_diario: prom, efectividad:pEf,
         tareas_demanda:o.demand, tareas_enhancement:o.enh, total_tareas:o.total,
         ids_trabajados:o.idsWork, correcciones_auditadas:o.idsCal, dias_activos:o.dias.size,
         q: Q_OF_MONTH_INDEX(o.mesIndex)
@@ -338,15 +443,23 @@
     return rows;
   }
 
-  /******** ESTADO ********/
-  let originalData=[], currentData=[];
-  const charts={}; let nineboxDetailsData={};
+  /**********************
+   * ESTADO GLOBAL
+   **********************/
+  let originalData = [];
+  let currentData  = [];
+  const charts = {};
+  let nineboxDetailsData = {};
+
+  // Estado de filtros (multi selección con Set)
   const state = {
     q:new Set(), mes:new Set(), semana:new Set(), ubic:new Set(), lider:new Set(), usuario:new Set(),
     flujo:new Set(['mixto']) // default
   };
 
-  /******** UI FILTROS (pills) ********/
+  /**********************
+   * FILTROS UI
+   **********************/
   const filtersDef = [
     {key:'q',      placeholder:'Todos los trimestres'},
     {key:'mes',    placeholder:'Todos los meses'},
@@ -357,9 +470,12 @@
     {key:'flujo',  placeholder:'mixto'}
   ];
 
+  function uniqueSorted(arr){ return Array.from(new Set(arr)).sort(); }
+  function uniqueSortedNum(arr){ return Array.from(new Set(arr)).sort((a,b)=>a-b); }
+
   function renderOptions(key, values){
-    const opts=document.getElementById(`opts-${key}`); if(!opts) return;
-    opts.innerHTML='';
+    const cont=document.getElementById(`opts-${key}`); if(!cont) return;
+    cont.innerHTML='';
     (values||[]).forEach(v=>{
       const id=`${key}-${String(v).replace(/\s+/g,'_')}`;
       const row=document.createElement('label'); row.className='opt-row';
@@ -379,62 +495,56 @@
           if(cb.checked) state[key].add(String(v)); else state[key].delete(String(v));
         }
         refreshDependentFilters();
-        updateSummary(key);
+        updateFilterSummary(key);
         applyFilters();
       });
-      opts.appendChild(row);
+      cont.appendChild(row);
     });
   }
 
-  function createFilterDropdown({key,placeholder}, options){
-    const wrap=document.createElement('div'); wrap.className='relative inline-flex'; wrap.dataset.key=key;
-
-    const btn=document.createElement('button');
-    btn.className='filter-pill';
-    btn.innerHTML=`<span class="filter-value" id="sum-${key}">${placeholder}</span><span class="caret">▾</span>`;
-    wrap.appendChild(btn);
-
-    const panel=document.createElement('div'); panel.className='panel';
-    panel.innerHTML=`
-      <div class="panel-header">
-        <span class="text-slate-700 font-medium">${placeholder}</span>
+  function makeFilterControl(key, placeholder, values){
+    const wrap=document.createElement('div'); wrap.className='filter-wrap'; wrap.dataset.key=key;
+    const btn=document.createElement('button'); btn.type='button'; btn.className='filter-btn';
+    btn.innerHTML=`<span id="sum-${key}" class="filter-value">${placeholder}</span><span class="caret">▾</span>`;
+    const panel=document.createElement('div'); panel.className='filter-panel'; panel.innerHTML=`
+      <div class="fp-head">
+        <span class="text-slate-700">${placeholder}</span>
         <button class="filter-clear text-sm">Limpiar</button>
       </div>
-      <div class="panel-body" id="opts-${key}"></div>
+      <div class="fp-body" id="opts-${key}"></div>
     `;
-    wrap.appendChild(panel);
-
-    renderOptions(key, options);
+    wrap.appendChild(btn); wrap.appendChild(panel);
 
     btn.addEventListener('click',(e)=>{ e.stopPropagation(); closeAllPanels(); panel.classList.toggle('open'); });
     panel.querySelector('.filter-clear').addEventListener('click',(e)=>{
       e.preventDefault();
       if(key==='flujo'){ state.flujo=new Set(['mixto']); } else { state[key].clear(); }
-      refreshDependentFilters(); updateSummary(key); applyFilters();
+      refreshDependentFilters(); updateFilterSummary(key); applyFilters();
     });
 
+    renderOptions(key, values);
+    updateFilterSummary(key);
     return wrap;
   }
 
-  function updateSummary(key){
-    const sum=document.getElementById(`sum-${key}`); if(!sum) return;
+  function closeAllPanels(){ document.querySelectorAll('.filter-panel.open').forEach(p=>p.classList.remove('open')); }
+  document.addEventListener('click', (e)=>{ if(!e.target.closest('.filter-panel') && !e.target.closest('.filter-btn')) closeAllPanels(); });
+
+  function updateFilterSummary(key){
+    const el=document.getElementById(`sum-${key}`); if(!el) return;
     const set=state[key]; const def=filtersDef.find(f=>f.key===key)?.placeholder || 'Todos';
     if(key==='flujo'){
       const arr=[...set]; const txt = arr.length===0 ? 'mixto' : (arr.length===1?arr[0]:`${arr.length} seleccionados`);
-      sum.textContent=txt; sum.title=arr.length?arr.join(', '):'mixto'; return;
+      el.textContent=txt; el.title=arr.length?arr.join(', '):'mixto'; return;
     }
     const arr=[...set];
-    sum.textContent= arr.length===0 ? def : (arr.length===1 ? arr[0] : `${arr.length} seleccionados`);
-    sum.title= arr.length ? arr.join(', ') : def;
+    el.textContent = arr.length===0 ? def : (arr.length===1 ? arr[0] : `${arr.length} seleccionados`);
+    el.title = arr.length ? arr.join(', ') : def;
   }
 
-  function uniqueSorted(arr){ return Array.from(new Set(arr)).sort(); }
-  function uniqueSortedNum(arr){ return Array.from(new Set(arr)).sort((a,b)=>a-b); }
-  function closeAllPanels(){ document.querySelectorAll('.panel.open').forEach(p=>p.classList.remove('open')); }
-  document.addEventListener('click', (e)=>{ if(!e.target.closest('.panel') && !e.target.closest('.filter-pill')) closeAllPanels(); });
-
   function mountFilters(){
-    const row=document.getElementById('filters-row'); row.innerHTML='';
+    const grid=document.getElementById('filters-grid'); grid.innerHTML='';
+    // opciones base
     const meses   = MONTHS_ES.filter(m => originalData.some(r=>r.mes===m));
     const semanas = uniqueSortedNum(originalData.map(r=>r.week)).map(String);
     const ubic    = uniqueSorted(originalData.map(r=>r.ciudad).filter(Boolean));
@@ -443,19 +553,24 @@
     const qs      = ['Q1','Q2','Q3','Q4'].filter(q => originalData.some(r=>r.q===q));
     const defMap = { q:qs, mes:meses, semana:semanas, ubic:ubic, lider:lideres, usuario:usuarios, flujo:['mixto','demanda','enhancement'] };
 
-    filtersDef.forEach(def=>{
-      const el=createFilterDropdown(def, defMap[def.key]);
-      row.appendChild(el); updateSummary(def.key);
+    // Orden y creación
+    ['q','mes','semana','ubic','lider','usuario','flujo'].forEach(key=>{
+      const def = filtersDef.find(d=>d.key===key);
+      grid.appendChild( makeFilterControl(key, def.placeholder, defMap[key]) );
     });
 
-    // Export dropdown
-    const btnExp=document.getElementById('btn-export');
-    const menuExp=document.getElementById('export-menu');
-    btnExp.addEventListener('click',(e)=>{ e.stopPropagation(); menuExp.classList.toggle('open'); });
-    document.addEventListener('click',(e)=>{ if(!menuExp.contains(e.target) && !btnExp.contains(e.target)) menuExp.classList.remove('open'); });
-    menuExp.querySelectorAll('a').forEach(a=>{
-      a.addEventListener('click',(e)=>{
-        e.preventDefault(); menuExp.classList.remove('open');
+    // “Limpiar todos” + export menu
+    document.getElementById('btn-clear-all').addEventListener('click', ()=>{
+      Object.keys(state).forEach(k=> state[k]=(k==='flujo')?new Set(['mixto']):new Set());
+      refreshDependentFilters(); filtersDef.forEach(d=>updateFilterSummary(d.key)); applyFilters();
+    });
+
+    const expBtn=document.getElementById('btn-export'), expMenu=document.getElementById('export-menu');
+    expBtn.addEventListener('click',(e)=>{ e.stopPropagation(); expMenu.classList.toggle('hidden'); });
+    document.addEventListener('click',(e)=>{ if(!expMenu.contains(e.target) && !expBtn.contains(e.target)) expMenu.classList.add('hidden'); });
+    expMenu.querySelectorAll('a').forEach(a=>{
+      a.addEventListener('click', (e)=>{
+        e.preventDefault(); expMenu.classList.add('hidden');
         const type=a.getAttribute('data-exp');
         if(type==='csv') exportSectionCSV();
         if(type==='png') exportSectionPNGs();
@@ -463,15 +578,9 @@
         if(type==='sheets') exportToGoogleSheets();
       });
     });
-
-    // Limpiar todos
-    document.getElementById('btn-clear-all').addEventListener('click', ()=>{
-      Object.keys(state).forEach(k=> state[k]=(k==='flujo')?new Set(['mixto']):new Set());
-      refreshDependentFilters(); filtersDef.forEach(d=>updateSummary(d.key)); applyFilters();
-    });
   }
 
-  // datos válidos excluyendo una o varias claves
+  // Datos válidos excluyendo un conjunto de claves (para dependencias)
   function dataFilteredExcept(excepts=new Set()){
     return originalData.filter(r=>{
       const pass=(k,set,val)=>(excepts.has(k) || set.size===0 || set.has(val));
@@ -483,6 +592,7 @@
              pass('usuario',state.usuario,r.usuario);
     });
   }
+
   function refreshDependentFilters(){
     const keys=['q','mes','semana','ubic','lider','usuario'];
     keys.forEach(key=>{
@@ -495,17 +605,19 @@
       if(key==='lider')  values=uniqueSorted(allowed.map(r=>r['líder']).filter(l=>l && l.toLowerCase()!=='sin líder'));
       if(key==='usuario')values=uniqueSorted(allowed.map(r=>r.usuario));
 
-      // Mantener selección que siga siendo válida
+      // Mantener selección que continúa siendo válida
       state[key]=new Set([...state[key]].filter(v=>values.includes(v)));
       renderOptions(key, values);
-      updateSummary(key);
+      updateFilterSummary(key);
     });
-    // Flujo (fijo)
+    // Flujo constante
     renderOptions('flujo',['mixto','demanda','enhancement']);
-    updateSummary('flujo');
+    updateFilterSummary('flujo');
   }
 
-  /******** NAV ********/
+  /**********************
+   * NAV
+   **********************/
   function setupNavigation(){
     const links=[...document.querySelectorAll('#nav-menu a')];
     links.forEach(a=>{
@@ -537,9 +649,13 @@
     };
   }
 
-  /******** APLICAR ********/
+  /**********************
+   * APLICAR
+   **********************/
   function applyFilters(){
-    currentData = dataFilteredExcept(new Set()); // Flujo NO filtra la base (para que el donut siempre sea Demanda vs Enhancement)
+    // Base filtrada SOLO por los filtros de tiempo/ubicación/jerarquía/usuario (Flujo no filtra base)
+    currentData = dataFilteredExcept(new Set());
+
     updateKPIs();
     renderNineBox();
     renderDemandPie();
@@ -551,13 +667,15 @@
     updateDetailKPIs();
   }
 
-  /******** KPI + RENDER ********/
+  /**********************
+   * KPI + RENDER
+   **********************/
   function updateKPIs(){
     const flows=state.flujo;
     const total=currentData.reduce((s,r)=>s+tareasPorFlujos(r,flows),0);
     const ids=currentData.reduce((s,r)=>s+(r.ids_trabajados||0),0);
     const usuarios=new Set(currentData.map(r=>r.usuario)).size;
-    const corr=currentData.reduce((s,r)=>s+(r.correcciones_auditadas||0),0);
+    const correcc=currentData.reduce((s,r)=>s+(r.correcciones_auditadas||0),0);
     const prom=promedioDiario(currentData,flows);
     const vals=currentData.map(r=>r.efectividad).filter(v=>v!=='' && v!=null);
     const ef=vals.length? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
@@ -568,12 +686,12 @@
     const efPct=ef*100;
     setColor(efEl,(efPct<=75)?'text-red-600':(efPct<87)?'text-orange-500':(efPct<90)?'text-yellow-500':'text-green-600');
 
-    document.getElementById('kpi-total-tareas').textContent=fmt.int(total);
-    document.getElementById('kpi-ids').textContent=fmt.int(ids);
-    document.getElementById('kpi-usuarios').textContent=fmt.int(usuarios);
-    document.getElementById('kpi-correcciones').textContent=fmt.int(corr);
-    promEl.textContent=fmt.dec(prom);
-    efEl.textContent=fmt.pct(ef);
+    document.getElementById('kpi-total-tareas').textContent     = fmt.int(total);
+    document.getElementById('kpi-ids').textContent              = fmt.int(ids);
+    document.getElementById('kpi-usuarios').textContent         = fmt.int(usuarios);
+    document.getElementById('kpi-correcciones').textContent     = fmt.int(correcc);
+    promEl.textContent = fmt.dec(prom);
+    efEl.textContent   = fmt.pct(ef);
   }
 
   function updateEvolutionKPIs(){
@@ -583,14 +701,17 @@
     const prom=promedioDiario(currentData,flows);
     const vals=currentData.map(r=>r.efectividad).filter(v=>v!=='' && v!=null);
     const ef=vals.length? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
+
     const promEl=document.getElementById('evo-kpi-prom');
     const efEl=document.getElementById('evo-kpi-ef');
     setColor(promEl,(prom<=70)?'text-red-600':(prom>=80)?'text-green-600':'text-yellow-500');
     const efPct=ef*100;
     setColor(efEl,(efPct<=75)?'text-red-600':(efPct<87)?'text-orange-500':(efPct<90)?'text-yellow-500':'text-green-600');
-    promEl.textContent=fmt.dec(prom); efEl.textContent=fmt.pct(ef);
-    document.getElementById('evo-kpi-ids').textContent=fmt.int(ids);
-    document.getElementById('evo-kpi-users').textContent=fmt.int(usuarios);
+
+    promEl.textContent = fmt.dec(prom);
+    efEl.textContent   = fmt.pct(ef);
+    document.getElementById('evo-kpi-ids').textContent   = fmt.int(ids);
+    document.getElementById('evo-kpi-users').textContent = fmt.int(usuarios);
   }
 
   function updateDetailKPIs(){
@@ -599,306 +720,559 @@
     const prom=promedioDiario(currentData,flows);
     const vals=currentData.map(r=>r.efectividad).filter(v=>v!=='' && v!=null);
     const ef=vals.length? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
+
     const promEl=document.getElementById('det-kpi-prom');
     const efEl=document.getElementById('det-kpi-ef');
     setColor(promEl,(prom<=70)?'text-red-600':(prom>=80)?'text-green-600':'text-yellow-500');
     const efPct=ef*100;
     setColor(efEl,(efPct<=75)?'text-red-600':(efPct<87)?'text-orange-500':(efPct<90)?'text-yellow-500':'text-green-600');
-    promEl.textContent=fmt.dec(prom); efEl.textContent=fmt.pct(ef);
-    document.getElementById('det-kpi-ids').textContent=fmt.int(ids);
+
+    promEl.textContent = fmt.dec(prom);
+    efEl.textContent   = fmt.pct(ef);
+    document.getElementById('det-kpi-ids').textContent = fmt.int(ids);
   }
 
-  function createOrUpdateChart(id,cfg){ if(charts[id]){ charts[id].data=cfg.data; charts[id].options=cfg.options||{}; charts[id].update(); return charts[id]; } const ctx=document.getElementById(id).getContext('2d'); charts[id]=new Chart(ctx,cfg); return charts[id];}
-  function barDataset(label,data){ return {type:'bar',label,data,yAxisID:'y',backgroundColor:BAR_BG,borderColor:'rgba(0,0,0,0)',order:1,barPercentage:.8,categoryPercentage:.8}; }
-  function lineEffDataset(label,data){ return {type:'line',label,data,yAxisID:'y1',borderColor:LINE_ACC,backgroundColor:LINE_ACC,order:2,fill:false,tension:.25,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#fff',pointBorderColor:LINE_ACC,borderWidth:3,spanGaps:true}; }
+  function createOrUpdateChart(id, cfg){
+    if(charts[id]){ charts[id].data=cfg.data; charts[id].options=cfg.options||{}; charts[id].update(); return charts[id]; }
+    const ctx=document.getElementById(id).getContext('2d');
+    charts[id]=new Chart(ctx,cfg); return charts[id];
+  }
 
-  /* Nine-box */
+  function barDataset(label, data){
+    return {
+      type:'bar', label, data, yAxisID:'y',
+      backgroundColor: BAR_BG, borderColor: 'rgba(0,0,0,0)', order: 1,
+      barPercentage: 0.8, categoryPercentage: 0.8
+    };
+  }
+  function lineEffDataset(label, data){
+    return {
+      type:'line', label, data, yAxisID:'y1',
+      borderColor: LINE_ACC, backgroundColor: LINE_ACC,
+      order: 2, fill:false, tension:0.25, pointRadius:3, pointHoverRadius:5,
+      pointBackgroundColor:'#ffffff', pointBorderColor: LINE_ACC, borderWidth:3, spanGaps:true
+    };
+  }
+
+  /* ---------- Nine-box ---------- */
   function renderNineBox(){
     const flows=state.flujo;
-    const map=new Map();
+
+    const map = new Map(); // user -> {num,den, effSum, effN}
     currentData.forEach(r=>{
-      const u=r.usuario; const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
-      o.num+=tareasPorFlujos(r,flows); o.den+=(r.dias_activos||0);
-      if(r.efectividad!=='' && r.efectividad!=null){ o.effSum+=r.efectividad; o.effN++; }
+      const u=r.usuario;
+      const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
+      o.num += tareasPorFlujos(r,flows); o.den += (r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){ o.effSum+=r.efectividad; o.effN++; }
       map.set(u,o);
     });
 
-    const users=Array.from(map.entries()).map(([u,o])=>{
-      const prom=o.den?o.num/o.den:null; const eff=o.effN?o.effSum/o.effN:null; return {u,prom,eff};
+    const users = Array.from(map.entries()).map(([u,o])=>{
+      const prom = o.den? o.num/o.den : null;
+      const eff  = o.effN? o.effSum/o.effN : null;
+      return {u, prom, eff};
     });
 
-    const prodBand=p=>(p>=80?'alta':p>=70?'media':'baja');
-    const calBand=e=>(e>=0.90?'alta':e>=0.75?'media':'baja');
+    const prodBand = p => (p>=80 ? 'alta' : p>=70 ? 'media' : 'baja');
+    const calBand  = e => (e>=0.90 ? 'alta' : e>=0.75 ? 'media' : 'baja');
 
-    const rows=['alta','media','baja'], cols=['alta','media','baja'];
-    const buckets={}, details={}; rows.forEach(r=>cols.forEach(c=>{ buckets[`${r}-${c}`]=[]; details[`${r}-${c}`]=[]; }));
-    const missing=[];
+    const rows=['alta','media','baja']; // productividad
+    const cols=['alta','media','baja']; // calidad
+
+    const buckets = {};
+    const details = {};
+    rows.forEach(r=>cols.forEach(c=>{ buckets[`${r}-${c}`]=[]; details[`${r}-${c}`]=[]; }));
+
+    const missing = [];
     users.forEach(x=>{
-      if(x.prom==null||x.eff==null){ missing.push(x); }
-      else{ const key=`${prodBand(x.prom)}-${calBand(x.eff)}`; buckets[key].push(x.u); details[key].push({usuario:x.u,prom:x.prom,eff:x.eff}); }
+      if(x.prom===null || x.eff===null){
+        missing.push(x);
+      }else{
+        const key = `${prodBand(x.prom)}-${calBand(x.eff)}`;
+        buckets[key].push(x.u);
+        details[key].push({usuario:x.u, prom:x.prom, eff:x.eff});
+      }
     });
 
-    const grid=document.getElementById('ninebox-grid');
-    const label=s=>s.charAt(0).toUpperCase()+s.slice(1);
-    const cellClass=(r,c)=> (r==='baja'&&c==='baja')?'nb-red' : (r==='alta'&&c==='alta')?'nb-green' : (c==='baja'||r==='media')?'nb-orange':'nb-yellow';
-    const hdrCell=txt=>`<div class="nb-cell nb-hdr" style="height:42px">${txt}</div>`;
+    const grid = document.getElementById('ninebox-grid');
+    const label = s=> s.charAt(0).toUpperCase()+s.slice(1);
+    const cellClass = (r,c)=>{
+      if(r==='alta' && c==='alta') return 'nb-green';
+      if(r==='alta' && c==='media') return 'nb-yellow';
+      if(r==='alta' && c==='baja') return 'nb-orange';
+      if(r==='media' && c==='alta') return 'nb-yellow';
+      if(r==='media' && c==='media') return 'nb-yellow';
+      if(r==='media' && c==='baja') return 'nb-orange';
+      if(r==='baja' && c==='alta') return 'nb-yellow';
+      if(r==='baja' && c==='media') return 'nb-orange';
+      return 'nb-red';
+    };
+    const hdrCell = (txt)=>`<div class="nb-cell nb-hdr" style="height:42px">${txt}</div>`;
 
-    let html=''; html+=hdrCell('&nbsp;'); cols.forEach(c=> html+=hdrCell('Calidad '+label(c)));
+    let html = '';
+    html += hdrCell('&nbsp;');
+    cols.forEach(c=> html += hdrCell('Calidad '+label(c)));
     rows.forEach(r=>{
-      html+=hdrCell('Prod. '+label(r));
+      html += hdrCell('Prod. '+label(r));
       cols.forEach(c=>{
-        const arr=buckets[`${r}-${c}`]||[];
-        html+=`<div class="nb-cell ${cellClass(r,c)}" data-bucket="${r}-${c}" title="Prod ${label(r)} / Calidad ${label(c)}"><span class="nb-badge">${arr.length}</span></div>`;
+        const arr = buckets[`${r}-${c}`]||[];
+        html += `<div class="nb-cell ${cellClass(r,c)}" data-bucket="${r}-${c}" title="Prod ${label(r)} / Calidad ${label(c)}">
+                  <span class="nb-badge">${arr.length}</span>
+                </div>`;
       });
     });
-    grid.innerHTML=html;
-    nineboxDetailsData=details;
-    grid.onclick=(ev)=>{ const cell=ev.target.closest('.nb-cell[data-bucket]'); if(!cell) return; const key=cell.getAttribute('data-bucket'); showNineboxDetails(key, label); };
+    grid.innerHTML = html;
 
-    const missDiv=document.getElementById('ninebox-missing');
+    nineboxDetailsData = details;
+
+    grid.onclick = (ev)=>{
+      const cell = ev.target.closest('.nb-cell[data-bucket]');
+      if(!cell) return;
+      const key = cell.getAttribute('data-bucket');
+      showNineboxDetails(key, label);
+    };
+
+    const missDiv = document.getElementById('ninebox-missing');
     if(missing.length){
-      const lines=missing.sort((a,b)=>a.u>b.u?1:-1).map(m=>{
-        const parts=[]; if(m.prom!=null) parts.push(`Promedio Diario: ${m.prom.toFixed(2)}`); if(m.eff!=null) parts.push(`% Efectividad: ${(m.eff*100).toFixed(2)}%`);
-        return `• ${m.u} — ${parts.join(' | ') || 'sin datos'}`;
-      });
-      missDiv.innerHTML=`<div class="font-medium mb-1">Perfiles no incluidos por datos faltantes</div><div class="whitespace-pre-line">${lines.join('\n')}</div>`;
-    }else missDiv.innerHTML='';
-  }
-
-  function showNineboxDetails(bucketKey,labelFn){
-    const box=document.getElementById('ninebox-details');
-    const rows=(nineboxDetailsData[bucketKey]||[]).slice().sort((a,b)=>b.prom-a.prom);
-    const [prod,cal]=bucketKey.split('-').map(labelFn);
-    if(!rows.length){
-      box.innerHTML=`<div class="flex items-center justify-between mb-2"><div class="font-semibold">Prod. ${prod} / Calidad ${cal}</div><button class="text-slate-500 hover:text-slate-700 text-sm" id="nb-close">Cerrar</button></div><div class="text-slate-500 text-sm">Sin perfiles en este cuadrante para los filtros actuales.</div>`;
-      box.classList.remove('hidden'); document.getElementById('nb-close').onclick=()=>box.classList.add('hidden'); return;
+      const lines = missing
+        .sort((a,b)=> (a.u>b.u?1:-1))
+        .map(m=>{
+          const parts = [];
+          if(m.prom!==null) parts.push(`Promedio Diario: ${m.prom.toFixed(2)}`);
+          if(m.eff!==null)  parts.push(`% Efectividad: ${(m.eff*100).toFixed(2)}%`);
+          return `• ${m.u} — ${parts.join(' | ') || 'sin datos'}`;
+        });
+      missDiv.innerHTML = `<div class="font-medium mb-1">Perfiles no incluidos por datos faltantes</div><div class="whitespace-pre-line">${lines.join('\n')}</div>`;
+    }else{
+      missDiv.innerHTML = '';
     }
-    const header=`<div class="flex items-center justify-between mb-2"><div class="font-semibold">Prod. ${prod} / Calidad ${cal} — <span class="text-slate-500 font-normal">${rows.length} perfiles</span></div><button class="text-slate-500 hover:text-slate-700 text-sm" id="nb-close">Cerrar</button></div>`;
-    const table=`<div class="overflow-x-auto border border-slate-200 rounded-md"><table class="min-w-full text-sm"><thead class="bg-slate-50 text-slate-600"><tr><th class="text-left px-3 py-2">Usuario</th><th class="text-right px-3 py-2">Prom. Diario</th><th class="text-right px-3 py-2">% Efectividad</th></tr></thead><tbody>${rows.map(r=>`<tr class="border-t"><td class="px-3 py-2">${r.usuario}</td><td class="px-3 py-2 text-right">${fmt.dec(r.prom)}</td><td class="px-3 py-2 text-right">${fmt.pct(r.eff)}</td></tr>`).join('')}</tbody></table></div>`;
-    box.innerHTML=header+table; box.classList.remove('hidden'); document.getElementById('nb-close').onclick=()=>box.classList.add('hidden');
   }
 
-  /* Donut Demanda vs Enhancement (siempre) */
+  function showNineboxDetails(bucketKey, labelFn){
+    const box = document.getElementById('ninebox-details');
+    const rows = (nineboxDetailsData[bucketKey]||[]).slice().sort((a,b)=>b.prom-a.prom);
+    const [prod, cal] = bucketKey.split('-').map(labelFn);
+    if(!rows.length){
+      box.innerHTML = `
+        <div class="flex items-center justify-between mb-2">
+          <div class="font-semibold">Prod. ${prod} / Calidad ${cal}</div>
+          <button class="text-slate-500 hover:text-slate-700 text-sm" id="nb-close">Cerrar</button>
+        </div>
+        <div class="text-slate-500 text-sm">Sin perfiles en este cuadrante para los filtros actuales.</div>`;
+      box.classList.remove('hidden');
+      document.getElementById('nb-close').onclick = ()=> box.classList.add('hidden');
+      return;
+    }
+
+    const header = `
+      <div class="flex items-center justify-between mb-2">
+        <div class="font-semibold">Prod. ${prod} / Calidad ${cal} — <span class="text-slate-500 font-normal">${rows.length} perfiles</span></div>
+        <button class="text-slate-500 hover:text-slate-700 text-sm" id="nb-close">Cerrar</button>
+      </div>`;
+
+    const table = `
+      <div class="overflow-x-auto border border-slate-200 rounded-md">
+        <table class="min-w-full text-sm">
+          <thead class="bg-slate-50 text-slate-600">
+            <tr>
+              <th class="text-left px-3 py-2">Usuario</th>
+              <th class="text-right px-3 py-2">Prom. Diario</th>
+              <th class="text-right px-3 py-2">% Efectividad</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(r=>`
+              <tr class="border-t">
+                <td class="px-3 py-2">${r.usuario}</td>
+                <td class="px-3 py-2 text-right">${fmt.dec(r.prom)}</td>
+                <td class="px-3 py-2 text-right">${fmt.pct(r.eff)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>`;
+
+    box.innerHTML = header + table;
+    box.classList.remove('hidden');
+    document.getElementById('nb-close').onclick = ()=> box.classList.add('hidden');
+  }
+
+  /* ---------- Donut Demanda vs Enhancement (siempre) ---------- */
   function renderDemandPie(){
-    const demand=currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
-    const enh   =currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
-    const tot=demand+enh; const pctD=tot?100*demand/tot:0; const pctE=tot?100*enh/tot:0;
-    createOrUpdateChart('demandPieChart',{ type:'pie', data:{ labels:['Demanda','Enhancement'], datasets:[{ data:[pctD,pctE], backgroundColor:[PALETTE.c0,PALETTE.c4] }] }, options:{ responsive:true, plugins:{ legend:{position:'bottom'}, tooltip:{callbacks:{label:(c)=>`${c.label}: ${c.parsed.toFixed(1)}%`}} } });
-    document.getElementById('demandTotals').textContent=`Total Demanda: ${fmt.int(demand)} — Total Enhancement: ${fmt.int(enh)}`;
+    const demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
+    const enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
+    const tot = demand+enh;
+    const pctD = tot? (100*demand/tot) : 0;
+    const pctE = tot? (100*enh   /tot) : 0;
+
+    createOrUpdateChart('demandPieChart',{
+      type:'pie',
+      data:{ labels:['Demanda','Enhancement'], datasets:[{ data:[pctD, pctE], backgroundColor:[PALETTE.c0, PALETTE.c4] }] },
+      options:{
+        responsive:true,
+        plugins:{
+          legend:{ position:'bottom' },
+          tooltip:{ callbacks:{ label:(ctx)=> `${ctx.label}: ${ctx.parsed.toFixed(1)}%` } }
+        }
+      }
+    });
+
+    document.getElementById('demandTotals').textContent =
+      `Total Demanda: ${fmt.int(demand)} — Total Enhancement: ${fmt.int(enh)}`;
   }
 
-  /* Detalle por usuario */
+  /* ---------- Detalle por usuario ---------- */
   function renderTasksByUser(){
     const flows=state.flujo;
-    const agg=new Map();
+
+    const agg = new Map(); // user -> {num,den, effNum, effDen}
     currentData.forEach(r=>{
       const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
-      o.num+=tareasPorFlujos(r,flows); o.den+=(r.dias_activos||0);
-      if(r.efectividad!=='' && r.efectividad!=null){ const w=(r.correcciones_auditadas||0)||1; o.effNum+=r.efectividad*w; o.effDen+=w; }
+      o.num += tareasPorFlujos(r,flows);
+      o.den += (r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
+        const w=(r.correcciones_auditadas||0)||1;
+        o.effNum += r.efectividad*w; o.effDen += w;
+      }
       agg.set(u,o);
     });
-    const arr=Array.from(agg.entries()).map(([u,o])=>({user:u,prom:o.den?o.num/o.den:0,effPct:o.effDen?100*o.effNum/o.effDen:null})).sort((a,b)=>b.prom-a.prom);
-    createOrUpdateChart('tasksByUserChart',{ data:{ labels:arr.map(x=>x.user), datasets:[barDataset('Prom. diario',arr.map(x=>x.prom)), lineEffDataset('% Efectividad',arr.map(x=>x.effPct))] }, options:{ responsive:true, scales:{ y:{position:'left',ticks:{callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}}, y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>`${v.toFixed(0)}%`}, suggestedMin:50,suggestedMax:100}, x:{ticks:{autoSkip:false,maxRotation:60,minRotation:45}} } });
+
+    const arr = Array.from(agg.entries()).map(([u,o])=>{
+      const prom = o.den? o.num/o.den : 0;
+      const effPct = o.effDen? (100*o.effNum/o.effDen) : null;
+      return { user:u, prom, effPct };
+    }).sort((a,b)=>b.prom-a.prom);
+
+    createOrUpdateChart('tasksByUserChart',{
+      data:{
+        labels:arr.map(x=>x.user),
+        datasets:[ barDataset('Prom. diario', arr.map(x=>x.prom)), lineEffDataset('% Efectividad', arr.map(x=>x.effPct)) ]
+      },
+      options:{
+        responsive:true,
+        scales:{
+          y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
+          y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 },
+          x:{ ticks:{ autoSkip:false, maxRotation:60, minRotation:45 } }
+        }
+      }
+    });
   }
 
-  /* Comparativa por equipo */
+  /* ---------- Comparativa por equipo ---------- */
   function renderTasksByLeader(){
-    const flows=state.flujo; const agg=new Map();
+    const flows=state.flujo;
+    const agg = new Map(); // líder -> {num,den, effNum, effDen}
     currentData.forEach(r=>{
-      const l=r['líder']; if(!l || l.toLowerCase()==='sin líder') return;
-      const o=agg.get(l)||{num:0,den:0,effNum:0,effDen:0};
-      o.num+=tareasPorFlujos(r,flows); o.den+=(r.dias_activos||0);
-      if(r.efectividad!=='' && r.efectividad!=null){ const w=(r.correcciones_auditadas||0)||1; o.effNum+=r.efectividad*w; o.effDen+=w; }
+      const l = r['líder']; if(!l || l.toLowerCase()==='sin líder') return;
+      const o = agg.get(l) || {num:0,den:0,effNum:0,effDen:0};
+      o.num += tareasPorFlujos(r,flows);
+      o.den += (r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
+        const w = (r.correcciones_auditadas || 0) || 1;
+        o.effNum += r.efectividad * w;
+        o.effDen += w;
+      }
       agg.set(l,o);
     });
-    const arr=Array.from(agg.entries()).map(([l,o])=>({lider:l,prom:o.den?o.num/o.den:0,effPct:o.effDen?100*o.effNum/o.effDen:null})).sort((a,b)=>b.prom-a.prom);
-    createOrUpdateChart('tasksByLeaderChart',{ data:{ labels:arr.map(x=>x.lider), datasets:[barDataset('Prom. diario',arr.map(x=>x.prom)), lineEffDataset('% Efectividad',arr.map(x=>x.effPct))] }, options:{ responsive:true, scales:{ y:{position:'left',ticks:{callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}}, y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>`${v.toFixed(0)}%`}, suggestedMin:50,suggestedMax:100}, x:{ticks:{autoSkip:false,maxRotation:45}} } });
+    const arr = Array.from(agg.entries()).map(([l,o])=>{
+      const prom = o.den? o.num/o.den : 0;
+      const effPct = o.effDen? (100*o.effNum/o.effDen) : null;
+      return { lider:l, prom, effPct };
+    }).sort((a,b)=>b.prom-a.prom);
+
+    createOrUpdateChart('tasksByLeaderChart',{
+      data:{
+        labels:arr.map(x=>x.lider),
+        datasets:[ barDataset('Prom. diario', arr.map(x=>x.prom)), lineEffDataset('% Efectividad', arr.map(x=>x.effPct)) ]
+      },
+      options:{
+        responsive:true,
+        scales:{
+          y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
+          y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 },
+          x:{ ticks:{ autoSkip:false, maxRotation:45 } }
+        }
+      }
+    });
   }
 
-  /* Evolución semanal */
+  /* ---------- Evolución semanal ---------- */
   function renderWeeklyEvolution(){
-    const flows=state.flujo; const agg=new Map();
+    const flows=state.flujo;
+    const agg = new Map(); // week -> {num,den, effNum, effDen}
     currentData.forEach(r=>{
-      const w=Number(r.week); if(!Number.isFinite(w)) return;
-      const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
-      o.num+=tareasPorFlujos(r,flows); o.den+=(r.dias_activos||0);
-      if(r.efectividad!=='' && r.efectividad!=null){ const g=(r.correcciones_auditadas||0)||1; o.effNum+=r.efectividad*g; o.effDen+=g; }
+      const w = Number(r.week); if(!Number.isFinite(w)) return;
+      const o = agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
+      o.num += tareasPorFlujos(r,flows);
+      o.den += (r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
+        const weight = (r.correcciones_auditadas||0)||1;
+        o.effNum += r.efectividad*weight;
+        o.effDen += weight;
+      }
       agg.set(w,o);
     });
-    const weeks=Array.from(agg.keys()); if(!weeks.length){ createOrUpdateChart('weeklyEvolutionChart',{type:'line',data:{labels:[],datasets:[]},options:{}}); return; }
-    const minW=Math.min(...weeks), maxW=Math.max(...weeks);
-    const labels=[],prom=[],eff=[];
-    for(let w=minW; w<=maxW; w++){
-      const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
-      labels.push('W'+String(w).padStart(2,'0'));
-      prom.push(o.den?o.num/o.den:0);
-      eff.push(o.effDen?100*o.effNum/o.effDen:null);
+
+    const weeks = Array.from(agg.keys());
+    if(!weeks.length){
+      createOrUpdateChart('weeklyEvolutionChart',{type:'line',data:{labels:[],datasets:[]},options:{}});
+      return;
     }
-    createOrUpdateChart('weeklyEvolutionChart',{ data:{ labels, datasets:[barDataset('Prom. diario',prom), lineEffDataset('% Efectividad',eff)] }, options:{ responsive:true, plugins:{legend:{display:true}}, scales:{ x:{ticks:{autoSkip:false,maxRotation:0}}, y:{position:'left',ticks:{callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}}, y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>`${v.toFixed(0)}%`}, suggestedMin:50,suggestedMax:100} } });
+    const minW=Math.min(...weeks), maxW=Math.max(...weeks);
+    const labels=[], promValues=[], effValues=[];
+    for(let w=minW; w<=maxW; w++){
+      labels.push('W'+String(w).padStart(2,'0'));
+      const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
+      promValues.push((o.den? o.num/o.den : 0));
+      effValues.push(o.effDen? 100*o.effNum/o.effDen : null);
+    }
+    createOrUpdateChart('weeklyEvolutionChart',{
+      data:{
+        labels,
+        datasets:[ barDataset('Prom. diario', promValues), lineEffDataset('% Efectividad', effValues) ]
+      },
+      options:{
+        responsive:true,
+        plugins:{ legend:{display:true} },
+        scales:{
+          x:{ ticks:{autoSkip:false,maxRotation:0} },
+          y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
+          y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 }
+        }
+      }
+    });
   }
 
-  /* Ubicación */
+  /* ---------- Ubicación ---------- */
   function renderByLocation(){
-    const flows=state.flujo; const byLoc=new Map(), effLoc=new Map(), antig={};
+    const flows=state.flujo;
+    const byLoc = new Map(); // ciudad -> {num,den}
+    const effLoc = new Map(); // ciudad -> {num,den}
+    const antig = {}; // ciudad -> {sum, n}
+
     currentData.forEach(r=>{
       const c=r.ciudad||'Sin ubicación';
-      const o=byLoc.get(c)||{num:0,den:0}; o.num+=tareasPorFlujos(r,flows); o.den+=(r.dias_activos||0); byLoc.set(c,o);
-      if(r.efectividad!=='' && r.efectividad!=null){ const w=(r.correcciones_auditadas||0)||1; const e=effLoc.get(c)||{num:0,den:0}; e.num+=r.efectividad*w; e.den+=w; effLoc.set(c,e); }
-      const a=Number(r.antigüedad||0); if(!antig[c]) antig[c]={sum:0,n:0}; if(Number.isFinite(a)){ antig[c].sum+=a; antig[c].n++; }
+      const o=byLoc.get(c)||{num:0,den:0};
+      o.num += tareasPorFlujos(r,flows); o.den += (r.dias_activos||0); byLoc.set(c,o);
+
+      if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
+        const w=(r.correcciones_auditadas||0)||1;
+        const e=effLoc.get(c)||{num:0,den:0};
+        e.num += r.efectividad*w; e.den += w; effLoc.set(c,e);
+      }
+
+      const a = Number(r.antigüedad||0);
+      if(!antig[c]) antig[c]={sum:0,n:0};
+      if(Number.isFinite(a)){ antig[c].sum+=a; antig[c].n++; }
     });
 
-    const labels=Array.from(byLoc.keys()).sort((a,b)=>{ const va=(byLoc.get(a).den?byLoc.get(a).num/byLoc.get(a).den:0); const vb=(byLoc.get(b).den?byLoc.get(b).num/byLoc.get(b).den:0); return vb-va; });
-    const promData=labels.map(c=>{ const o=byLoc.get(c); return o.den?o.num/o.den:0; });
-    const effData =labels.map(c=>{ const e=effLoc.get(c)||{num:0,den:0}; return e.den?100*e.num/e.den:null; });
+    const labels = Array.from(byLoc.keys()).sort((a,b)=>{
+      const va=(byLoc.get(a).den? byLoc.get(a).num/byLoc.get(a).den : 0);
+      const vb=(byLoc.get(b).den? byLoc.get(b).num/byLoc.get(b).den : 0);
+      return vb-va;
+    });
 
-    createOrUpdateChart('locCombinedChart',{ data:{ labels, datasets:[barDataset('Prom. diario',promData), lineEffDataset('% Efectividad',effData)] }, options:{ responsive:true, scales:{ y:{position:'left',ticks:{callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}}, y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>`${v.toFixed(0)}%`}, suggestedMin:50,suggestedMax:100}, x:{ticks:{ autoSkip:false }} }, plugins:{legend:{display:true}} });
+    const promData = labels.map(c=>{ const o=byLoc.get(c); return (o.den? o.num/o.den : 0); });
+    const effData  = labels.map(c=>{ const e=effLoc.get(c)||{num:0,den:0}; return e.den? 100*e.num/e.den : null; });
 
-    const list=labels.map(loc=>{ const v=antig[loc]||{sum:0,n:0}; const avg=v.n? v.sum/v.n : 0; return [loc,avg]; }).sort((a,b)=>b[1]-a[1]);
-    document.getElementById('avg-antiguedad-cards').innerHTML = list.map(([loc,avg])=>`
-      <div class="kpi-card"><div class="flex items-baseline justify-between">
-        <div class="text-slate-500 font-medium">${loc}</div>
-        <div class="text-3xl font-bold">${fmt.dec(avg)}</div>
-      </div></div>`).join('');
+    createOrUpdateChart('locCombinedChart',{
+      data:{
+        labels,
+        datasets:[ barDataset('Prom. diario', promData), lineEffDataset('% Efectividad', effData) ]
+      },
+      options:{
+        responsive:true,
+        scales:{
+          y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
+          y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 },
+          x:{ ticks:{ autoSkip:false } }
+        },
+        plugins:{ legend:{display:true} }
+      }
+    });
+
+    // Antigüedad tarjetas
+    const list = labels.map(loc=>{
+      const v=antig[loc]||{sum:0,n:0}; const avg=v.n? v.sum/v.n : 0;
+      return [loc, avg];
+    }).sort((a,b)=>b[1]-a[1]);
+
+    const grid = document.getElementById('avg-antiguedad-cards');
+    grid.innerHTML = list.map(([loc,avg])=>`
+      <div class="kpi-card">
+        <div class="flex items-baseline justify-between">
+          <div class="text-slate-500 font-medium">${loc}</div>
+          <div class="text-3xl font-bold">${fmt.dec(avg)}</div>
+        </div>
+      </div>
+    `).join('');
   }
 
-  /******** EXPORTS ********/
-  function getActiveSectionId(){ const sec=[...document.querySelectorAll('.page-section')].find(s=>!s.classList.contains('hidden')); return sec?sec.id:'resumen'; }
+  /**********************
+   * EXPORT / HELPERS
+   **********************/
+  function getActiveSectionId(){
+    const sec=[...document.querySelectorAll('.page-section')].find(s=>!s.classList.contains('hidden'));
+    return sec ? sec.id : 'resumen';
+  }
   function download(filename, blob){ saveAs(blob, filename); }
-  function toCSV(headers, rows){ const esc=v=>`"${String(v??'').replace(/"/g,'""')}"`; const head=headers.map(esc).join(','); const body=rows.map(r=>headers.map(h=>esc(r[h])).join(',')).join('\n'); return head+'\n'+body; }
-
-  function buildNineboxData(){
-    const flows=state.flujo; const map=new Map();
-    currentData.forEach(r=>{ const u=r.usuario; const o=map.get(u)||{num:0,den:0,effSum:0,effN:0}; o.num+=tareasPorFlujos(r,flows); o.den+=(r.dias_activos||0); if(r.efectividad!==''&&r.efectividad!=null){o.effSum+=r.efectividad;o.effN++;} map.set(u,o); });
-    const prod=p=>(p>=80?'Alta':p>=70?'Media':'Baja'), cal=e=>(e>=0.90?'Alta':e>=0.75?'Media':'Baja');
-    const buckets={ "Prod Alta / Cal Alta":[], "Prod Alta / Cal Media":[], "Prod Alta / Cal Baja":[], "Prod Media / Cal Alta":[], "Prod Media / Cal Media":[], "Prod Media / Cal Baja":[], "Prod Baja / Cal Alta":[], "Prod Baja / Cal Media":[], "Prod Baja / Cal Baja":[] };
-    const missing=[];
-    Array.from(map.entries()).forEach(([u,o])=>{ const pr=o.den?o.num/o.den:null; const ef=o.effN?o.effSum/o.effN:null; if(pr==null||ef==null){ missing.push({u,pr,ef}); return; } buckets[`Prod ${prod(pr)} / Cal ${cal(ef)}`].push(u); });
-    return { buckets, missing };
-  }
-  function buildUsersPromEff(){
-    const flows=state.flujo; const agg=new Map();
-    currentData.forEach(r=>{ const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0}; o.num+=tareasPorFlujos(r,flows); o.den+=(r.dias_activos||0); if(r.efectividad!==''&&r.efectividad!=null){ const w=(r.correcciones_auditadas||0)||1; o.effNum+=r.efectividad*w; o.effDen+=w;} agg.set(u,o); });
-    return Array.from(agg.entries()).map(([user,o])=>({user,prom:o.den?o.num/o.den:0,eff:o.effDen?o.effNum/o.effDen:null})).sort((a,b)=>b.prom-a.prom);
-  }
-  function buildLideresData(){
-    const flows=state.flujo; const agg=new Map();
-    currentData.forEach(r=>{ const l=r['líder']; if(!l||l.toLowerCase()==='sin líder') return; const o=agg.get(l)||{num:0,den:0,effNum:0,effDen:0}; o.num+=tareasPorFlujos(r,flows); o.den+=(r.dias_activos||0); if(r.efectividad!==''&&r.efectividad!=null){ const w=(r.correcciones_auditadas||0)||1; o.effNum+=r.efectividad*w; o.effDen+=w;} agg.set(l,o); });
-    return Array.from(agg.entries()).map(([lider,o])=>({lider,prom:o.den?o.num/o.den:0,eff:o.effDen?o.effNum/o.effDen:null})).sort((a,b)=>b.prom-a.prom);
-  }
-  function buildEvolucionData(){
-    const flows=state.flujo; const agg=new Map();
-    currentData.forEach(r=>{ const w=Number(r.week); if(!Number.isFinite(w)) return; const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0}; o.num+=tareasPorFlujos(r,flows); o.den+=(r.dias_activos||0); if(r.efectividad!==''&&r.efectividad!=null){ const g=(r.correcciones_auditadas||0)||1; o.effNum+=r.efectividad*g; o.effDen+=g;} agg.set(w,o); });
-    const weeks=Array.from(agg.keys()); const minW=Math.min(...weeks),maxW=Math.max(...weeks);
-    const labels=[],values=[],eff=[]; for(let w=minW; w<=maxW; w++){ const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0}; labels.push('W'+String(w).padStart(2,'0')); values.push(o.den?o.num/o.den:0); eff.push(o.effDen?100*o.effNum/o.effDen:null); }
-    return {labels,values,eff};
-  }
-  function buildUbicacionData(){
-    const flows=state.flujo; const byLoc=new Map(), effLoc=new Map(), antig={};
-    currentData.forEach(r=>{ const c=r.ciudad||'Sin ubicación'; const o=byLoc.get(c)||{num:0,den:0}; o.num+=tareasPorFlujos(r,flows); o.den+=(r.dias_activos||0); byLoc.set(c,o);
-      if(r.efectividad!==''&&r.efectividad!=null){ const w=(r.correcciones_auditadas||0)||1; const e=effLoc.get(c)||{num:0,den:0}; e.num+=r.efectividad*w; e.den+=w; effLoc.set(c,e); }
-      const a=Number(r.antigüedad||0); if(!antig[c]) antig[c]={sum:0,n:0}; if(Number.isFinite(a)){ antig[c].sum+=a; antig[c].n++; }
-    });
-    const labels=Array.from(byLoc.keys()).sort(); const prom=labels.map(c=>{ const o=byLoc.get(c)||{num:0,den:0}; return o.den?o.num/o.den:0; }); const eff=labels.map(c=>{ const e=effLoc.get(c)||{num:0,den:0}; return e.den?100*e.num/e.den:null; }); const antigList=labels.map(c=>{ const v=antig[c]||{sum:0,n:0}; return [c, v.n? v.sum/v.n : 0]; });
-    return {labels,prom,eff,antig:antigList};
+  function toCSV(headers, rows){
+    const esc=v=> `"${String(v??'').replace(/"/g,'""')}"`;
+    const head = headers.map(esc).join(',');
+    const body = rows.map(r=> headers.map(h=>esc(r[h])).join(',')).join('\n');
+    return head + '\n' + body;
   }
 
   async function exportSectionPNGs(){
-    const id=getActiveSectionId(); const canvases=[];
-    if(id==='resumen'){ canvases.push(document.getElementById('demandPieChart')); const el=document.getElementById('ninebox-card'); const canvas=await html2canvas(el,{scale:2}); canvas.toBlob(b=>download('productividad-calidad.png',b)); }
-    else if(id==='detalle'){ canvases.push(document.getElementById('tasksByUserChart')); }
-    else if(id==='lideres'){ canvases.push(document.getElementById('tasksByLeaderChart')); }
-    else if(id==='evolucion'){ canvases.push(document.getElementById('weeklyEvolutionChart')); }
-    else if(id==='ubicacion'){ canvases.push(document.getElementById('locCombinedChart')); }
-    canvases.forEach((c,i)=>{ if(!c) return; const url=c.toDataURL('image/png'); fetch(url).then(r=>r.blob()).then(b=>download(`${id}-chart${i+1}.png`, b)); });
+    const id=getActiveSectionId();
+    const canvases=[];
+    if(id==='resumen'){
+      canvases.push(document.getElementById('demandPieChart'));
+      const el=document.getElementById('ninebox-card');
+      const canvas = await html2canvas(el,{scale:2});
+      canvas.toBlob(b=>download('productividad-calidad.png',b));
+    }else if(id==='detalle'){
+      canvases.push(document.getElementById('tasksByUserChart'));
+    }else if(id==='lideres'){
+      canvases.push(document.getElementById('tasksByLeaderChart'));
+    }else if(id==='evolucion'){
+      canvases.push(document.getElementById('weeklyEvolutionChart'));
+    }else if(id==='ubicacion'){
+      canvases.push(document.getElementById('locCombinedChart'));
+    }
+    canvases.forEach((c,i)=>{
+      if(!c) return;
+      const url=c.toDataURL('image/png');
+      fetch(url).then(r=>r.blob()).then(b=>download(`${id}-chart${i+1}.png`, b));
+    });
   }
 
   async function exportSectionCSV(){
     const id=getActiveSectionId();
+
     if(id==='resumen'){
-      const demand=currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
-      const enh=currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
-      const tot=demand+enh;
-      const rows1=[{Flujo:'Demanda',Total:demand,Porcentaje:tot?demand/tot:0},{Flujo:'Enhancement',Total:enh,Porcentaje:tot?enh/tot:0}];
-      const csv1=toCSV(['Flujo','Total','Porcentaje'],rows1);
+      const demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
+      const enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
+      const tot = demand+enh;
+      const rows1 = [
+        { Flujo:'Demanda', Total:demand, Porcentaje: tot? (demand/tot) : 0 },
+        { Flujo:'Enhancement', Total:enh, Porcentaje: tot? (enh/tot) : 0 }
+      ];
+      const csv1 = toCSV(['Flujo','Total','Porcentaje'], rows1);
       download('resumen_demanda_enhancement.csv', new Blob([csv1],{type:'text/csv;charset=utf-8'}));
 
-      const nb=buildNineboxData();
-      const rows=[]; Object.entries(nb.buckets).forEach(([k,arr])=>rows.push({Caja:k,Usuarios:arr.join(' | '),Conteo:arr.length}));
-      const csv2=toCSV(['Caja','Usuarios','Conteo'],rows);
+      const nb = buildNineboxData();
+      const headers=['Caja','Usuarios','Conteo'];
+      const rows=[];
+      Object.entries(nb.buckets).forEach(([k,arr])=>{
+        rows.push({Caja:k,Usuarios:arr.join(' | '),Conteo:arr.length});
+      });
+      const csv2 = toCSV(headers, rows);
       download('resumen_productividad_calidad.csv', new Blob([csv2],{type:'text/csv;charset=utf-8'}));
       if(nb.missing.length){
-        const csv3=toCSV(['Usuario','Promedio_Diario','Efectividad'], nb.missing.map(m=>({Usuario:m.u,Promedio_Diario:(m.pr==null?'':m.pr),Efectividad:(m.ef==null?'':m.ef)})));
+        const csv3 = toCSV(['Usuario','Promedio_Diario','Efectividad'],
+          nb.missing.map(m=>({Usuario:m.u, Promedio_Diario: (m.pr==null?'':m.pr), Efectividad:(m.ef==null?'':m.ef)})));
         download('resumen_productividad_calidad_faltantes.csv', new Blob([csv3],{type:'text/csv;charset=utf-8'}));
       }
+
     }else if(id==='detalle'){
-      const data=buildUsersPromEff();
-      const rows=data.map(d=>({Usuario:d.user,Promedio_Diario:d.prom,Efectividad:d.eff}));
-      const csv=toCSV(['Usuario','Promedio_Diario','Efectividad'],rows);
+      const data = buildUsersPromEff();
+      const rows = data.map(d=>({Usuario:d.user, Promedio_Diario:d.prom, Efectividad:d.eff}));
+      const csv=toCSV(['Usuario','Promedio_Diario','Efectividad'], rows);
       download('detalle_por_usuario.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
+
     }else if(id==='lideres'){
-      const data=buildLideresData();
-      const rows=data.map(d=>({Lider:d.lider,Promedio_Diario:d.prom,Efectividad:d.eff}));
-      const csv=toCSV(['Lider','Promedio_Diario','Efectividad'],rows);
+      const data = buildLideresData();
+      const rows = data.map(d=>({Lider:d.lider, Promedio_Diario:d.prom, Efectividad:d.eff}));
+      const csv = toCSV(['Lider','Promedio_Diario','Efectividad'], rows);
       download('comparativa_equipo.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
+
     }else if(id==='evolucion'){
-      const s=buildEvolucionData();
-      const rows=s.labels.map((lab,i)=>({Semana:lab,Promedio_Diario:s.values[i],Efectividad:s.eff[i]}));
-      const csv=toCSV(['Semana','Promedio_Diario','Efectividad'],rows);
+      const series = buildEvolucionData();
+      const rows = series.labels.map((lab,i)=>({Semana:lab, Promedio_Diario:series.values[i], Efectividad:series.eff[i]}));
+      const csv = toCSV(['Semana','Promedio_Diario','Efectividad'], rows);
       download('evolucion_promedio_y_efectividad.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
+
     }else if(id==='ubicacion'){
-      const data=buildUbicacionData();
-      const rows=data.labels.map((lab,i)=>({Ubicacion:lab,Promedio_Diario:data.prom[i],Efectividad:data.eff[i]}));
-      const csv=toCSV(['Ubicacion','Promedio_Diario','Efectividad'],rows);
+      const data = buildUbicacionData();
+      const rows = data.labels.map((lab,i)=>({Ubicacion:lab, Promedio_Diario:data.prom[i], Efectividad:data.eff[i]}));
+      const csv = toCSV(['Ubicacion','Promedio_Diario','Efectividad'], rows);
       download('ubicacion_prom_y_efectividad.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
 
-      const rows2=data.antig.map(([loc,avg])=>({Ubicacion:loc,Antiguedad_Promedio:avg}));
-      const csv2=toCSV(['Ubicacion','Antiguedad_Promedio'],rows2);
+      const rows2 = data.antig.map(([loc,avg])=>({Ubicacion:loc, Antiguedad_Promedio:avg}));
+      const csv2=toCSV(['Ubicacion','Antiguedad_Promedio'], rows2);
       download('ubicacion_antiguedad.csv', new Blob([csv2],{type:'text/csv;charset=utf-8'}));
     }
   }
 
   async function exportSectionZIP(){
-    const id=getActiveSectionId(); const zip=new JSZip();
-    function addCSV(name, headers, rows){ zip.file(name, toCSV(headers, rows)); }
+    const id=getActiveSectionId();
+    const zip=new JSZip();
 
+    function addCSV(name, headers, rows){
+      zip.file(name, toCSV(headers, rows));
+    }
     if(id==='resumen'){
-      const demand=currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
-      const enh=currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
-      const tot=demand+enh;
-      addCSV('resumen_demanda_enhancement.csv',['Flujo','Total','Porcentaje'],[
-        {Flujo:'Demanda',Total:demand,Porcentaje:tot?demand/tot:0},
-        {Flujo:'Enhancement',Total:enh,Porcentaje:tot?enh/tot:0}
-      ]);
-      const nb=buildNineboxData();
-      const rows=[]; Object.entries(nb.buckets).forEach(([k,arr])=>rows.push({Caja:k,Usuarios:arr.join(' | '),Conteo:arr.length}));
-      addCSV('resumen_productividad_calidad.csv',['Caja','Usuarios','Conteo'],rows);
+      const demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
+      const enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
+      const tot = demand+enh;
+      addCSV('resumen_demanda_enhancement.csv',
+        ['Flujo','Total','Porcentaje'],
+        [{Flujo:'Demanda',Total:demand,Porcentaje:tot?demand/tot:0},{Flujo:'Enhancement',Total:enh,Porcentaje:tot?enh/tot:0}]
+      );
+      const nb = buildNineboxData();
+      const rows=[]; Object.entries(nb.buckets).forEach(([k,arr])=> rows.push({Caja:k,Usuarios:arr.join(' | '),Conteo:arr.length}));
+      addCSV('resumen_productividad_calidad.csv', ['Caja','Usuarios','Conteo'], rows);
       if(nb.missing.length){
-        addCSV('resumen_productividad_calidad_faltantes.csv',['Usuario','Promedio_Diario','Efectividad'], nb.missing.map(m=>({Usuario:m.u,Promedio_Diario:(m.pr==null?'':m.pr),Efectividad:(m.ef==null?'':m.ef)})));
+        addCSV('resumen_productividad_calidad_faltantes.csv', ['Usuario','Promedio_Diario','Efectividad'],
+          nb.missing.map(m=>({Usuario:m.u,Promedio_Diario:(m.pr==null?'':m.pr),Efectividad:(m.ef==null?'':m.ef)})));
       }
       const el=document.getElementById('ninebox-card');
-      const canvas=await html2canvas(el,{scale:2}); const blobNb=await new Promise(res=>canvas.toBlob(res));
+      const canvas = await html2canvas(el,{scale:2});
+      const blobNb = await new Promise(res=>canvas.toBlob(res));
       zip.file('productividad-calidad.png', blobNb);
-      const c1=document.getElementById('demandPieChart'); const b1=await (await fetch(c1.toDataURL('image/png'))).blob();
+      const c1=document.getElementById('demandPieChart');
+      const b1=await (await fetch(c1.toDataURL('image/png'))).blob();
       zip.file('demanda_enhancement.png', b1);
+
     }else if(id==='detalle'){
-      const data=buildUsersPromEff();
-      addCSV('detalle_por_usuario.csv',['Usuario','Promedio_Diario','Efectividad'], data.map(d=>({Usuario:d.user,Promedio_Diario:d.prom,Efectividad:d.eff})));
-      const c=document.getElementById('tasksByUserChart'); const b=await (await fetch(c.toDataURL('image/png'))).blob(); zip.file('detalle_prom_efectividad.png', b);
+      const data = buildUsersPromEff();
+      addCSV('detalle_por_usuario.csv', ['Usuario','Promedio_Diario','Efectividad'],
+             data.map(d=>({Usuario:d.user,Promedio_Diario:d.prom,Efectividad:d.eff})));
+      const c1=document.getElementById('tasksByUserChart');
+      const b1=await (await fetch(c1.toDataURL('image/png'))).blob();
+      zip.file('detalle_prom_efectividad.png', b1);
+
     }else if(id==='lideres'){
-      const data=buildLideresData();
-      addCSV('comparativa_equipo.csv',['Lider','Promedio_Diario','Efectividad'], data.map(d=>({Lider:d.lider,Promedio_Diario:d.prom,Efectividad:d.eff})));
-      const c=document.getElementById('tasksByLeaderChart'); const b=await (await fetch(c.toDataURL('image/png'))).blob(); zip.file('comparativa_equipo.png', b);
+      const data = buildLideresData();
+      addCSV('comparativa_equipo.csv', ['Lider','Promedio_Diario','Efectividad'],
+             data.map(d=>({Lider:d.lider,Promedio_Diario:d.prom,Efectividad:d.eff})));
+      const c=document.getElementById('tasksByLeaderChart');
+      const b=await (await fetch(c.toDataURL('image/png'))).blob();
+      zip.file('comparativa_equipo.png', b);
+
     }else if(id==='evolucion'){
-      const s=buildEvolucionData();
-      addCSV('evolucion_promedio_y_efectividad.csv',['Semana','Promedio_Diario','Efectividad'], s.labels.map((lab,i)=>({Semana:lab,Promedio_Diario:s.values[i],Efectividad:s.eff[i]})));
-      const c=document.getElementById('weeklyEvolutionChart'); const b=await (await fetch(c.toDataURL('image/png'))).blob(); zip.file('evolucion.png', b);
+      const series=buildEvolucionData();
+      addCSV('evolucion_promedio_y_efectividad.csv', ['Semana','Promedio_Diario','Efectividad'],
+             series.labels.map((lab,i)=>({Semana:lab,Promedio_Diario:series.values[i],Efectividad:series.eff[i]})));
+      const c=document.getElementById('weeklyEvolutionChart');
+      const b=await (await fetch(c.toDataURL('image/png'))).blob();
+      zip.file('evolucion.png', b);
+
     }else if(id==='ubicacion'){
       const data=buildUbicacionData();
-      addCSV('ubicacion_prom_y_efectividad.csv',['Ubicacion','Promedio_Diario','Efectividad'], data.labels.map((lab,i)=>({Ubicacion:lab,Promedio_Diario:data.prom[i],Efectividad:data.eff[i]})));
-      addCSV('ubicacion_antiguedad.csv',['Ubicacion','Antiguedad_Promedio'], data.antig.map(([loc,avg])=>({Ubicacion:loc,Antiguedad_Promedio:avg})));
-      const c=document.getElementById('locCombinedChart'); const b=await (await fetch(c.toDataURL('image/png'))).blob(); zip.file('ubicacion.png', b);
+      addCSV('ubicacion_prom_y_efectividad.csv',['Ubicacion','Promedio_Diario','Efectividad'],
+             data.labels.map((lab,i)=>({Ubicacion:lab,Promedio_Diario:data.prom[i],Efectividad:data.eff[i]})));
+      addCSV('ubicacion_antiguedad.csv',['Ubicacion','Antiguedad_Promedio'],
+             data.antig.map(([loc,avg])=>({Ubicacion:loc,Antiguedad_Promedio:avg})));
+      const c=document.getElementById('locCombinedChart');
+      const b=await (await fetch(c.toDataURL('image/png'))).blob();
+      zip.file('ubicacion.png', b);
     }
-    const blob=await zip.generateAsync({type:'blob'}); download(`export_${id}.zip`, blob);
+
+    const blob = await zip.generateAsync({type:'blob'});
+    download(`export_${id}.zip`, blob);
   }
 
   async function exportToGoogleSheets(){
@@ -921,21 +1295,142 @@
     }catch(e){ alert('No se pudo exportar a Sheets: '+e.message); }
   }
 
-  /******** GEMINI (prompts actualizados) ********/
+  /**********************
+   * CONSTRUCTORES para export
+   **********************/
+  function buildNineboxData(){
+    const flows=state.flujo; const map=new Map();
+    currentData.forEach(r=>{
+      const u=r.usuario; const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
+      o.num+=tareasPorFlujos(r,flows); o.den+=(r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!=null){ o.effSum+=r.efectividad; o.effN++; }
+      map.set(u,o);
+    });
+
+    const prodBand=p=>(p>=80?'Alta':p>=70?'Media':'Baja');
+    const calBand =e=>(e>=0.90?'Alta':e>=0.75?'Media':'Baja');
+
+    const buckets = {
+      "Prod Alta / Cal Alta":[], "Prod Alta / Cal Media":[], "Prod Alta / Cal Baja":[],
+      "Prod Media / Cal Alta":[], "Prod Media / Cal Media":[], "Prod Media / Cal Baja":[],
+      "Prod Baja / Cal Alta":[], "Prod Baja / Cal Media":[], "Prod Baja / Cal Baja":[]
+    };
+    const missing = [];
+
+    Array.from(map.entries()).forEach(([u,o])=>{
+      const prom = o.den? o.num/o.den : null;
+      const eff  = o.effN? o.effSum/o.effN : null;
+      if(prom==null || eff==null){ missing.push({u, pr:prom, ef:eff}); return; }
+      const caja = `Prod ${prodBand(prom)} / Cal ${calBand(eff)}`;
+      buckets[caja].push(u);
+    });
+
+    return { buckets, missing };
+  }
+
+  function buildUsersPromEff(){
+    const flows=state.flujo; const agg=new Map();
+    currentData.forEach(r=>{
+      const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
+      o.num+=tareasPorFlujos(r,flows); o.den+=(r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!=null){
+        const w=(r.correcciones_auditadas||0)||1; o.effNum+=r.efectividad*w; o.effDen+=w;
+      }
+      agg.set(u,o);
+    });
+    return Array.from(agg.entries()).map(([user,o])=>({user, prom:o.den?o.num/o.den:0, eff:o.effDen?o.effNum/o.effDen:null})).sort((a,b)=>b.prom-a.prom);
+  }
+
+  function buildLideresData(){
+    const flows=state.flujo; const agg=new Map();
+    currentData.forEach(r=>{
+      const l=r['líder']; if(!l || l.toLowerCase()==='sin líder') return;
+      const o=agg.get(l)||{num:0,den:0,effNum:0,effDen:0};
+      o.num+=tareasPorFlujos(r,flows); o.den+=(r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!=null){
+        const w=(r.correcciones_auditadas||0)||1; o.effNum+=r.efectividad*w; o.effDen+=w;
+      }
+      agg.set(l,o);
+    });
+    return Array.from(agg.entries()).map(([lider,o])=>({lider, prom:o.den?o.num/o.den:0, eff:o.effDen?o.effNum/o.effDen:null})).sort((a,b)=>b.prom-a.prom);
+  }
+
+  function buildEvolucionData(){
+    const flows=state.flujo; const agg=new Map();
+    currentData.forEach(r=>{
+      const w=Number(r.week); if(!Number.isFinite(w)) return;
+      const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
+      o.num+=tareasPorFlujos(r,flows); o.den+=(r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!=null){
+        const g=(r.correcciones_auditadas||0)||1; o.effNum+=r.efectividad*g; o.effDen+=g;
+      }
+      agg.set(w,o);
+    });
+    const weeks=Array.from(agg.keys());
+    const minW=Math.min(...weeks), maxW=Math.max(...weeks);
+    const labels=[], values=[], eff=[];
+    for(let w=minW; w<=maxW; w++){
+      const o=agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
+      labels.push('W'+String(w).padStart(2,'0'));
+      values.push(o.den? o.num/o.den : 0);
+      eff.push(o.effDen? 100*o.effNum/o.effDen : null);
+    }
+    return { labels, values, eff };
+  }
+
+  function buildUbicacionData(){
+    const flows=state.flujo; const byLoc=new Map(), effLoc=new Map(), antig={};
+    currentData.forEach(r=>{
+      const c=r.ciudad||'Sin ubicación';
+      const o=byLoc.get(c)||{num:0,den:0};
+      o.num+=tareasPorFlujos(r,flows); o.den+=(r.dias_activos||0); byLoc.set(c,o);
+
+      if(r.efectividad!=='' && r.efectividad!=null){
+        const w=(r.correcciones_auditadas||0)||1;
+        const e=effLoc.get(c)||{num:0,den:0};
+        e.num+=r.efectividad*w; e.den+=w; effLoc.set(c,e);
+      }
+
+      const a=Number(r.antigüedad||0);
+      if(!antig[c]) antig[c]={sum:0,n:0};
+      if(Number.isFinite(a)){ antig[c].sum+=a; antig[c].n++; }
+    });
+
+    const labels=Array.from(byLoc.keys()).sort();
+    const prom = labels.map(c=>{ const o=byLoc.get(c)||{num:0,den:0}; return o.den? o.num/o.den : 0; });
+    const eff  = labels.map(c=>{ const e=effLoc.get(c)||{num:0,den:0}; return e.den? 100*e.num/e.den : null; });
+    const antigList = labels.map(c=>{ const v=antig[c]||{sum:0,n:0}; return [c, v.n? v.sum/v.n : 0]; });
+    return { labels, prom, eff, antig: antigList };
+  }
+
+  /**********************
+   * GEMINI (prompts actualizados)
+   **********************/
   function buildNineboxPrompt(){
     const flows=state.flujo;
-    const filtros_activos=JSON.stringify(filtersSummary());
-    const total_tareas=currentData.reduce((s,r)=>s+tareasPorFlujos(r,flows),0);
-    const promedio_diario=promedioDiario(currentData,flows).toFixed(2);
-    const efVals=currentData.map(r=>r.efectividad).filter(v=>v!==''&&v!=null);
-    const efectividad=(efVals.length? (100*efVals.reduce((a,b)=>a+b,0)/efVals.length) : 0).toFixed(2);
+    const filtros_activos = JSON.stringify(filtersSummary());
+    const total_tareas = currentData.reduce((s,r)=>s+tareasPorFlujos(r,flows),0);
+    const promedio_diario = promedioDiario(currentData,flows).toFixed(2);
+    const efVals= currentData.map(r=>r.efectividad).filter(v=>v!==''&&v!=null);
+    const efectividad = (efVals.length? (100*efVals.reduce((a,b)=>a+b,0)/efVals.length) : 0).toFixed(2);
 
-    const prodBand=p=>(p>=80?'Alta':p>=70?'Media':'Baja'), calBand=e=>(e>=0.90?'Alta':e>=0.75?'Media':'Baja');
-    const buckets={'Prod Alta / Cal Alta':0,'Prod Alta / Cal Media':0,'Prod Alta / Cal Baja':0,'Prod Media / Cal Alta':0,'Prod Media / Cal Media':0,'Prod Media / Cal Baja':0,'Prod Baja / Cal Alta':0,'Prod Baja / Cal Media':0,'Prod Baja / Cal Baja':0};
+    // distribución ninebox
+    const prodBand=p=>(p>=80?'Alta':p>=70?'Media':'Baja');
+    const calBand=e=>(e>=0.90?'Alta':e>=0.75?'Media':'Baja');
+    const buckets = { 'Prod Alta / Cal Alta':0,'Prod Alta / Cal Media':0,'Prod Alta / Cal Baja':0,'Prod Media / Cal Alta':0,'Prod Media / Cal Media':0,'Prod Media / Cal Baja':0,'Prod Baja / Cal Alta':0,'Prod Baja / Cal Media':0,'Prod Baja / Cal Baja':0 };
     const map=new Map();
-    currentData.forEach(r=>{ const u=r.usuario; const o=map.get(u)||{num:0,den:0,effSum:0,effN:0}; o.num+=tareasPorFlujos(r,flows); o.den+=(r.dias_activos||0); if(r.efectividad!==''&&r.efectividad!=null){o.effSum+=r.efectividad;o.effN++;} map.set(u,o); });
-    Array.from(map.values()).forEach(o=>{ const prom=o.den?o.num/o.den:null, eff=o.effN?o.effSum/o.effN:null; if(prom==null||eff==null) return; buckets[`Prod ${prodBand(prom)} / Cal ${calBand(eff)}`]++; });
-    const distribucion_ninebox=Object.entries(buckets).map(([k,v])=>`• ${k}: ${v}`).join('\n');
+    currentData.forEach(r=>{
+      const u=r.usuario; const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
+      o.num += tareasPorFlujos(r,flows); o.den += (r.dias_activos||0);
+      if(r.efectividad!=='' && r.efectividad!=null){ o.effSum+=r.efectividad; o.effN++; }
+      map.set(u,o);
+    });
+    Array.from(map.values()).forEach(o=>{
+      const prom = o.den?o.num/o.den:null, eff=o.effN?o.effSum/o.effN:null;
+      if(prom==null||eff==null) return;
+      buckets[`Prod ${prodBand(prom)} / Cal ${calBand(eff)}`]++;
+    });
+    const distribucion_ninebox = Object.entries(buckets).map(([k,v])=>`• ${k}: ${v}`).join('\n');
 
     return `🔹 Prompt 1: *Análisis Nine-box con foco en Productividad x Calidad*
 
@@ -971,12 +1466,12 @@ ${distribucion_ninebox}
 
   function buildGlobalInsightsPrompt(){
     const flows=state.flujo;
-    const filtros_activos=JSON.stringify(filtersSummary());
-    const usuarios=new Set(currentData.map(r=>r.usuario)).size;
-    const ids=currentData.reduce((s,r)=>s+(r.ids_trabajados||0),0);
-    const prom=promedioDiario(currentData,flows).toFixed(2);
-    const efVals=currentData.map(r=>r.efectividad).filter(v=>v!==''&&v!=null);
-    const ef=(efVals.length? (100*efVals.reduce((a,b)=>a+b,0)/efVals.length) : 0).toFixed(2);
+    const filtros_activos = JSON.stringify(filtersSummary());
+    const usuarios = new Set(currentData.map(r=>r.usuario)).size;
+    const ids = currentData.reduce((s,r)=>s+(r.ids_trabajados||0),0);
+    const prom = promedioDiario(currentData,flows).toFixed(2);
+    const efVals= currentData.map(r=>r.efectividad).filter(v=>v!==''&&v!=null);
+    const ef = (efVals.length? (100*efVals.reduce((a,b)=>a+b,0)/efVals.length) : 0).toFixed(2);
 
     return `🔹 Prompt 2: *Análisis Global para Coordinación*
 
@@ -1008,35 +1503,48 @@ Sos analista de mejora continua en Catálogo (Netkel). Apuntás a ayudar al equi
 • Evitá recomendaciones fuera del alcance (ej. contratar más, usar software externo)`;
   }
 
-  async function geminiRequest(prompt){
-    if(!GEMINI_PROXY_URL) return "Configura GEMINI_PROXY_URL.";
-    const attempts=[{prompt:String(prompt)},{contents:[{parts:[{text:String(prompt)}]}]}];
+  async function geminiRequest(prompt) {
+    if (!GEMINI_PROXY_URL) return "Configura GEMINI_PROXY_URL.";
+    const attempts = [{ prompt: String(prompt) }, { contents: [{ parts: [{ text: String(prompt) }]}] }];
     let lastErr;
-    for(const body of attempts){
-      try{
-        const r=await fetch(GEMINI_PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-        const raw=await r.text(); if(!r.ok) throw new Error(raw||`HTTP ${r.status}`);
-        let data; try{ data=JSON.parse(raw); }catch{ return raw; }
-        const out=data?.candidates?.[0]?.content?.parts?.[0]?.text ?? data?.text ?? data?.output ?? data;
-        return (typeof out==='string')? out : JSON.stringify(out);
-      }catch(e){ lastErr=e; }
+    for (const body of attempts) {
+      try {
+        const r = await fetch(GEMINI_PROXY_URL, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) });
+        const raw = await r.text();
+        if (!r.ok) throw new Error(raw || `HTTP ${r.status}`);
+        let data; try { data = JSON.parse(raw); } catch { return raw; }
+        const out = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? data?.text ?? data?.output ?? data;
+        return (typeof out === 'string') ? out : JSON.stringify(out);
+      } catch (e) { lastErr = e; }
     }
-    throw lastErr||new Error('Gemini request failed');
+    throw lastErr || new Error('Gemini request failed');
   }
 
   function setupGemini(){
     document.getElementById('generate-summary-btn').addEventListener('click', async ()=>{
-      const block=document.getElementById('ninebox-missing');
-      block.classList.remove('hidden'); block.innerHTML='Generando…';
-      try{ const resp=await geminiRequest(buildNineboxPrompt()); block.innerHTML=resp; }catch(e){ block.innerHTML=e.message; }
+      const block = document.getElementById('ninebox-missing');
+      block.classList.remove('hidden');
+      block.innerHTML='Generando…';
+      try{
+        const resp = await geminiRequest(buildNineboxPrompt());
+        block.innerHTML = resp; // HTML enriquecido
+      }catch(e){ block.innerHTML = e.message; }
     });
+
     document.getElementById('generate-insights-btn').addEventListener('click', async ()=>{
-      const out=document.getElementById('insights-output'); out.classList.remove('hidden'); out.innerHTML='Analizando…';
-      try{ const resp=await geminiRequest(buildGlobalInsightsPrompt()); out.innerHTML=resp; }catch(e){ out.innerHTML=e.message; }
+      const out = document.getElementById('insights-output');
+      out.classList.remove('hidden');
+      out.innerHTML = 'Analizando…';
+      try{
+        const resp = await geminiRequest(buildGlobalInsightsPrompt());
+        out.innerHTML = resp; // HTML enriquecido
+      }catch(e){ out.innerHTML = e.message; }
     });
   }
 
-  /******** INIT ********/
+  /**********************
+   * INIT
+   **********************/
   document.addEventListener('DOMContentLoaded', async ()=>{
     try{
       const [tProd,tCal,tBase,tLid] = await Promise.all([
@@ -1045,17 +1553,22 @@ Sos analista de mejora continua en Catálogo (Netkel). Apuntás a ayudar al equi
         fetchCSVFile(FILES.base),
         fetchCSVFile(FILES.lideres)
       ]);
-      const prod=parseCSV(tProd), cal=parseCSV(tCal), base=parseCSV(tBase), lids=parseCSV(tLid);
-      originalData=buildWeeklyRows(prod,cal,base,lids);
+      const prod = parseCSV(tProd);
+      const cal  = parseCSV(tCal);
+      const base = parseCSV(tBase);
+      const lids = parseCSV(tLid);
+
+      originalData = buildWeeklyRows(prod, cal, base, lids);
 
       mountFilters();
       setupNavigation();
       setupGemini();
+
       refreshDependentFilters();
       applyFilters();
     }catch(err){
       console.error(err);
-      document.body.innerHTML=`<div class="p-8 text-center text-red-600 bg-red-100">${err.message}</div>`;
+      document.body.innerHTML = `<div class="p-8 text-center text-red-600 bg-red-100">${err.message}</div>`;
     }
   });
   </script>
