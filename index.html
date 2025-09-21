@@ -120,18 +120,14 @@
 
   /* KPI text */
   .kpi-title{color:var(--muted);font-weight:700;letter-spacing:.2px}
-  /* ——— Ajuste tipográfico para que no “salte” ni sobresalga ——— */
+  /* — Ajuste tipográfico: sin elipsis + auto-fit por JS — */
   .kpi-number{
     display:block;
     font-weight:800;
     line-height:1.05;
     font-variant-numeric: tabular-nums;
     letter-spacing:.5px;
-    white-space:nowrap;           /* nunca salta de línea */
-    overflow:hidden;              /* evita desbordes feos */
-    text-overflow:ellipsis;
-    /* Tamaño adaptativo controlado */
-    font-size:clamp(1.85rem, 2.1vw, 2.25rem);
+    white-space:nowrap;           /* una sola línea */
   }
   .t-ok{color:var(--ok)}
   .t-warn{color:var(--warn)}
@@ -397,7 +393,7 @@
 const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
 const FILES = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
 
-/* Google Apps Script Web App URL (provista por vos) */
+/* Google Apps Script Web App URL (provista) */
 const GAS_SHEETS_URL = "https://script.google.com/macros/s/AKfycbxqTzxdY090fV2JWIFxiqAVnkre_dtUw1M09ZMv9mNKYz3GQW-d1ONSP_FIJTswZ9t2qA/exec";
 
 /* Paleta base (se ajusta por tema más abajo) */
@@ -448,7 +444,7 @@ function applyThemeToCharts(){
         sc.grid.color = grid;
       }
     }
-    if(ch.options && ch.options.plugins && ch.options.plugins.legend && ch.options.plugins.legend.labels){
+    if(ch.options?.plugins?.legend?.labels){
       ch.options.plugins.legend.labels.color = getCss('--chart-legend');
     }
     ch.update();
@@ -527,6 +523,29 @@ function setColor(el, color){
   el.classList.remove('t-bad','t-warn','t-ok');
   if(color) el.classList.add(color);
 }
+
+/* ---- Auto-fit para que los números NUNCA queden con "..." ---- */
+const KPI_FIT_MAX = 40;   // px
+const KPI_FIT_MIN = 18;   // px
+function fitNumber(el){
+  // iniciar grande y achicar hasta que quepa
+  el.style.fontSize = KPI_FIT_MAX + 'px';
+  // fallback por si el contenedor aún no tiene ancho
+  const tryFit = ()=>{
+    let size = KPI_FIT_MAX;
+    const w = el.clientWidth || el.parentElement.clientWidth;
+    if(!w){ requestAnimationFrame(tryFit); return; }
+    while(el.scrollWidth > el.clientWidth && size > KPI_FIT_MIN){
+      size -= 1;
+      el.style.fontSize = size + 'px';
+    }
+  };
+  tryFit();
+}
+function fitAllKPINumbers(){
+  document.querySelectorAll('.kpi-number').forEach(fitNumber);
+}
+const debounce = (fn,ms)=>{ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; };
 
 /**********************
  * CONSOLIDADO
@@ -663,7 +682,6 @@ function filteredOriginalDataExcept(exceptKeys){
 }
 
 function computeFilterOptions(){
-  // Calcula opciones válidas respetando exclusión entre Q↔Mes↔Semana
   const forQ = filteredOriginalDataExcept('q');
   const forMes = filteredOriginalDataExcept('mes');
   const forSemana = filteredOriginalDataExcept('semana');
@@ -678,7 +696,7 @@ function computeFilterOptions(){
     ubic: uniqueSorted(forUbic.map(r=>r.ciudad).filter(Boolean)),
     lider: uniqueSorted(forLider.map(r=>r['líder']).filter(l => l && l.toLowerCase()!=='sin líder' && l.toLowerCase()!=='sin lider')),
     usuario: uniqueSorted(forUser.map(r=>r.usuario)),
-    flujo: ['mixto','demanda','enhancement'] // fijo
+    flujo: ['mixto','demanda','enhancement']
   };
   return opts;
 }
@@ -799,6 +817,7 @@ function setupNavigation(){
       if(target==='#lideres') renderTasksByLeader();
       if(target==='#evolucion'){ renderWeeklyEvolution(); updateEvolutionKPIs(); }
       if(target==='#ubicacion') renderByLocation();
+      fitAllKPINumbers();
     });
   });
 
@@ -832,6 +851,9 @@ function setupNavigation(){
     const now = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
     setTheme(now);
   });
+
+  // Recalcular auto-fit en resize
+  window.addEventListener('resize', debounce(fitAllKPINumbers, 120));
 }
 
 /**********************
@@ -859,6 +881,7 @@ function applyFilters(){
   renderByLocation();
   updateEvolutionKPIs();
   updateDetailKPIs();
+  fitAllKPINumbers();
 }
 
 /**********************
@@ -979,7 +1002,7 @@ function lineEffDataset(label, data){
 function renderNineBox(){
   const f = flujoSel();
 
-  const map = new Map(); // user -> {num,den, effSum, effN}
+  const map = new Map();
   currentData.forEach(r=>{
     const u=r.usuario;
     const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
@@ -997,8 +1020,8 @@ function renderNineBox(){
   const prodBand = p => (p>=80 ? 'alta' : p>=70 ? 'media' : 'baja');
   const calBand  = e => (e>=0.90 ? 'alta' : e>=0.75 ? 'media' : 'baja');
 
-  const rows=['alta','media','baja']; // productividad
-  const cols=['alta','media','baja']; // calidad
+  const rows=['alta','media','baja']; 
+  const cols=['alta','media','baja']; 
 
   const buckets = {};
   const details = {};
@@ -1151,7 +1174,7 @@ function renderDemandPie(){
 function renderTasksByUser(){
   const f = flujoSel();
 
-  const agg = new Map(); // user -> {num,den, effNum, effDen}
+  const agg = new Map();
   currentData.forEach(r=>{
     const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
     o.num += tareasFlujo(r,f);
@@ -1192,7 +1215,7 @@ function renderTasksByUser(){
 /* ---------- Comparativa por equipo ---------- */
 function renderTasksByLeader(){
   const f = flujoSel();
-  const agg = new Map(); // líder -> {num,den, effNum, effDen}
+  const agg = new Map();
   currentData.forEach(r=>{
     const l = r['líder']; if(!l || l.toLowerCase()==='sin líder' || l.toLowerCase()==='sin lider') return;
     const o = agg.get(l) || {num:0,den:0,effNum:0,effDen:0};
@@ -1234,7 +1257,7 @@ function renderTasksByLeader(){
 /* ---------- Evolución semanal ---------- */
 function renderWeeklyEvolution(){
   const f = flujoSel();
-  const agg = new Map(); // week -> {num,den, effNum, effDen}
+  const agg = new Map();
   currentData.forEach(r=>{
     const w = Number(r.week); if(!Number.isFinite(w)) return;
     const o = agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
@@ -1284,9 +1307,9 @@ function renderWeeklyEvolution(){
 /* ---------- Ubicación ---------- */
 function renderByLocation(){
   const f = flujoSel();
-  const byLoc = new Map(); // ciudad -> {num,den}
-  const effLoc = new Map(); // ciudad -> {num,den}
-  const antig = {}; // ciudad -> {sum, n}
+  const byLoc = new Map();
+  const effLoc = new Map();
+  const antig = {};
 
   currentData.forEach(r=>{
     const c=r.ciudad||'Sin ubicación';
@@ -1622,6 +1645,9 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     currentData = originalData.slice();
     applyFilters();
     applyThemeToCharts();
+
+    // ajuste de números inicial
+    fitAllKPINumbers();
   }catch(err){
     console.error(err);
     document.body.innerHTML = `<div class="p-8 text-center text-red-600 bg-red-100">${err.message}</div>`;
