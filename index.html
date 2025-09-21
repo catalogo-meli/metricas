@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="light">
+<html lang="es">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
@@ -24,120 +24,161 @@
 
 <style>
   :root{
-    --bg:#f1f5f9;              /* slate-100 */
-    --text:#0f172a;            /* slate-900 */
-    --muted:#475569;           /* slate-600 */
-    --card:#ffffff;
-    --border:#e2e8f0;          /* slate-200 */
-    --sidebar-bg:#9aa0a6;      /* claro */
-    --sidebar-text:#ffffff;
-    --sidebar-link-hover-bg:#7a7a7a;
+    /* LIGHT THEME */
+    --bg:#f1f5f9;              /* page background */
+    --text:#0f172a;            /* base text */
+    --muted:#64748b;           /* secondary text */
+    --card-bg:#ffffff;         /* card background */
+    --card-border:#e2e8f0;     /* card border */
+    --sidebar-bg:#6b7280;      /* sidebar background */
+    --sidebar-text:#ffffff;    /* sidebar text */
+    --sidebar-active:#7a7a7a;  /* active/hover link */
+    --chip-bg:#ffffff;
+    --chip-border:#e2e8f0;
+    --menu-bg:#ffffff;
 
-    --nb-green:#dcfce7;
-    --nb-yellow:#fef9c3;
-    --nb-orange:#ffedd5;
-    --nb-red:#fee2e2;
-    --nb-text:#0f172a;         /* texto dentro de celdas pastel */
-
-    --chart-grid:rgba(0,0,0,.12);
+    /* charts */
+    --chart-grid:#94a3b8;
     --chart-tick:#334155;
+    --chart-legend:#0f172a;
+
+    /* brand/palette */
+    --c0:#86eae9;
+    --c1:#3edad8;
+    --c2:#37c9ef;
+    --c3:#2c92d5;
+    --c4:#13538a;
+
+    /* KPI states */
+    --ok:#16a34a;      /* green-600 */
+    --warn:#f59e0b;    /* amber-500 */
+    --bad:#ef4444;     /* red-500 */
+
+    /* FILTERS compact */
+    --pill-font:.90rem;
+    --pill-pad-y:.45rem;
+    --pill-pad-x:.65rem;
+    --pill-minw:200px;
+    --menu-minw:280px;
+  }
+  html.dark{
+    --bg:#0b1220;
+    --text:#e5e7eb;
+    --muted:#94a3b8;
+    --card-bg:#0f172a;
+    --card-border:#1f2937;
+    --sidebar-bg:#374151;      /* slate-700 */
+    --sidebar-text:#e5e7eb;
+    --sidebar-active:#475569;  /* slate-600 */
+    --chip-bg:#0f172a;
+    --chip-border:#1f2937;
+    --menu-bg:#0f172a;
+
+    --chart-grid:#2b3a4a;
+    --chart-tick:#cbd5e1;
+    --chart-legend:#e5e7eb;
+
+    /* keep brand readable on dark */
+    --c0:#5eead4;   /* teal-300 */
+    --c1:#22d3ee;   /* cyan-400 */
+    --c2:#38bdf8;   /* sky-400 */
+    --c3:#60a5fa;   /* blue-400 */
+    --c4:#93c5fd;   /* blue-300 */
   }
 
-  [data-theme="dark"]{
-    --bg:#0b1220;              /* tinta profunda */
-    --text:#e5edf7;            /* casi blanco */
-    --muted:#b6c2d1;           /* suave */
-    --card:#0f172a;            /* slate-900 */
-    --border:#1f2a37;          /* líneas */
-    --sidebar-bg:#334155;      /* lateral */
-    --sidebar-text:#e5edf7;
-    --sidebar-link-hover-bg:#1f2937;
+  /* Base */
+  *{box-sizing:border-box}
+  body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text)}
+  .container{max-width:1400px}
+  a{color:inherit}
 
-    /* Pasteles se mantienen; texto oscuro para contraste */
-    --nb-green:#dcfce7;
-    --nb-yellow:#fef9c3;
-    --nb-orange:#ffedd5;
-    --nb-red:#fee2e2;
-    --nb-text:#0b1220;
+  /* Sidebar */
+  .sidebar{width:16rem;display:flex;flex-direction:column;background:var(--sidebar-bg);color:var(--sidebar-text)}
+  .sidebar-link{transition:all .2s ease-in-out;border-radius:.5rem;padding:.75rem .75rem;display:flex;align-items:center}
+  .sidebar-link:hover{background:var(--sidebar-active);transform:translateX(4px)}
+  .sidebar-link.active{background:var(--sidebar-active)}
+  .sidebar .title{color:#fff}
 
-    --chart-grid:rgba(148,163,184,.25);
-    --chart-tick:#e2e8f0;
-  }
-
-  body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text);}
-  .kpi-card{background:var(--card);border-radius:.9rem;padding:1.5rem;border:1px solid var(--border);box-shadow:0 10px 30px -18px rgba(0,0,0,.45);}
-  .chart-container{height:400px;}
-  #mobile-menu{transition:transform .3s ease-in-out;}
-
-  /* Sidebar adaptativa */
-  .sidebar{background:var(--sidebar-bg);color:var(--sidebar-text);}
-  .sidebar-link{transition:all .2s ease-in-out;border-radius:.6rem;padding:.75rem .9rem;display:flex;align-items:center;}
-  .sidebar-link:hover,.sidebar-link.active{background:var(--sidebar-link-hover-bg);color:#fff;transform:translateX(4px);}
+  /* Cards */
+  .kpi-card{background:var(--card-bg);border-radius:.9rem;padding:1.25rem;box-shadow:0 4px 8px -2px rgb(0 0 0 / .15);border:1px solid var(--card-border)}
+  .chart-container{height:400px}
+  #mobile-menu{transition:transform .3s ease-in-out}
 
   /* Nine-box */
-  .nb-cell{display:flex;align-items:center;justify-content:center;height:84px;border-radius:.6rem;border:1px solid var(--border);color:var(--nb-text);}
+  .nb-cell{display:flex;align-items:center;justify-content:center;height:80px;border-radius:.5rem;border:1px solid var(--card-border)}
   .nb-hdr{font-weight:600;color:var(--muted)}
   .nb-badge{font-size:1.5rem;font-weight:700}
-  .nb-green{background:var(--nb-green)}
-  .nb-yellow{background:var(--nb-yellow)}
-  .nb-orange{background:var(--nb-orange)}
-  .nb-red{background:var(--nb-red)}
+  .nb-green{background:#dcfce7}
+  .nb-yellow{background:#fef9c3}
+  .nb-orange{background:#ffedd5}
+  .nb-red{background:#fee2e2}
+  html.dark .nb-green{background:#0e3b2c;color:#d1fae5;border-color:#14532d}
+  html.dark .nb-yellow{background:#3b2f0b;color:#fde68a;border-color:#a16207}
+  html.dark .nb-orange{background:#422006;color:#fed7aa;border-color:#9a3412}
+  html.dark .nb-red{background:#3f0d12;color:#fecaca;border-color:#b91c1c}
   .nb-cell[data-bucket]{cursor:pointer}
 
-  /* Pills de filtros */
-  .pill{display:flex;align-items:center;gap:.5rem;background:var(--card);border:1px solid var(--border);border-radius:.75rem;padding:.5rem .75rem;box-shadow:0 1px 2px rgb(0 0 0 / .06);position:relative;min-width:230px;}
-  .pill:hover{box-shadow:0 2px 6px rgb(0 0 0 / .08);}
-  .pill .label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;color:var(--muted)}
-  .pill .chev{color:#64748b}
-  .menu{position:absolute;z-index:50;top:110%;left:0;min-width:320px;background:var(--card);border:1px solid var(--border);border-radius:.75rem;box-shadow:0 18px 30px -12px rgb(0 0 0 / .25);display:none}
+  /* KPI numbers */
+  .kpi-title{color:var(--muted);font-weight:600}
+  .kpi-number{font-size:2.75rem;font-weight:800;line-height:1.1}
+  /* color helpers applied by JS */
+  .t-ok{color:var(--ok)}
+  .t-warn{color:var(--warn)}
+  .t-bad{color:var(--bad)}
+
+  /* Pills de filtros (compactos) */
+  .pill{display:flex;align-items:center;gap:.5rem;background:var(--chip-bg);border:1px solid var(--chip-border);border-radius:.75rem;padding:var(--pill-pad-y) var(--pill-pad-x);box-shadow:0 1px 2px rgb(0 0 0 / .06);position:relative;min-width:var(--pill-minw);font-size:var(--pill-font)}
+  .pill:hover{box-shadow:0 2px 6px rgb(0 0 0 / .08)}
+  .pill .label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;color:var(--muted);font-size:var(--pill-font)}
+  .pill .chev{color:#64748b;font-size:.85rem}
+  .menu{position:absolute;z-index:50;top:110%;left:0;min-width:var(--menu-minw);background:var(--menu-bg);border:1px solid var(--card-border);border-radius:.75rem;box-shadow:0 18px 30px -12px rgb(0 0 0 / .25);display:none}
   .menu.open{display:block}
-  .menu .head{display:flex;align-items:center;justify-content:space-between;padding:.6rem .75rem;border-bottom:1px solid var(--border)}
-  .menu .search{width:100%;padding:.5rem .75rem;border:1px solid var(--border);border-radius:.5rem;background:#f8fafc;font-size:.9rem;color:#111827}
-  [data-theme="dark"] .menu .search{background:#0b1220;color:#e2e8f0;border-color:var(--border)}
-  .menu .clear{font-size:.85rem;color:#0ea5e9}
-  .menu .list{max-height:260px;overflow:auto;padding:.5rem}
-  .menu .item{display:flex;align-items:center;gap:.6rem;padding:.4rem .35rem;border-radius:.5rem;cursor:pointer}
+  .menu .head{display:flex;align-items:center;justify-content:space-between;padding:.5rem .6rem;border-bottom:1px solid var(--card-border)}
+  .menu .search{width:100%;padding:.4rem .6rem;border:1px solid var(--card-border);border-radius:.5rem;background:#f8fafc;font-size:.85rem}
+  html.dark .menu .search{background:#0b1220;color:var(--text)}
+  .menu .clear{font-size:.8rem;color:#0ea5e9}
+  .menu .list{max-height:260px;overflow:auto;padding:.4rem}
+  .menu .item{display:flex;align-items:center;gap:.6rem;padding:.3rem .3rem;border-radius:.5rem;cursor:pointer}
   .menu .item:hover{background:#f8fafc}
-  [data-theme="dark"] .menu .item:hover{background:#0b1220}
-  .menu .foot{padding:.6rem .75rem;border-top:1px solid var(--border);font-size:.85rem;color:#64748b}
+  html.dark .menu .item:hover{background:#0b1220}
+  .menu .foot{padding:.45rem .6rem;border-top:1px solid var(--card-border);font-size:.75rem;color:var(--muted)}
 
   /* Export dropdown */
-  .dropdown{position:relative;display:inline-block;}
-  .dropdown-menu{position:absolute;right:0;top:100%;background:var(--card);border:1px solid var(--border);border-radius:.5rem;box-shadow:0 10px 20px rgba(0,0,0,.18);min-width:260px;z-index:50}
-  .dropdown-menu a{display:block;padding:.6rem .8rem;font-size:.95rem;color:#334155}
-  [data-theme="dark"] .dropdown-menu a{color:#e2e8f0}
+  .dropdown{position:relative;display:inline-block}
+  .dropdown-menu{position:absolute;right:0;top:100%;background:var(--menu-bg);border:1px solid var(--card-border);border-radius:.5rem;box-shadow:0 10px 20px rgba(0,0,0,.12);min-width:270px;z-index:50}
+  .dropdown-menu a{display:block;padding:.6rem .8rem;font-size:.95rem;color:var(--text)}
   .dropdown-menu a:hover{background:#f1f5f9}
-  [data-theme="dark"] .dropdown-menu a:hover{background:#0b1220}
+  html.dark .dropdown-menu a:hover{background:#111827}
 
-  /* IA output */
+  /* IA enriched output */
   .ai-output p{margin-bottom:.75rem;line-height:1.55}
   .ai-output ul{list-style:disc;margin-left:1.5rem;margin-bottom:1rem}
   .ai-output table{width:100%;border-collapse:collapse;margin-top:1rem}
   .ai-output th,.ai-output td{border:1px solid #cbd5e1;padding:.5rem;text-align:left}
   .ai-output th{background:#f1f5f9}
+  html.dark .ai-output th{background:#111827;border-color:#334155}
   .ai-output code{background:#f3f4f6;padding:.2rem .4rem;border-radius:4px}
 
-  /* Botón tema */
-  .btn-ghost{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:.75rem;padding:.55rem .8rem}
-  .btn-ghost:hover{filter:brightness(0.98)}
+  /* Buttons */
+  .btn{border-radius:.75rem;padding:.55rem .8rem;font-weight:600}
+  .btn-outline{border:1px solid var(--chip-border);background:transparent}
+  .btn-sky{background:#0284c7;color:#fff}
+  .btn-sky:hover{background:#0369a1}
 
-  /* --- Mejor contraste en modo oscuro para números KPI --- */
-  [data-theme="dark"] .text-green-600{color:#34d399 !important;}  /* green-400 */
-  [data-theme="dark"] .text-red-600{color:#f87171 !important;}    /* red-400 */
-  [data-theme="dark"] .text-orange-500{color:#fb923c !important;} /* orange-400 */
-  [data-theme="dark"] .text-amber-500{color:#fbbf24 !important;}  /* amber-400 */
+  /* Small utility */
+  .shadow-soft{box-shadow:0 4px 6px -1px rgb(0 0 0 / .1),0 2px 4px -2px rgb(0 0 0 / .1)}
 </style>
 </head>
 
 <body>
 <div class="flex h-screen overflow-hidden">
   <!-- Sidebar -->
-  <aside class="hidden md:flex w-64 flex-col sidebar p-4">
+  <aside class="hidden md:flex sidebar p-4">
     <div class="flex items-center mb-8">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-3 text-white" viewBox="0 0 20 20" fill="currentColor">
         <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
       </svg>
-      <h1 class="text-2xl font-bold text-white">Catálogo</h1>
+      <h1 class="text-2xl font-bold title">Catálogo</h1>
     </div>
     <nav id="nav-menu" class="flex-1 space-y-2">
       <a href="#resumen" class="sidebar-link active">Resumen General</a>
@@ -154,28 +195,27 @@
     <div class="container mx-auto px-6 py-8">
       <!-- Header -->
       <div class="flex flex-wrap justify-between items-center mb-6 gap-3">
-        <h2 id="page-title" class="text-3xl font-bold" style="color:var(--text)">Resumen General</h2>
+        <h2 id="page-title" class="text-3xl font-extrabold">Resumen General</h2>
         <div class="flex items-center gap-2">
-          <button id="btn-clear-filters" class="px-3 py-2 rounded-lg btn-ghost text-sm">
-            Limpiar todos los filtros
+          <button id="btn-clear-filters" class="btn btn-outline">Limpiar todos los filtros</button>
+
+          <!-- Theme toggle -->
+          <button id="btn-theme" class="btn btn-outline" title="Cambiar tema">
+            <span id="theme-emoji">🌞</span>
           </button>
-          <button id="theme-toggle" class="btn-ghost" title="Tema claro/oscuro" aria-label="Alternar tema">
-            <span id="theme-ico">🌙</span>
-          </button>
+
           <div class="dropdown">
-            <button id="btn-export" class="px-3 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-sm">
-              Exportar
-            </button>
+            <button id="btn-export" class="btn btn-sky">Exportar</button>
             <div id="export-menu" class="dropdown-menu hidden">
               <a href="#" data-exp="csv">Exportar datos (CSV)</a>
+              <a href="#" data-exp="sheets">Exportar a Google Sheets</a>
               <a href="#" data-exp="png">Exportar gráficos (PNG)</a>
-              <a href="#" data-exp="gsheets">Exportar a Google Sheets</a>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Filtros -->
+      <!-- Barra de filtros -->
       <div id="filters-bar" class="flex flex-wrap gap-3 mb-8"></div>
 
       <!-- Secciones -->
@@ -184,28 +224,28 @@
         <section id="resumen" class="page-section">
           <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-6 mb-6">
             <div class="kpi-card text-center">
-              <h3 class="font-medium" style="color:var(--muted)">Total Tareas</h3>
-              <p id="kpi-total-tareas" class="text-4xl font-bold mt-2"></p>
+              <h3 class="kpi-title">Total Tareas</h3>
+              <p id="kpi-total-tareas" class="kpi-number mt-2"></p>
             </div>
             <div class="kpi-card text-center">
-              <h3 class="font-medium" style="color:var(--muted)">IDs trabajados</h3>
-              <p id="kpi-ids" class="text-4xl font-bold mt-2"></p>
+              <h3 class="kpi-title">IDs trabajados</h3>
+              <p id="kpi-ids" class="kpi-number mt-2"></p>
             </div>
             <div class="kpi-card text-center">
-              <h3 class="font-medium" style="color:var(--muted)">Promedio Diario</h3>
-              <p id="kpi-promedio-diario" class="text-4xl font-bold mt-2"></p>
+              <h3 class="kpi-title">Promedio Diario</h3>
+              <p id="kpi-promedio-diario" class="kpi-number mt-2"></p>
             </div>
             <div class="kpi-card text-center">
-              <h3 class="font-medium" style="color:var(--muted)">% Efectividad</h3>
-              <p id="kpi-efectividad-prom" class="text-4xl font-bold mt-2"></p>
+              <h3 class="kpi-title">% Efectividad</h3>
+              <p id="kpi-efectividad-prom" class="kpi-number mt-2"></p>
             </div>
             <div class="kpi-card text-center">
-              <h3 class="font-medium" style="color:var(--muted)">Correcciones Auditadas</h3>
-              <p id="kpi-correcciones" class="text-4xl font-bold mt-2"></p>
+              <h3 class="kpi-title">Correcciones Auditadas</h3>
+              <p id="kpi-correcciones" class="kpi-number mt-2"></p>
             </div>
             <div class="kpi-card text-center">
-              <h3 class="font-medium" style="color:var(--muted)">Usuarios Activos</h3>
-              <p id="kpi-usuarios" class="text-4xl font-bold mt-2"></p>
+              <h3 class="kpi-title">Usuarios Activos</h3>
+              <p id="kpi-usuarios" class="kpi-number mt-2"></p>
             </div>
           </div>
 
@@ -214,10 +254,10 @@
             <div id="ninebox-card" class="kpi-card">
               <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Productividad - Calidad</h3>
-                <button id="generate-summary-btn" class="bg-sky-500 text-white px-4 py-2 rounded-lg hover:bg-sky-600 transition-colors text-sm font-medium">✨ Generar Resumen</button>
+                <button id="generate-summary-btn" class="btn btn-sky text-sm">✨ Generar Resumen</button>
               </div>
-              <div id="ninebox-grid" class="grid grid-cols-4 gap-2"></div>
-              <p class="mt-3 text-xs" style="color:var(--muted)">
+              <div class="grid grid-cols-4 gap-2" id="ninebox-grid"></div>
+              <p class="mt-3 text-xs text-slate-500">
                 Productividad: Alta ≥80; Media 70–&lt;80; Baja &lt;70. &nbsp;|&nbsp;
                 Calidad: Alta ≥90%; Media 75%–&lt;90%; Baja &lt;75%.
               </p>
@@ -231,7 +271,7 @@
               <div class="chart-container relative mx-auto" style="height:320px;max-width:360px">
                 <canvas id="demandPieChart"></canvas>
               </div>
-              <div id="demandTotals" class="mt-3 text-center text-sm" style="color:var(--muted)"></div>
+              <div id="demandTotals" class="mt-3 text-center text-sm"></div>
             </div>
           </div>
         </section>
@@ -245,16 +285,16 @@
             </div>
             <div class="grid grid-cols-1 gap-4">
               <div class="kpi-card text-center">
-                <h3 class="font-medium" style="color:var(--muted)">Promedio Diario</h3>
-                <p id="det-kpi-prom" class="text-4xl font-bold mt-2"></p>
+                <h3 class="kpi-title">Promedio Diario</h3>
+                <p id="det-kpi-prom" class="kpi-number mt-2"></p>
               </div>
               <div class="kpi-card text-center">
-                <h3 class="font-medium" style="color:var(--muted)">% Efectividad</h3>
-                <p id="det-kpi-ef" class="text-4xl font-bold mt-2"></p>
+                <h3 class="kpi-title">% Efectividad</h3>
+                <p id="det-kpi-ef" class="kpi-number mt-2"></p>
               </div>
               <div class="kpi-card text-center">
-                <h3 class="font-medium" style="color:var(--muted)">IDs trabajados</h3>
-                <p id="det-kpi-ids" class="text-3xl font-bold mt-2"></p>
+                <h3 class="kpi-title">IDs trabajados</h3>
+                <p id="det-kpi-ids" class="kpi-number mt-2"></p>
               </div>
             </div>
           </div>
@@ -277,20 +317,20 @@
             </div>
             <div class="grid grid-cols-1 gap-4">
               <div class="kpi-card text-center">
-                <h3 class="font-medium" style="color:var(--muted)">Promedio Diario</h3>
-                <p id="evo-kpi-prom" class="text-4xl font-bold mt-2"></p>
+                <h3 class="kpi-title">Promedio Diario</h3>
+                <p id="evo-kpi-prom" class="kpi-number mt-2"></p>
               </div>
               <div class="kpi-card text-center">
-                <h3 class="font-medium" style="color:var(--muted)">% Efectividad</h3>
-                <p id="evo-kpi-ef" class="text-4xl font-bold mt-2"></p>
+                <h3 class="kpi-title">% Efectividad</h3>
+                <p id="evo-kpi-ef" class="kpi-number mt-2"></p>
               </div>
               <div class="kpi-card text-center">
-                <h3 class="font-medium" style="color:var(--muted)">IDs trabajados</h3>
-                <p id="evo-kpi-ids" class="text-3xl font-bold mt-2"></p>
+                <h3 class="kpi-title">IDs trabajados</h3>
+                <p id="evo-kpi-ids" class="kpi-number mt-2"></p>
               </div>
               <div class="kpi-card text-center">
-                <h3 class="font-medium" style="color:var(--muted)">Usuarios Activos</h3>
-                <p id="evo-kpi-users" class="text-3xl font-bold mt-2"></p>
+                <h3 class="kpi-title">Usuarios Activos</h3>
+                <p id="evo-kpi-users" class="kpi-number mt-2"></p>
               </div>
             </div>
           </div>
@@ -314,11 +354,9 @@
         <section id="analisis" class="page-section hidden">
           <div class="kpi-card">
             <h3 class="text-xl font-semibold mb-2">Análisis Inteligente con Gemini</h3>
-            <p class="mb-4" style="color:var(--muted)">Insights basados en los datos y filtros actuales.</p>
-            <button id="generate-insights-btn" class="bg-sky-600 text-white px-6 py-3 rounded-lg hover:bg-sky-700 transition-colors text-base font-semibold">
-              ✨ Analizar Datos y Generar Sugerencias
-            </button>
-            <div id="insights-output" class="mt-6 p-4 rounded-md border hidden ai-output" style="background:#0b1220;border-color:var(--border)"></div>
+            <p class="text-slate-500 mb-4">Insights basados en los datos y filtros actuales.</p>
+            <button id="generate-insights-btn" class="btn btn-sky text-base">✨ Analizar Datos y Generar Sugerencias</button>
+            <div id="insights-output" class="mt-6 p-4 bg-slate-50 rounded-md border border-slate-200 hidden ai-output"></div>
           </div>
         </section>
       </div>
@@ -330,9 +368,9 @@
 <div id="mobile-menu" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden">
   <aside class="absolute top-0 left-0 h-full w-64 sidebar p-4 transform -translate-x-full transition-transform duration-300">
     <div class="flex justify-between items-center mb-8">
-      <h1 class="text-2xl font-bold text-white">Menú</h1>
+      <h1 class="text-2xl font-bold title">Menú</h1>
       <button id="close-mobile-menu">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
         </svg>
       </button>
@@ -348,13 +386,13 @@
 const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
 const FILES = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
 
-/* Paleta accesible para claro/oscuro */
-const PALETTE = { c0:'#86eae9', c1:'#35c3bf', c2:'#37c9ef', c3:'#2ea0f4', c4:'#2c92d5', c5:'#13538a' };
-const BAR_BG = 'rgba(55,201,239,0.5)';
-const LINE_ACC = PALETTE.c1;
+/* Google Apps Script Web App URL (provista por vos) */
+const GAS_SHEETS_URL = "https://script.google.com/macros/s/AKfycbxqTzxdY090fV2JWIFxiqAVnkre_dtUw1M09ZMv9mNKYz3GQW-d1ONSP_FIJTswZ9t2qA/exec";
 
-/* Export a Google Sheets (Apps Script) */
-const EXPORT_ENDPOINT = "https://script.google.com/macros/s/AKfycbxqTzxdY090fV2JWIFxiqAVnkre_dtUw1M09ZMv9mNKYz3GQW-d1ONSP_FIJTswZ9t2qA/exec";
+/* Paleta base (se ajusta por tema más abajo) */
+const PALETTE = { c0:getCss('--c0'), c1:getCss('--c1'), c2:getCss('--c2'), c3:getCss('--c3'), c4:getCss('--c4') };
+let BAR_BG = 'rgba(55,201,239,0.5)';
+let LINE_ACC = getCss('--c1');
 
 Chart.defaults.elements.bar.borderRadius = 6;
 Chart.defaults.elements.line.borderWidth = 4;
@@ -362,6 +400,66 @@ Chart.defaults.elements.point.radius = 3;
 Chart.defaults.elements.point.hoverRadius = 5;
 Chart.defaults.elements.point.borderWidth = 2;
 Chart.defaults.plugins.legend.labels.usePointStyle = true;
+
+/**********************
+ * THEME
+ **********************/
+function getCss(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+
+function applyThemeToCharts(){
+  const tick = getCss('--chart-tick'), grid = getCss('--chart-grid');
+  Chart.defaults.color = tick;
+  Chart.defaults.borderColor = grid;
+  LINE_ACC = getCss('--c1');
+  BAR_BG = hexToRgba(getCss('--c2'), .45);
+  Object.values(charts).forEach(ch=>{
+    if(!ch) return;
+    // recolor datasets
+    ch.data.datasets.forEach(ds=>{
+      if(ds.type==='line'){
+        ds.borderColor = LINE_ACC;
+        ds.backgroundColor = LINE_ACC;
+        ds.pointBorderColor = LINE_ACC;
+      }else if(ds.type==='bar'){
+        ds.backgroundColor = BAR_BG;
+        ds.borderColor = 'rgba(0,0,0,0)';
+      }
+      if(ch.config.type==='pie' || ds.type==='pie'){
+        ds.backgroundColor = [getCss('--c0'), getCss('--c3')];
+        ds.borderColor = getCss('--bg');
+      }
+    });
+    // recolor scales
+    if(ch.options && ch.options.scales){
+      for(const k of Object.keys(ch.options.scales)){
+        const sc = ch.options.scales[k];
+        if(!sc.ticks) sc.ticks = {};
+        sc.ticks.color = tick;
+        if(!sc.grid) sc.grid = {};
+        sc.grid.color = grid;
+      }
+    }
+    // legend
+    if(ch.options && ch.options.plugins && ch.options.plugins.legend && ch.options.plugins.legend.labels){
+      ch.options.plugins.legend.labels.color = getCss('--chart-legend');
+    }
+    ch.update();
+  });
+}
+function hexToRgba(hex, a){
+  const h = hex.replace('#','');
+  const bigint = parseInt(h.length===3 ? h.split('').map(x=>x+x).join('') : h, 16);
+  const r = (bigint>>16)&255, g=(bigint>>8)&255, b=bigint&255;
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+function setTheme(mode){
+  const html = document.documentElement;
+  html.classList.toggle('dark', mode==='dark');
+  localStorage.setItem('theme', mode);
+  document.getElementById('theme-emoji').textContent = mode==='dark' ? '🌙' : '🌞';
+  applyThemeToCharts();
+}
 
 /**********************
  * HELPERS
@@ -418,7 +516,7 @@ function promedioDiario(rows, f){
   return den ? num/den : 0;
 }
 function setColor(el, color){
-  el.classList.remove('text-red-600','text-yellow-500','text-green-600','text-orange-500','text-amber-500');
+  el.classList.remove('t-bad','t-warn','t-ok');
   if(color) el.classList.add(color);
 }
 
@@ -522,12 +620,12 @@ const state = {
     ubic: [],
     lider: [],
     usuario: [],
-    flujo: ['mixto']
+    flujo: ['mixto'] // única selección
   }
 };
 
 /**********************
- * FILTROS (pills)
+ * UI FILTROS (pills)
  **********************/
 const FILTER_ORDER = ['q','mes','semana','ubic','lider','usuario','flujo'];
 const FILTER_LABEL = {
@@ -557,6 +655,7 @@ function filteredOriginalDataExcept(exceptKeys){
 }
 
 function computeFilterOptions(){
+  // Calcula opciones válidas respetando exclusión entre Q↔Mes↔Semana
   const forQ = filteredOriginalDataExcept('q');
   const forMes = filteredOriginalDataExcept('mes');
   const forSemana = filteredOriginalDataExcept('semana');
@@ -571,7 +670,7 @@ function computeFilterOptions(){
     ubic: uniqueSorted(forUbic.map(r=>r.ciudad).filter(Boolean)),
     lider: uniqueSorted(forLider.map(r=>r['líder']).filter(l => l && l.toLowerCase()!=='sin líder' && l.toLowerCase()!=='sin lider')),
     usuario: uniqueSorted(forUser.map(r=>r.usuario)),
-    flujo: ['mixto','demanda','enhancement']
+    flujo: ['mixto','demanda','enhancement'] // fijo
   };
   return opts;
 }
@@ -603,7 +702,7 @@ function renderFiltersBar(){
           <button class="clear">Limpiar</button>
         </div>
         <div class="list"></div>
-        <div class="foot text-xs">${key==='flujo' ? 'Elegí uno' : 'Selección múltiple'}</div>
+        <div class="foot">${key==='flujo' ? 'Elegí uno' : 'Selección múltiple'}</div>
       </div>
     `;
     bar.appendChild(pill);
@@ -612,6 +711,7 @@ function renderFiltersBar(){
     const list = menu.querySelector('.list');
     const search = menu.querySelector('.search');
 
+    // Construir items
     function buildList(){
       list.innerHTML = '';
       const values = opts[key].filter(v => String(v).toLowerCase().includes(search.value.trim().toLowerCase()));
@@ -630,11 +730,12 @@ function renderFiltersBar(){
     }
     buildList();
 
+    // Interacción
     pill.addEventListener('click', (e)=>{
       const inside = pill.contains(e.target);
       if(!inside) return;
       const isControl = e.target.closest('.menu');
-      if(isControl) return;
+      if(isControl) return; // ya está abierto
       const isChevOrLabel = e.target.closest('.label') || e.target.classList.contains('chev') || e.target===pill;
       if(isChevOrLabel){
         const open = menu.classList.contains('open');
@@ -645,7 +746,8 @@ function renderFiltersBar(){
 
     search.addEventListener('input', buildList);
 
-    menu.addEventListener('change', ()=>{
+    // change handler
+    menu.addEventListener('change', (e)=>{
       const inputs = menu.querySelectorAll('.opt');
       if(key==='flujo'){
         const v = Array.from(inputs).find(i=>i.checked)?.value || 'mixto';
@@ -658,28 +760,30 @@ function renderFiltersBar(){
       applyFilters();
     });
 
+    // limpiar individual
     menu.querySelector('.clear').addEventListener('click',(e)=>{
       e.stopPropagation();
       if(key==='flujo'){ state.filtros.flujo=['mixto']; }
       else state.filtros[key]=[];
       pill.querySelector('.label').textContent = pillSummary(key);
-      renderFiltersBar();
+      renderFiltersBar(); // re-render
       applyFilters();
     });
   });
 
+  // cerrar al click fuera
   document.addEventListener('click', (ev)=>{
     if(!bar.contains(ev.target)) closeAllMenus();
   }, { once:true });
 }
 
 /**********************
- * NAV + EXPORT + CLEAR + THEME
+ * NAV + EXPORT + CLEAR ALL + THEME
  **********************/
 function setupNavigation(){
   const links=[...document.querySelectorAll('#nav-menu a')];
   const mobile=document.getElementById('mobile-nav-menu');
-  mobile.innerHTML = links.map(a=>`<a href="${a.getAttribute('href')}" class="block p-3 rounded-lg hover:bg-gray-700 text-white">${a.textContent}</a>`).join('');
+  mobile.innerHTML = links.map(a=>`<a href="${a.getAttribute('href')}" class="block p-3 rounded-lg hover:bg-gray-700">${a.textContent}</a>`).join('');
   links.forEach(a=>{
     a.addEventListener('click', e=>{
       e.preventDefault();
@@ -704,13 +808,13 @@ function setupNavigation(){
     if(!dd.contains(e.target) && !document.getElementById('btn-export').contains(e.target)) dd.classList.add('hidden');
   });
   document.querySelectorAll('#export-menu a').forEach(a=>{
-    a.addEventListener('click', async (e)=>{
+    a.addEventListener('click', (e)=>{
       e.preventDefault();
       document.getElementById('export-menu').classList.add('hidden');
       const type = a.getAttribute('data-exp');
       if(type==='csv') exportSectionCSV();
       if(type==='png') exportSectionPNGs();
-      if(type==='gsheets') exportToGoogleSheets();
+      if(type==='sheets') exportSectionToGoogleSheets();
     });
   });
 
@@ -721,41 +825,12 @@ function setupNavigation(){
     applyFilters();
   });
 
-  // Tema
-  const saved = localStorage.getItem('catalogo.theme') || 'light';
+  // Theme toggle
+  const saved = localStorage.getItem('theme') || 'light';
   setTheme(saved);
-  document.getElementById('theme-toggle').addEventListener('click', ()=>{
-    const cur = document.documentElement.getAttribute('data-theme');
-    setTheme(cur==='dark'?'light':'dark');
-  });
-}
-function setTheme(mode){
-  document.documentElement.setAttribute('data-theme', mode);
-  localStorage.setItem('catalogo.theme', mode);
-  document.getElementById('theme-ico').textContent = (mode==='dark'?'☀️':'🌙');
-  applyThemeToCharts();
-}
-function applyThemeToCharts(){
-  const styles = getComputedStyle(document.documentElement);
-  const tick = styles.getPropertyValue('--chart-tick').trim() || '#334155';
-  const grid = styles.getPropertyValue('--chart-grid').trim() || 'rgba(0,0,0,.1)';
-  Chart.defaults.color = tick;
-  Chart.defaults.borderColor = grid;
-  Object.values(charts).forEach(ch=>{
-    if(!ch) return;
-    if(!ch.options.plugins) ch.options.plugins = {};
-    if(!ch.options.plugins.legend) ch.options.plugins.legend = {};
-    if(!ch.options.plugins.legend.labels) ch.options.plugins.legend.labels = {};
-    ch.options.plugins.legend.labels.color = tick;
-    if(ch.options.scales){
-      Object.values(ch.options.scales).forEach(sc=>{
-        if(!sc.ticks) sc.ticks = {};
-        if(!sc.grid) sc.grid = {};
-        sc.ticks.color = tick;
-        sc.grid.color = grid;
-      });
-    }
-    ch.update();
+  document.getElementById('btn-theme').addEventListener('click', ()=>{
+    const now = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+    setTheme(now);
   });
 }
 
@@ -763,6 +838,7 @@ function applyThemeToCharts(){
  * APLICAR FILTROS
  **********************/
 function applyFilters(){
+  // recalcular data filtrada
   const f = state.filtros;
   currentData = originalData.filter(r =>
     (f.mes.length===0    || f.mes.includes(r.mes)) &&
@@ -773,8 +849,10 @@ function applyFilters(){
     (f.q.length===0      || f.q.includes(r.q))
   );
 
+  // actualizar opciones dependientes
   renderFiltersBar();
 
+  // refrescar UI
   updateKPIs();
   renderNineBox();
   renderDemandPie();
@@ -803,14 +881,14 @@ function updateKPIs(){
   const promEl = document.getElementById('kpi-promedio-diario');
   const efEl   = document.getElementById('kpi-efectividad-prom');
 
-  const promColor = (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-amber-500';
+  let promColor = (prom<=70) ? 't-bad' : (prom>=80) ? 't-ok' : 't-warn';
   setColor(promEl, promColor);
 
   const efPct = ef*100;
-  const efColor = (efPct<=75) ? 'text-red-600'
-                : (efPct<87) ? 'text-orange-500'
-                : (efPct<90) ? 'text-amber-500'
-                : 'text-green-600';
+  let efColor = (efPct<=75) ? 't-bad'
+                : (efPct<87) ? 't-warn'
+                : (efPct<90) ? 't-warn'
+                : 't-ok';
   setColor(efEl, efColor);
 
   document.getElementById('kpi-total-tareas').textContent     = fmt.int(totalFlujo);
@@ -821,6 +899,7 @@ function updateKPIs(){
   efEl.textContent   = fmt.pct(ef);
 }
 
+// KPIs a la derecha del gráfico en "Evolución Semanal"
 function updateEvolutionKPIs(){
   const f = flujoSel();
   const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
@@ -831,10 +910,10 @@ function updateEvolutionKPIs(){
 
   const promEl = document.getElementById('evo-kpi-prom');
   const efEl   = document.getElementById('evo-kpi-ef');
-  setColor(promEl, (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-amber-500');
+  setColor(promEl, (prom<=70) ? 't-bad' : (prom>=80) ? 't-ok' : 't-warn');
 
   const efPct = ef*100;
-  setColor(efEl, (efPct<=75) ? 'text-red-600' : (efPct<87) ? 'text-orange-500' : (efPct<90) ? 'text-amber-500' : 'text-green-600');
+  setColor(efEl, (efPct<=75) ? 't-bad' : (efPct<87) ? 't-warn' : (efPct<90) ? 't-warn' : 't-ok');
 
   promEl.textContent = fmt.dec(prom);
   efEl.textContent   = fmt.pct(ef);
@@ -842,6 +921,7 @@ function updateEvolutionKPIs(){
   document.getElementById('evo-kpi-users').textContent = fmt.int(usuarios);
 }
 
+// KPIs a la derecha del gráfico en "Detalle por Usuario"
 function updateDetailKPIs(){
   const f = flujoSel();
   const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
@@ -851,10 +931,10 @@ function updateDetailKPIs(){
 
   const promEl = document.getElementById('det-kpi-prom');
   const efEl   = document.getElementById('det-kpi-ef');
-  setColor(promEl, (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-amber-500');
+  setColor(promEl, (prom<=70) ? 't-bad' : (prom>=80) ? 't-ok' : 't-warn');
 
   const efPct = ef*100;
-  setColor(efEl, (efPct<=75) ? 'text-red-600' : (efPct<87) ? 'text-orange-500' : (efPct<90) ? 'text-amber-500' : 'text-green-600');
+  setColor(efEl, (efPct<=75) ? 't-bad' : (efPct<87) ? 't-warn' : (efPct<90) ? 't-warn' : 't-ok');
 
   promEl.textContent = fmt.dec(prom);
   efEl.textContent   = fmt.pct(ef);
@@ -864,7 +944,7 @@ function updateDetailKPIs(){
 function createOrUpdateChart(id, cfg){
   if(charts[id]){ charts[id].data=cfg.data; charts[id].options=cfg.options||{}; charts[id].update(); return charts[id]; }
   const ctx=document.getElementById(id).getContext('2d');
-  charts[id]=new Chart(ctx,cfg); applyThemeToCharts(); return charts[id];
+  charts[id]=new Chart(ctx,cfg); return charts[id];
 }
 
 function barDataset(label, data){
@@ -904,7 +984,7 @@ function lineEffDataset(label, data){
 function renderNineBox(){
   const f = flujoSel();
 
-  const map = new Map();
+  const map = new Map(); // user -> {num,den, effSum, effN}
   currentData.forEach(r=>{
     const u=r.usuario;
     const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
@@ -922,8 +1002,8 @@ function renderNineBox(){
   const prodBand = p => (p>=80 ? 'alta' : p>=70 ? 'media' : 'baja');
   const calBand  = e => (e>=0.90 ? 'alta' : e>=0.75 ? 'media' : 'baja');
 
-  const rows=['alta','media','baja'];
-  const cols=['alta','media','baja'];
+  const rows=['alta','media','baja']; // productividad
+  const cols=['alta','media','baja']; // calidad
 
   const buckets = {};
   const details = {};
@@ -1017,9 +1097,9 @@ function showNineboxDetails(bucketKey, labelFn){
     </div>`;
 
   const table = `
-    <div class="overflow-x-auto border rounded-md" style="border-color:var(--border)">
+    <div class="overflow-x-auto border border-slate-200 rounded-md">
       <table class="min-w-full text-sm">
-        <thead style="background:#f1f5f9;color:#334155">
+        <thead class="bg-slate-50 text-slate-600">
           <tr>
             <th class="text-left px-3 py-2">Usuario</th>
             <th class="text-right px-3 py-2">Prom. Diario</th>
@@ -1028,7 +1108,7 @@ function showNineboxDetails(bucketKey, labelFn){
         </thead>
         <tbody>
           ${rows.map(r=>`
-            <tr class="border-t" style="border-color:var(--border)">
+            <tr class="border-t">
               <td class="px-3 py-2">${r.usuario}</td>
               <td class="px-3 py-2 text-right">${fmt.dec(r.prom)}</td>
               <td class="px-3 py-2 text-right">${fmt.pct(r.eff)}</td>
@@ -1057,11 +1137,11 @@ function renderDemandPie(){
 
   createOrUpdateChart('demandPieChart',{
     type:'pie',
-    data:{ labels:['Demanda','Enhancement'], datasets:[{ data:[pctD, pctE], backgroundColor:[PALETTE.c0, PALETTE.c4] }] },
+    data:{ labels:['Demanda','Enhancement'], datasets:[{ data:[pctD, pctE], backgroundColor:[getCss('--c0'), getCss('--c3')], borderColor:getCss('--bg') }] },
     options:{
       responsive:true,
       plugins:{
-        legend:{ position:'bottom' },
+        legend:{ position:'bottom', labels:{ color:getCss('--chart-legend') } },
         tooltip:{ callbacks:{ label:(ctx)=> `${ctx.label}: ${ctx.parsed.toFixed(1)}%` } }
       }
     }
@@ -1076,7 +1156,7 @@ function renderDemandPie(){
 function renderTasksByUser(){
   const f = flujoSel();
 
-  const agg = new Map();
+  const agg = new Map(); // user -> {num,den, effNum, effDen}
   currentData.forEach(r=>{
     const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
     o.num += tareasFlujo(r,f);
@@ -1104,10 +1184,11 @@ function renderTasksByUser(){
     },
     options:{
       responsive:true,
+      plugins:{ legend:{labels:{color:getCss('--chart-legend')}} },
       scales:{
-        y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
-        y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v!=null? v.toFixed(0):''}%` }, suggestedMin: 50, suggestedMax: 100 },
-        x:{ ticks:{ autoSkip:false, maxRotation:60, minRotation:45 } }
+        y:{ position:'left', ticks:{ color:getCss('--chart-tick'), callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) }, grid:{color:getCss('--chart-grid')} },
+        y1:{ position:'right', grid:{ drawOnChartArea:false,color:getCss('--chart-grid') }, ticks:{ color:getCss('--chart-tick'), callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 },
+        x:{ ticks:{ autoSkip:false, maxRotation:60, minRotation:45, color:getCss('--chart-tick') }, grid:{color:getCss('--chart-grid')} }
       }
     }
   });
@@ -1116,7 +1197,7 @@ function renderTasksByUser(){
 /* ---------- Comparativa por equipo ---------- */
 function renderTasksByLeader(){
   const f = flujoSel();
-  const agg = new Map();
+  const agg = new Map(); // líder -> {num,den, effNum, effDen}
   currentData.forEach(r=>{
     const l = r['líder']; if(!l || l.toLowerCase()==='sin líder' || l.toLowerCase()==='sin lider') return;
     const o = agg.get(l) || {num:0,den:0,effNum:0,effDen:0};
@@ -1145,10 +1226,11 @@ function renderTasksByLeader(){
     },
     options:{
       responsive:true,
+      plugins:{ legend:{labels:{color:getCss('--chart-legend')}} },
       scales:{
-        y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
-        y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v!=null? v.toFixed(0):''}%` }, suggestedMin: 50, suggestedMax: 100 },
-        x:{ ticks:{ autoSkip:false, maxRotation:45 } }
+        y:{ position:'left', ticks:{ color:getCss('--chart-tick'), callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) }, grid:{color:getCss('--chart-grid')} },
+        y1:{ position:'right', grid:{ drawOnChartArea:false,color:getCss('--chart-grid') }, ticks:{ color:getCss('--chart-tick'), callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 },
+        x:{ ticks:{ autoSkip:false, maxRotation:45, color:getCss('--chart-tick') }, grid:{color:getCss('--chart-grid')} }
       }
     }
   });
@@ -1157,7 +1239,7 @@ function renderTasksByLeader(){
 /* ---------- Evolución semanal ---------- */
 function renderWeeklyEvolution(){
   const f = flujoSel();
-  const agg = new Map();
+  const agg = new Map(); // week -> {num,den, effNum, effDen}
   currentData.forEach(r=>{
     const w = Number(r.week); if(!Number.isFinite(w)) return;
     const o = agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
@@ -1194,11 +1276,11 @@ function renderWeeklyEvolution(){
     },
     options:{
       responsive:true,
-      plugins:{ legend:{display:true} },
+      plugins:{ legend:{display:true,labels:{color:getCss('--chart-legend')}} },
       scales:{
-        x:{ ticks:{autoSkip:false,maxRotation:0} },
-        y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
-        y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v!=null? v.toFixed(0):''}%` }, suggestedMin: 50, suggestedMax: 100 }
+        x:{ ticks:{autoSkip:false,maxRotation:0,color:getCss('--chart-tick')}, grid:{color:getCss('--chart-grid')} },
+        y:{ position:'left', ticks:{ color:getCss('--chart-tick'), callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) }, grid:{color:getCss('--chart-grid')} },
+        y1:{ position:'right', grid:{ drawOnChartArea:false,color:getCss('--chart-grid') }, ticks:{ color:getCss('--chart-tick'), callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 }
       }
     }
   });
@@ -1207,9 +1289,9 @@ function renderWeeklyEvolution(){
 /* ---------- Ubicación ---------- */
 function renderByLocation(){
   const f = flujoSel();
-  const byLoc = new Map();
-  const effLoc = new Map();
-  const antig = {};
+  const byLoc = new Map(); // ciudad -> {num,den}
+  const effLoc = new Map(); // ciudad -> {num,den}
+  const antig = {}; // ciudad -> {sum, n}
 
   currentData.forEach(r=>{
     const c=r.ciudad||'Sin ubicación';
@@ -1246,12 +1328,12 @@ function renderByLocation(){
     },
     options:{
       responsive:true,
+      plugins:{ legend:{labels:{color:getCss('--chart-legend')}} },
       scales:{
-        y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
-        y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v!=null? v.toFixed(0):''}%` }, suggestedMin: 50, suggestedMax: 100 },
-        x:{ ticks:{ autoSkip:false } }
-      },
-      plugins:{ legend:{display:true} }
+        y:{ position:'left', ticks:{ color:getCss('--chart-tick'), callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) }, grid:{color:getCss('--chart-grid')} },
+        y1:{ position:'right', grid:{ drawOnChartArea:false,color:getCss('--chart-grid') }, ticks:{ color:getCss('--chart-tick'), callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 },
+        x:{ ticks:{ autoSkip:false, color:getCss('--chart-tick') }, grid:{color:getCss('--chart-grid')} }
+      }
     }
   });
 
@@ -1265,7 +1347,7 @@ function renderByLocation(){
   grid.innerHTML = list.map(([loc,avg])=>`
     <div class="kpi-card">
       <div class="flex items-baseline justify-between">
-        <div class="font-medium" style="color:var(--muted)">${loc}</div>
+        <div class="kpi-title">${loc}</div>
         <div class="text-3xl font-bold">${fmt.dec(avg)}</div>
       </div>
     </div>
@@ -1293,7 +1375,7 @@ async function exportSectionPNGs(){
   if(id==='resumen'){
     canvases.push(document.getElementById('demandPieChart'));
     const el=document.getElementById('ninebox-card');
-    const canvas = await html2canvas(el,{scale:2});
+    const canvas = await html2canvas(el,{scale:2, backgroundColor:getCss('--bg')});
     canvas.toBlob(b=>download('productividad-calidad.png',b));
   }else if(id==='detalle'){
     canvases.push(document.getElementById('tasksByUserChart'));
@@ -1327,37 +1409,45 @@ async function exportSectionCSV(){
     ];
     const csv1 = toCSV(['Flujo','Total','Porcentaje'], rows1);
     download('resumen_demanda_enhancement.csv', new Blob([csv1],{type:'text/csv;charset=utf-8'}));
+  }else{
+    // exporta tabla base filtrada
+    const headers = ['week','mes','usuario','líder','ciudad','antigüedad','promedio_diario','efectividad','tareas_demanda','tareas_enhancement','total_tareas','ids_trabajados','correcciones_auditadas','dias_activos','q'];
+    const csv = toCSV(headers, currentData);
+    download(`export_${id}.csv`, new Blob([csv],{type:'text/csv;charset=utf-8'}));
   }
 }
 
-/* Export directo a Google Sheets (Apps Script Web App) */
-async function exportToGoogleSheets(){
-  const btn = document.getElementById('btn-export');
-  const old = btn.textContent;
-  btn.textContent = 'Exportando…';
-  btn.disabled = true;
-
+/* ---- Export to Google Sheets (Apps Script) ---- */
+async function exportSectionToGoogleSheets(){
+  const section = getActiveSectionId();
   const payload = {
-    timestamp: new Date().toISOString(),
-    filtros: filtersSummary(),
-    flujo: flujoSel(),
-    rows: currentData
+    section,
+    filters: filtersSummary(),
+    rows: currentData.map(r=>({
+      week:r.week, mes:r.mes, usuario:r.usuario, lider:r['líder'], ciudad:r.ciudad, antiguedad:r.antigüedad,
+      promedio_diario:r.promedio_diario, efectividad:r.efectividad,
+      tareas_demanda:r.tareas_demanda, tareas_enhancement:r.tareas_enhancement, total_tareas:r.total_tareas,
+      ids_trabajados:r.ids_trabajados, correcciones_auditadas:r.correcciones_auditadas, dias_activos:r.dias_activos, q:r.q
+    })),
+    meta:{ exportedAt: new Date().toISOString() }
   };
 
+  // Intento normal + fallback no-cors (por si el GAS no devuelve los headers CORS)
   try{
-    const r = await fetch(EXPORT_ENDPOINT, {
+    const res = await fetch(GAS_SHEETS_URL,{
       method:'POST',
-      headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify(payload),
-      mode:'cors'
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
     });
-    const text = await r.text().catch(()=> '');
-    alert(r.ok ? (text || 'Exportado a Google Sheets ✅') : ('Error al exportar: ' + (text || r.status)));
-  }catch(e){
-    alert('No pude exportar (revisá CORS en Apps Script). Detalle: ' + e.message);
-  }finally{
-    btn.textContent = old;
-    btn.disabled = false;
+    const txt = await res.text();
+    toast(res.ok ? '✅ Exportado a Google Sheets' : ('❌ Error: '+txt));
+  }catch(err){
+    try{
+      await fetch(GAS_SHEETS_URL,{ method:'POST', mode:'no-cors', body: JSON.stringify(payload) });
+      toast('✅ Enviado a Google Sheets (modo no-cors)');
+    }catch(e){
+      toast('❌ No se pudo exportar: '+e.message);
+    }
   }
 }
 
@@ -1457,7 +1547,7 @@ Sos analista de mejora continua de Catálogo (Netkel). Buscás mantener una oper
 
 🛑 Consideraciones:
 • Si la mayoría está on target, es positivo. No señales como problema.
-• No recomiendes revisar métricas, metodología o distribución si no hay señales claras.
+• No recomiendes revisar métricas o distribución si no hay señales claras.
 • Enfocá el análisis en:
    - Casos recurrentes de baja calidad
    - Perfiles en plan de trabajo (Low Grave / Low Moderado)
@@ -1478,8 +1568,7 @@ Sos analista de mejora continua de Catálogo (Netkel). Buscás mantener una oper
 📢 Formato:
 • Bullets concretos
 • Perfiles LOW → acción específica → plazo → responsable
-• No inventes ni generalices
-• Tono interno, claro y accionable`;
+• Sin vaguedades`;
 }
 
 async function geminiRequest(prompt) {
@@ -1506,7 +1595,7 @@ function setupGeminiFeatures(){
     block.innerHTML = 'Generando…';
     try{
       const resp = await geminiRequest(buildNineboxPrompt());
-      block.innerHTML = resp;
+      block.innerHTML = resp; // enriquecido
     }catch(e){ block.textContent = e.message; }
   });
 
@@ -1516,9 +1605,27 @@ function setupGeminiFeatures(){
     out.innerHTML = 'Analizando…';
     try{
       const resp = await geminiRequest(buildGlobalInsightsPrompt());
-      out.innerHTML = resp;
+      out.innerHTML = resp; // enriquecido
     }catch(e){ out.textContent = e.message; }
   });
+}
+
+/**********************
+ * Toast minimal
+ **********************/
+function toast(msg){
+  let el = document.getElementById('toast');
+  if(!el){
+    el = document.createElement('div');
+    el.id='toast';
+    el.style.position='fixed'; el.style.right='16px'; el.style.bottom='16px';
+    el.style.background='var(--card-bg)'; el.style.border='1px solid var(--card-border)';
+    el.style.color='var(--text)'; el.style.padding='10px 14px'; el.style.borderRadius='10px'; el.style.boxShadow='0 6px 18px rgba(0,0,0,.2)';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.opacity='1';
+  setTimeout(()=>{ el.style.transition='opacity .6s'; el.style.opacity='0'; }, 2200);
 }
 
 /**********************
@@ -1526,6 +1633,10 @@ function setupGeminiFeatures(){
  **********************/
 document.addEventListener('DOMContentLoaded', async ()=>{
   try{
+    // Theme first (so initial paint uses right colors)
+    const saved = localStorage.getItem('theme') || 'light';
+    setTheme(saved);
+
     const [tProd,tCal,tBase,tLid] = await Promise.all([
       fetchCSVFile(FILES.productividad),
       fetchCSVFile(FILES.calidad),
@@ -1545,6 +1656,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 
     currentData = originalData.slice();
     applyFilters();
+    applyThemeToCharts();
   }catch(err){
     console.error(err);
     document.body.innerHTML = `<div class="p-8 text-center text-red-600 bg-red-100">${err.message}</div>`;
