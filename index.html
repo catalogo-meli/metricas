@@ -35,28 +35,32 @@
     --accent:#0ea5e9;         /* sky-500 */
     --success:#16a34a;        /* green-600 */
     --warn:#f59e0b;           /* amber-500 */
-    --pie1:#86eae9;
-    --pie2:#2c92d5;
+    --pie1:#86eae9;           /* Demanda */
+    --pie2:#2c92d5;           /* Enhancement */
+    --pie3:#9b8af7;           /* Creación */
+    --pie4:#f59e0b;           /* Merge */
     --nine-green:#dcfce7;
     --nine-yellow:#fef9c3;
     --nine-orange:#ffedd5;
     --nine-red:#fee2e2;
   }
   [data-theme="dark"]{
-    --bg:#0b1220;      /* más profundo que slate-900 */
-    --panel:#0f1b2d;   /* navy oscuro legible */
+    --bg:#0b1220;
+    --panel:#0f1b2d;
     --panel-2:#0c1626;
-    --text:#e2e8f0;    /* slate-200 */
-    --muted:#a3b2c7;   /* slate-400~300 */
-    --border:#1e293b;  /* slate-800 */
+    --text:#e2e8f0;
+    --muted:#a3b2c7;
+    --border:#1e293b;
     --shadow: 0 10px 28px rgba(0,0,0,.45);
-    --sidebar:#3b4756; /* acorde al dark */
-    --accent:#22c3ee;  /* más vivo en dark */
+    --sidebar:#3b4756;
+    --accent:#22c3ee;
     --success:#22c55e;
     --warn:#f59e0b;
     --pie1:#6ee7e7;
     --pie2:#1d8bd9;
-    --nine-green:#0f3c36;  /* bloques nine-box legibles en dark */
+    --pie3:#a78bfa;
+    --pie4:#f59e0b;
+    --nine-green:#0f3c36;
     --nine-yellow:#3b3416;
     --nine-orange:#422006;
     --nine-red:#3f1d1d;
@@ -68,23 +72,15 @@
   .kpi-card{background:var(--panel);border:1px solid var(--border);border-radius:1rem;box-shadow:var(--shadow);padding:1.2rem}
   .kpi-title{color:var(--muted);font-weight:600}
   .kpi-value{
-    font-weight:800;
-    letter-spacing: .3px;
-    text-align:center;
-    font-size: clamp(1.4rem, 3.2vw, 2.5rem);
-    line-height:1.1;
-    word-break: keep-all;
-    white-space: nowrap;
+    font-weight:800; letter-spacing:.3px; text-align:center;
+    font-size:clamp(1.4rem,3.2vw,2.5rem); line-height:1.1;
+    white-space:nowrap;
   }
-  .kpi-colors-ef{color:var(--success)}
-  .kpi-colors-pd{color:var(--warn)}
 
-  /* Sidebar */
   .sidebar{background:var(--sidebar)}
   .sidebar-link{transition:all .2s ease-in-out;border-radius:.75rem}
   .sidebar-link:hover,.sidebar-link.active{background:rgba(255,255,255,.15);color:#fff;transform:translateX(4px)}
 
-  /* Filtros (pills compactas) */
   .pill{display:flex;align-items:center;gap:.5rem;background:var(--panel);border:1px solid var(--border);border-radius:.9rem;padding:.45rem .7rem;box-shadow:var(--shadow)}
   .pill .prefix{color:var(--muted);font-size:.82rem}
   .pill .value{font-weight:600;color:var(--text);font-size:.9rem;max-width:14rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -99,13 +95,11 @@
   .menu .item:hover{background:var(--panel-2)}
   .menu .foot{padding:.6rem .75rem;border-top:1px solid var(--border);font-size:.83rem;color:var(--muted)}
 
-  /* Export dropdown */
   .dropdown{position:relative;display:inline-block;}
   .dropdown-menu{position:absolute;right:0;top:100%;background:var(--panel);border:1px solid var(--border);border-radius:.75rem;box-shadow:var(--shadow);min-width:260px;z-index:50}
   .dropdown-menu a{display:block;padding:.68rem .9rem;font-size:.95rem;color:var(--text)}
   .dropdown-menu a:hover{background:var(--panel-2)}
 
-  /* Nine-box */
   .nb-cell{display:flex;align-items:center;justify-content:center;height:84px;border-radius:.7rem;border:1px solid var(--border)}
   .nb-hdr{font-weight:700;color:var(--muted)}
   .nb-badge{font-size:1.6rem;font-weight:800}
@@ -115,15 +109,6 @@
   .nb-orange{background:var(--nine-orange)}
   .nb-red{background:var(--nine-red)}
 
-  /* IA output */
-  .ai-output p{margin-bottom:.75rem;line-height:1.55}
-  .ai-output ul{list-style:disc;margin-left:1.5rem;margin-bottom:1rem}
-  .ai-output table{width:100%;border-collapse:collapse;margin-top:1rem}
-  .ai-output th,.ai-output td{border:1px solid #cbd5e1;padding:.5rem;text-align:left}
-  .ai-output th{background:#f1f5f9}
-  .ai-output code{background:#f3f4f6;padding:.2rem .4rem;border-radius:4px}
-
-  /* Buttons */
   .btn{border-radius:.8rem;padding:.6rem .9rem;font-weight:700}
   .btn-ghost{background:var(--panel);border:1px solid var(--border);color:var(--text)}
   .btn-sky{background:var(--accent);color:#fff}
@@ -135,17 +120,12 @@
 <div class="flex h-screen overflow-hidden">
 
   <!-- Sidebar -->
-<aside class="hidden md:flex w-64 flex-col sidebar text-white p-4">
-  <div class="flex items-center mb-8">
-    <!-- Logo -->
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 mr-3" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M5 3a2 2 0 00-2 2v14h2V5h2V3H5zm12 0h-2v4h2V3zm-4 0h-2v10h2V3zm6 6h-2v12h2V9zM9 15H7v6h2v-6z"/>
-    </svg>
-    <h1 class="text-2xl font-extrabold">Catálogo</h1>
-  </div>
-
-  <nav id="nav-menu" class="flex-1 space-y-2">
-
+  <aside class="hidden md:flex w-64 flex-col sidebar text-white p-4">
+    <div class="flex items-center mb-8">
+      <div class="text-2xl mr-3" aria-hidden="true">🚀</div>
+      <h1 class="text-2xl font-extrabold">Catálogo</h1>
+    </div>
+    <nav id="nav-menu" class="flex-1 space-y-2">
       <a href="#resumen"   class="sidebar-link active flex items-center p-3">Visión Global</a>
       <a href="#detalle"   class="sidebar-link flex items-center p-3">Detalle por Colaborador</a>
       <a href="#lideres"   class="sidebar-link flex items-center p-3">Comparativa por Equipo</a>
@@ -168,13 +148,11 @@
           <!-- Theme toggle -->
           <button id="theme-toggle" class="btn btn-ghost" title="Cambiar tema">
             <span id="icon-moon" class="inline-block" aria-hidden="true">
-              <!-- luna -->
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
               </svg>
             </span>
             <span id="icon-sun" class="hidden" aria-hidden="true">
-              <!-- sol -->
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.8 1.42-1.42zm10.48 0l1.8-1.79 1.41 1.41-1.79 1.8-1.42-1.42zM12 4V1h-0v3h0zM4 13H1v-2h3v2zm19 0h-3v-2h3v2zM6.76 19.16l-1.42 1.42-1.79-1.8 1.41-1.41 1.8 1.79zm10.48 0l1.42 1.42 1.79-1.8-1.41-1.41-1.8 1.79zM12 23h-0v-3h0v3zM12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12z"/>
               </svg>
@@ -192,7 +170,7 @@
         </div>
       </div>
 
-      <!-- Barra de filtros (pills compactas con prefijo) -->
+      <!-- Barra de filtros -->
       <div id="filters-bar" class="flex flex-wrap gap-3 mb-8"></div>
 
       <!-- Secciones -->
@@ -210,11 +188,11 @@
             </div>
             <div class="kpi-card text-center">
               <div class="kpi-title mb-2">Promedio Diario</div>
-              <div id="kpi-promedio-diario" class="kpi-value kpi-colors-pd">—</div>
+              <div id="kpi-promedio-diario" class="kpi-value">—</div>
             </div>
             <div class="kpi-card text-center">
               <div class="kpi-title mb-2">% Efectividad</div>
-              <div id="kpi-efectividad-prom" class="kpi-value kpi-colors-ef">—</div>
+              <div id="kpi-efectividad-prom" class="kpi-value">—</div>
             </div>
             <div class="kpi-card text-center">
               <div class="kpi-title mb-2">Correcciones Auditadas</div>
@@ -235,8 +213,8 @@
               </div>
               <div id="ninebox-grid" class="grid grid-cols-4 gap-2"></div>
               <p class="mt-3 text-xs" style="color:var(--muted)">
-                Productividad: Alta ≥80; Media 70–&lt;80; Baja &lt;70. &nbsp;|&nbsp;
-                Calidad: Alta ≥90%; Media 75%–&lt;90%; Baja &lt;75%.
+                PM: Prod. Alta ≥80; Media 70–&lt;80 · KV: Prod. Alta ≥28; Media 24–&lt;28 (equivalente diario).<br>
+                Calidad (ambos): Alta ≥90%; Media 75%–&lt;90%; Baja &lt;75%.
               </p>
               <div id="ninebox-missing" class="mt-4 text-sm"></div>
               <div id="ninebox-details" class="mt-4 hidden"></div>
@@ -263,11 +241,11 @@
             <div class="grid grid-cols-1 gap-4">
               <div class="kpi-card text-center">
                 <div class="kpi-title mb-2">Promedio Diario</div>
-                <div id="det-kpi-prom" class="kpi-value kpi-colors-pd"></div>
+                <div id="det-kpi-prom" class="kpi-value"></div>
               </div>
               <div class="kpi-card text-center">
                 <div class="kpi-title mb-2">% Efectividad</div>
-                <div id="det-kpi-ef" class="kpi-value kpi-colors-ef"></div>
+                <div id="det-kpi-ef" class="kpi-value"></div>
               </div>
               <div class="kpi-card text-center">
                 <div class="kpi-title mb-2">IDs trabajados</div>
@@ -295,11 +273,11 @@
             <div class="grid grid-cols-1 gap-4">
               <div class="kpi-card text-center">
                 <div class="kpi-title mb-2">Promedio Diario</div>
-                <div id="evo-kpi-prom" class="kpi-value kpi-colors-pd"></div>
+                <div id="evo-kpi-prom" class="kpi-value"></div>
               </div>
               <div class="kpi-card text-center">
                 <div class="kpi-title mb-2">% Efectividad</div>
-                <div id="evo-kpi-ef" class="kpi-value kpi-colors-ef"></div>
+                <div id="evo-kpi-ef" class="kpi-value"></div>
               </div>
               <div class="kpi-card text-center">
                 <div class="kpi-title mb-2">IDs trabajados</div>
@@ -338,7 +316,7 @@
             <h3 class="text-xl font-semibold mb-2">Análisis Inteligente con Gemini</h3>
             <p class="mb-4" style="color:var(--muted)">Insights basados en los datos y filtros actuales.</p>
             <button id="generate-insights-btn" class="btn btn-sky text-base">✨ Analizar Datos y Generar Sugerencias</button>
-            <div id="insights-output" class="mt-6 p-4 rounded-md border hidden ai-output" style="background:var(--panel-2);border-color:var(--border)"></div>
+            <div id="insights-output" class="mt-6 p-4 rounded-md border hidden" style="background:var(--panel-2);border-color:var(--border)"></div>
           </div>
         </section>
       </div>
@@ -353,9 +331,10 @@
 const SHEETS_WEB_APP = "https://script.google.com/macros/s/AKfycbxqTzxdY090fV2JWIFxiqAVnkre_dtUw1M09ZMv9mNKYz3GQW-d1ONSP_FIJTswZ9t2qA/exec";
 const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
 const FILES = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
+const FILES_KV = { crea:'creacion-kv.csv', creaQ:'calidad-creacion-kv.csv', merge:'merge-kv.csv', mergeQ:'calidad-merge-kv.csv' };
 
 /* Paleta charts acorde a tema */
-const PALETTE = { c0:'#86eae9', c1:'#3edad8', c2:'#37c9ef', c3:'#37c9ef', c4:'#2c92d5', c5:'#13538a' };
+const PALETTE = { c0:'#86eae9', c1:'#3edad8', c2:'#37c9ef', c3:'#9b8af7', c4:'#2c92d5', c5:'#13538a', c6:'#f59e0b' };
 const BAR_BG = 'rgba(55,201,239,0.45)';
 const LINE_ACC = '#22c3ee';
 
@@ -366,73 +345,16 @@ Chart.defaults.elements.point.hoverRadius = 5;
 Chart.defaults.elements.point.borderWidth = 2;
 Chart.defaults.plugins.legend.labels.usePointStyle = true;
 
-/* --- Helpers de gráficos (imprescindibles) --- */
+/* --- Helpers gráficos --- */
 const charts = {};
 function createOrUpdateChart(id, cfg){
-  if (charts[id]) {
-    charts[id].data = cfg.data;
-    charts[id].options = cfg.options || {};
-    charts[id].update();
-    return charts[id];
-  }
-  const el = document.getElementById(id);
-  if (!el) return null;
-  const ctx = el.getContext('2d');
-  charts[id] = new Chart(ctx, cfg);
-  return charts[id];
+  if (charts[id]) { charts[id].data=cfg.data; charts[id].options=cfg.options||{}; charts[id].update(); return charts[id]; }
+  const ctx=document.getElementById(id)?.getContext('2d'); if(!ctx) return null;
+  charts[id]=new Chart(ctx,cfg); return charts[id];
 }
-function barDataset(label, data){
-  return {
-    type:'bar',
-    label,
-    data,
-    yAxisID:'y',
-    backgroundColor: BAR_BG,
-    borderColor:'rgba(0,0,0,0)',
-    order:1,
-    barPercentage:0.8,
-    categoryPercentage:0.8
-  };
-}
-function lineEffDataset(label, data){
-  return {
-    type:'line',
-    label,
-    data,
-    yAxisID:'y1',
-    borderColor: LINE_ACC,
-    backgroundColor: LINE_ACC,
-    order:2,
-    fill:false,
-    tension:0.25,
-    pointRadius:3,
-    pointHoverRadius:5,
-    pointBackgroundColor:'#ffffff',
-    pointBorderColor: LINE_ACC,
-    borderWidth:3,
-    spanGaps:true
-  };
-}
-// línea simple (para evolutivo por ubicación)
-function lineDataset(label, data, color, yAxis='y'){
-  return {
-    type:'line',
-    label,
-    data,
-    yAxisID:yAxis,
-    borderColor: color,
-    backgroundColor: color,
-    order:2,
-    fill:false,
-    tension:0.25,
-    pointRadius:2,
-    pointHoverRadius:4,
-    pointBackgroundColor:'#ffffff',
-    pointBorderColor: color,
-    borderWidth:2,
-    spanGaps:true
-  };
-}
+function barDataset(label, data){ return { type:'bar', label, data, yAxisID:'y', backgroundColor:BAR_BG, borderColor:'rgba(0,0,0,0)', order:1, barPercentage:0.8, categoryPercentage:0.8 }; }
+function lineEffDataset(label, data){ return { type:'line', label, data, yAxisID:'y1', borderColor:LINE_ACC, backgroundColor:LINE_ACC, order:2, fill:false, tension:0.25, pointRadius:3, pointHoverRadius:5, pointBackgroundColor:'#fff', pointBorderColor:LINE_ACC, borderWidth:3, spanGaps:true }; }
+function lineDataset(label,data,color,yAxis='y'){ return { type:'line', label, data, yAxisID:yAxis, borderColor:color, backgroundColor:color, order:2, fill:false, tension:0.25, pointRadius:2, pointHoverRadius:4, pointBackgroundColor:'#fff', pointBorderColor:color, borderWidth:2, spanGaps:true }; }
 
 /**********************
  * HELPERS
@@ -440,14 +362,29 @@ function lineDataset(label, data, color, yAxis='y'){
 const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const Q_OF_MONTH_INDEX = m => 'Q' + (Math.floor(m/3)+1);
 
+const TEAM_CONFIG = {
+  'PM': {                       // Product Management (antes Catálogo)
+    prodDaily: { low:70, high:80 },
+    flows: ['demanda','enhancement']
+  },
+  'KV': {                       // Known Values
+    prodDaily: { low:24, high:28 },  // umbrales diarios (semanal 120/140 /5)
+    flows: ['creación','merge'],
+    defaultLeader: 'Celeste Cignoli'
+  },
+  'Matchers': {
+    prodDaily: { low:70, high:80 },  // placeholder hasta definir
+    flows: []
+  }
+};
+
 function ghURL(file){
   const bust = `?v=${Date.now()}`;
   return [ `/metricas/${file}${bust}`, `https://raw.githubusercontent.com/catalogo-meli/metricas/main/${file}${bust}` ];
 }
 async function fetchCSVFile(file){
   const [u1,u2] = ghURL(file);
-  let r = await fetch(u1,{cache:'no-store'});
-  if(!r.ok) r = await fetch(u2,{cache:'no-store'});
+  let r = await fetch(u1,{cache:'no-store'}); if(!r.ok) r = await fetch(u2,{cache:'no-store'});
   if(!r.ok) throw new Error(`No pude cargar ${file}. HTTP ${r.status}`);
   return r.text();
 }
@@ -480,14 +417,13 @@ const fmt = {
   pct: x => (x ?? 0).toLocaleString('es-AR',{style:'percent',minimumFractionDigits:2,maximumFractionDigits:2}),
   dec: x => (x ?? 0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})
 };
-
 function setColor(el, color){
   el.classList.remove('text-red-600','text-yellow-500','text-green-600','text-orange-500');
   if(color) el.classList.add(color);
 }
 
 /**********************
- * CONSOLIDADO
+ * CONSOLIDADO – PM (existente)
  **********************/
 function buildWeeklyRows(prod, cal, base, lideres){
   const P = prod.map(r=>({
@@ -509,8 +445,7 @@ function buildWeeklyRows(prod, cal, base, lideres){
 
   const perfiles = new Map();
   base.forEach(r=>{
-    const user = correoAUsuario(pick(r,['mail','email']));
-    if(!user) return;
+    const user = correoAUsuario(pick(r,['mail','email'])); if(!user) return;
     perfiles.set(user,{ ciudad: pick(r,['ciudad','ubicación'])||'', ingreso: parseDateAny(pick(r,['fecha ingreso','ingreso'])) });
   });
 
@@ -518,7 +453,7 @@ function buildWeeklyRows(prod, cal, base, lideres){
   lideres.forEach(r=>{
     const user = correoAUsuario(pick(r,['usuario','user']));
     let lider  = pick(r,['líder','lider']) || '';
-    if(String(lider||'').toLowerCase()==='sin líder' || String(lider||'').toLowerCase()==='sin lider') return;
+    if(String(lider||'').toLowerCase().startsWith('sin ')) return;
     if(user) liderPorUser.set(user, lider);
   });
 
@@ -560,13 +495,107 @@ function buildWeeklyRows(prod, cal, base, lideres){
     const prom = o.dias.size ? (o.total/o.dias.size) : '';
     const pEf  = o.idsCal>0 ? (1 - (o.errCal/o.idsCal)) : '';
     return {
-      week:o.week, mes:o.mes, mesIndex:o.mesIndex, usuario:o.user, líder:o.lider, ciudad:o.ciudad, antigüedad:o.antig,
+      equipo:'PM',
+      flujo:null,                 // PM no guarda flujo por fila; lo calculamos al sumar
+      week:o.week, mes:o.mes, mesIndex:o.mesIndex, q:Q_OF_MONTH_INDEX(o.mesIndex),
+      usuario:o.user, 'líder':o.lider, ciudad:o.ciudad, antigüedad:o.antig,
       promedio_diario: prom, efectividad:pEf,
       tareas_demanda:o.demand, tareas_enhancement:o.enh, total_tareas:o.total,
-      ids_trabajados:o.idsWork, correcciones_auditadas:o.idsCal, dias_activos:o.dias.size,
-      q: Q_OF_MONTH_INDEX(o.mesIndex)
+      ids_trabajados:o.idsWork, correcciones_auditadas:o.idsCal, dias_activos:o.dias.size
     };
   });
+  return rows;
+}
+
+/**********************
+ * CONSOLIDADO – KV (nuevo)
+ **********************/
+function normalizeWeekLabel(w){ if(!w) return null; const m=String(w).match(/W(\d{1,2})/i); return m? Number(m[1]) : null; }
+
+function buildKVRows(kvMerge, kvMergeQ, kvCrea, kvCreaQ){
+  const rows = [];
+
+  // --- CREACIÓN ---
+  const creaP = kvCrea.map(r=>{
+    const fecha = parseDateAny(r.Fecha_Accionamiento || r.Fecha);
+    const week  = normalizeWeekLabel(r.Week || r.Week_Accionamiento);
+    const usuario = correoAUsuario(r.Usuario);
+    const tareas = Number(r.Publicaciones || 0);
+    return { fecha, week, usuario, tareas };
+  }).filter(r=>r.week && r.usuario);
+
+  const creaAgg = new Map(); // user|week
+  for(const r of creaP){
+    const k=`${r.usuario}|${r.week}`;
+    if(!creaAgg.has(k)) creaAgg.set(k,{usuario:r.usuario,week:r.week,dias:new Set(),tareas:0});
+    const o=creaAgg.get(k);
+    if(r.fecha) o.dias.add(r.fecha.toDateString());
+    o.tareas += r.tareas;
+  }
+
+  const creaQ = new Map(); // user|week
+  kvCreaQ.forEach(r=>{
+    const usuario = correoAUsuario(r.Usuario);
+    const week = normalizeWeekLabel(r.Week_Accionamiento || r.Week);
+    if(!usuario || !week) return;
+    const k=`${usuario}|${week}`;
+    const o=creaQ.get(k)||{ok:0,n:0};
+    o.n+=1;
+    if(String(r.Decision).toLowerCase()==='correcta') o.ok+=1;
+    creaQ.set(k,o);
+  });
+
+  creaAgg.forEach(o=>{
+    const q = creaQ.get(`${o.usuario}|${o.week}`)||{ok:0,n:0};
+    const dias = o.dias.size || 5;
+    rows.push({
+      equipo:'KV', flujo:'creación',
+      week:o.week, mes:'', mesIndex:0, q:'',
+      usuario:o.usuario, 'líder': TEAM_CONFIG['KV'].defaultLeader, ciudad:'', antigüedad:'',
+      promedio_diario: (dias? o.tareas/dias : 0), efectividad:(q.n? q.ok/q.n : ''),
+      tareas_demanda:0, tareas_enhancement:0, total_tareas:o.tareas,
+      ids_trabajados:0, correcciones_auditadas:q.n, dias_activos:dias
+    });
+  });
+
+  // --- MERGE ---
+  const mP = kvMerge.map(r=>{
+    const week = normalizeWeekLabel(r.Week || r.ID);
+    const usuario = correoAUsuario(r.Usuario);
+    const valueId = r['Value ID'] || r.Value_Id;
+    return {week, usuario, valueId};
+  }).filter(r=>r.week && r.usuario);
+  const mAgg = new Map(); // user|week -> count
+  mP.forEach(r=>{
+    const k=`${r.usuario}|${r.week}`;
+    const o=mAgg.get(k)||{usuario:r.usuario, week:r.week, count:0};
+    o.count+=1; mAgg.set(k,o);
+  });
+
+  const byValueId = new Map(); mP.forEach(r=>{ if(r.valueId) byValueId.set(String(r.valueId), {usuario:r.usuario, week:r.week}); });
+  const mQ = new Map();
+  kvMergeQ.forEach(r=>{
+    const valId = String(r.Value_Id || r['Value ID'] || '');
+    const link = byValueId.get(valId); if(!link) return;
+    const k=`${link.usuario}|${link.week}`;
+    const o=mQ.get(k)||{ok:0,n:0};
+    o.n+=1;
+    if(String(r.Valor_Correcto_Audit_TL).toLowerCase()==='true') o.ok+=1;
+    mQ.set(k,o);
+  });
+
+  mAgg.forEach(o=>{
+    const q=mQ.get(`${o.usuario}|${o.week}`)||{ok:0,n:0};
+    rows.push({
+      equipo:'KV', flujo:'merge',
+      week:o.week, mes:'', mesIndex:0, q:'',
+      usuario:o.usuario, 'líder': TEAM_CONFIG['KV'].defaultLeader, ciudad:'', antigüedad:'',
+      promedio_diario: (o.count/5), efectividad:(q.n? q.ok/q.n : ''),
+      tareas_demanda:0, tareas_enhancement:0, total_tareas:o.count,
+      ids_trabajados:0, correcciones_auditadas:q.n, dias_activos:5
+    });
+  });
+
   return rows;
 }
 
@@ -579,8 +608,8 @@ let nineboxDetailsData = {};
 
 const state = {
   filtros: {
-    q: [], mes: [], semana: [], ubic: [], lider: [], usuario: [],
-    flujo: ['demanda','enhancement'] // multiselección; por defecto todos
+    equipo: [], q: [], mes: [], semana: [], ubic: [], lider: [], usuario: [],
+    flujo: [] // por defecto, si vacío → todos los flujos para los equipos seleccionados
   },
   theme: (localStorage.getItem('theme') || 'dark')
 };
@@ -588,8 +617,8 @@ const state = {
 /**********************
  * UI FILTROS
  **********************/
-const FILTER_ORDER = ['q','mes','semana','ubic','lider','usuario','flujo'];
-const FILTER_PREFIX = { q:'Trimestre', mes:'Mes', semana:'Semana', ubic:'Ubicación', lider:'Líder', usuario:'Usuario', flujo:'Flujo' };
+const FILTER_ORDER  = ['equipo','q','mes','semana','ubic','lider','usuario','flujo'];
+const FILTER_PREFIX = { equipo:'Equipo', q:'Trimestre', mes:'Mes', semana:'Semana', ubic:'Ubicación', lider:'Líder', usuario:'Usuario', flujo:'Flujo' };
 
 function uniqueSorted(arr){ return Array.from(new Set(arr)).sort(); }
 function uniqueSortedNum(arr){ return Array.from(new Set(arr)).sort((a,b)=>a-b); }
@@ -598,31 +627,42 @@ function filteredOriginalDataExcept(exceptKeys){
   const v = state.filtros;
   const exc = new Set([].concat(exceptKeys||[]));
   return originalData.filter(r =>
-    (exc.has('mes')    || v.mes.length===0    || v.mes.includes(r.mes)) &&
-    (exc.has('semana') || v.semana.length===0 || v.semana.includes(String(r.week))) &&
-    (exc.has('ubic')   || v.ubic.length===0   || v.ubic.includes(r.ciudad)) &&
-    (exc.has('usuario')|| v.usuario.length===0|| v.usuario.includes(r.usuario)) &&
-    (exc.has('lider')  || v.lider.length===0  || v.lider.includes(r['líder'])) &&
-    (exc.has('q')      || v.q.length===0      || v.q.includes(r.q))
+    (exc.has('equipo') || v.equipo.length===0  || v.equipo.includes(r.equipo)) &&
+    (exc.has('mes')    || v.mes.length===0     || v.mes.includes(r.mes)) &&
+    (exc.has('semana') || v.semana.length===0  || v.semana.includes(String(r.week))) &&
+    (exc.has('ubic')   || v.ubic.length===0    || v.ubic.includes(r.ciudad)) &&
+    (exc.has('usuario')|| v.usuario.length===0 || v.usuario.includes(r.usuario)) &&
+    (exc.has('lider')  || v.lider.length===0   || v.lider.includes(r['líder'])) &&
+    (exc.has('q')      || v.q.length===0       || v.q.includes(r.q))
   );
 }
 
+function flowsForSelectedEquipos(){
+  const eq = state.filtros.equipo;
+  const teams = (eq.length===0) ? ['PM','KV'] : eq;
+  const set = new Set();
+  teams.forEach(t => (TEAM_CONFIG[t]?.flows||[]).forEach(f=>set.add(f)));
+  return Array.from(set);
+}
+
 function computeFilterOptions(){
-  const forQ = filteredOriginalDataExcept('q');
-  const forMes = filteredOriginalDataExcept('mes');
+  const forEquipo = filteredOriginalDataExcept('equipo');
+  const forQ      = filteredOriginalDataExcept('q');
+  const forMes    = filteredOriginalDataExcept('mes');
   const forSemana = filteredOriginalDataExcept('semana');
-  const forUbic = filteredOriginalDataExcept('ubic');
-  const forLider = filteredOriginalDataExcept('lider');
-  const forUser = filteredOriginalDataExcept('usuario');
+  const forUbic   = filteredOriginalDataExcept('ubic');
+  const forLider  = filteredOriginalDataExcept('lider');
+  const forUser   = filteredOriginalDataExcept('usuario');
 
   const opts = {
+    equipo: ['PM','KV','Matchers'], // mostramos las 3 opciones
     q: ['Q1','Q2','Q3','Q4'].filter(q => forQ.some(r=>r.q===q)),
     mes: MONTHS_ES.filter(m => forMes.some(r=>r.mes===m)),
     semana: uniqueSortedNum(forSemana.map(r=>r.week)).map(String),
     ubic: uniqueSorted(forUbic.map(r=>r.ciudad).filter(Boolean)),
-    lider: uniqueSorted(forLider.map(r=>r['líder']).filter(l => l && l.toLowerCase()!=='sin líder' && l.toLowerCase()!=='sin lider')),
+    lider: uniqueSorted(forLider.map(r=>r['líder']).filter(l => l && !String(l).toLowerCase().startsWith('sin '))),
     usuario: uniqueSorted(forUser.map(r=>r.usuario)),
-    flujo: ['demanda','enhancement']
+    flujo: flowsForSelectedEquipos()
   };
   return opts;
 }
@@ -631,12 +671,20 @@ function pillValueText(key){
   const sel = state.filtros[key];
   const pluralTodos = (key==='semana' || key==='ubic') ? 'Todas' : 'Todos';
   if(key==='flujo'){
-    if(sel.length===0 || sel.length===2) return 'Todos';
-    return sel.map(v=>v==='demanda'?'Demanda':'Enhancement').join(' + ');
+    if(sel.length===0) return 'Todos';
+    if(sel.length===1) return titleFlow(sel[0]);
+    return `${sel.length} seleccionados`;
   }
   if(sel.length===0) return pluralTodos;
   if(sel.length===1) return sel[0];
   return `${sel.length} seleccionados`;
+}
+function titleFlow(f){
+  if(f==='demanda') return 'Demanda';
+  if(f==='enhancement') return 'Enhancement';
+  if(f==='creación') return 'Creación';
+  if(f==='merge') return 'Merge';
+  return f;
 }
 
 function closeAllMenus(){ document.querySelectorAll('.menu').forEach(m=>m.classList.remove('open')); }
@@ -667,10 +715,7 @@ function renderFiltersBar(){
     const list = menu.querySelector('.list');
     const search = menu.querySelector('.search');
 
-    function labelize(v){
-      if(key!=='flujo') return v;
-      return v==='demanda'?'Demanda':'Enhancement';
-    }
+    function labelize(v){ return key==='flujo'? titleFlow(v) : v; }
 
     function buildList(){
       list.innerHTML='';
@@ -680,9 +725,7 @@ function renderFiltersBar(){
         const selected = state.filtros[key].includes(v);
         const item = document.createElement('label');
         item.className='item';
-        item.innerHTML = `
-          <input type="checkbox" class="opt" id="${id}" value="${v}" ${selected?'checked':''}/>
-          <span>${labelize(v)}</span>`;
+        item.innerHTML = `<input type="checkbox" class="opt" id="${id}" value="${v}" ${selected?'checked':''}/><span>${labelize(v)}</span>`;
         list.appendChild(item);
       });
       list.style.scrollbarWidth='thin';
@@ -702,8 +745,7 @@ function renderFiltersBar(){
     search.addEventListener('input', buildList);
 
     menu.addEventListener('change', ()=>{
-      const selected = Array.from(menu.querySelectorAll('.opt'))
-        .filter(i=>i.checked).map(i=>i.value);
+      const selected = Array.from(menu.querySelectorAll('.opt')).filter(i=>i.checked).map(i=>i.value);
       state.filtros[key] = selected;
       pill.querySelector('.value').textContent = pillValueText(key);
       applyFilters();
@@ -711,7 +753,7 @@ function renderFiltersBar(){
 
     menu.querySelector('.clear').addEventListener('click',(e)=>{
       e.stopPropagation();
-      state.filtros[key]= key==='flujo' ? ['demanda','enhancement'] : [];
+      state.filtros[key]= [];
       pill.querySelector('.value').textContent = pillValueText(key);
       renderFiltersBar();
       applyFilters();
@@ -742,9 +784,7 @@ function setupNavigation(){
   });
 
   // Export dropdown
-  document.getElementById('btn-export').addEventListener('click', ()=>{
-    document.getElementById('export-menu').classList.toggle('hidden');
-  });
+  document.getElementById('btn-export').addEventListener('click', ()=>{ document.getElementById('export-menu').classList.toggle('hidden'); });
   document.addEventListener('click',(e)=>{
     const dd=document.getElementById('export-menu');
     if(!dd.contains(e.target) && !document.getElementById('btn-export').contains(e.target)) dd.classList.add('hidden');
@@ -761,9 +801,8 @@ function setupNavigation(){
 
   // Clear all
   document.getElementById('btn-clear-filters').addEventListener('click', ()=>{
-    state.filtros = { q:[], mes:[], semana:[], ubic:[], lider:[], usuario:[], flujo:['demanda','enhancement'] };
-    renderFiltersBar();
-    applyFilters();
+    state.filtros = { equipo:[], q:[], mes:[], semana:[], ubic:[], lider:[], usuario:[], flujo:[] };
+    renderFiltersBar(); applyFilters();
   });
 
   // Theme toggle
@@ -776,11 +815,7 @@ function setupNavigation(){
     Chart.defaults.color = col;
     Object.values(charts).forEach(c=>c?.update());
   }
-  document.getElementById('theme-toggle').addEventListener('click',()=>{
-    state.theme = (state.theme==='dark')?'light':'dark';
-    localStorage.setItem('theme', state.theme);
-    applyTheme();
-  });
+  document.getElementById('theme-toggle').addEventListener('click',()=>{ state.theme = (state.theme==='dark')?'light':'dark'; localStorage.setItem('theme', state.theme); applyTheme(); });
   applyTheme();
 }
 
@@ -789,15 +824,26 @@ function setupNavigation(){
  **********************/
 function selectedFlows(){
   let s = state.filtros.flujo;
-  if(!s || s.length===0) s=['demanda','enhancement'];
+  if(!s || s.length===0) s = flowsForSelectedEquipos();
   return new Set(s);
 }
 function tareasByFlows(row, flowsSet){
-  const f=flowsSet||selectedFlows();
-  if(f.has('demanda') && f.has('enhancement')) return (row.total_tareas||0);
-  if(f.has('demanda')) return (row.tareas_demanda||0);
-  if(f.has('enhancement')) return (row.tareas_enhancement||0);
-  return (row.total_tareas||0);
+  const f = flowsSet || selectedFlows();
+  // Filas PM
+  if(row.equipo==='PM'){
+    let sum=0;
+    if(f.has('demanda')) sum += (row.tareas_demanda||0);
+    if(f.has('enhancement')) sum += (row.tareas_enhancement||0);
+    // Si pidieron ambos y la fila ya tiene total, evito doble conteo inconsistente:
+    if(f.has('demanda') && f.has('enhancement') && sum===0) sum = row.total_tareas||0;
+    return sum;
+  }
+  // Filas KV
+  if(row.equipo==='KV'){
+    if(f.has(row.flujo)) return row.total_tareas||0;
+    return 0;
+  }
+  return row.total_tareas||0;
 }
 function promedioDiario(rows){
   const f = selectedFlows();
@@ -812,6 +858,7 @@ function promedioDiario(rows){
 function applyFilters(){
   const f = state.filtros;
   currentData = originalData.filter(r =>
+    (f.equipo.length===0 || f.equipo.includes(r.equipo)) &&
     (f.mes.length===0    || f.mes.includes(r.mes)) &&
     (f.semana.length===0 || f.semana.includes(String(r.week))) &&
     (f.ubic.length===0   || f.ubic.includes(r.ciudad)) &&
@@ -837,37 +884,30 @@ function applyFilters(){
  * KPI + RENDER
  **********************/
 function updateKPIs(){
-  const flows = selectedFlows();
-  const totalFlujo = currentData.reduce((s,r)=> s + tareasByFlows(r,flows), 0);
   const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
   const usuarios = new Set(currentData.map(r=>r.usuario)).size;
   const correcc = currentData.reduce((s,r)=> s + (r.correcciones_auditadas||0), 0);
   const prom = promedioDiario(currentData);
   const vals = currentData.map(r=>r.efectividad).filter(v => v!=='' && v!==null && v!==undefined);
   const ef = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
+  const totalFlujo = currentData.reduce((s,r)=> s + tareasByFlows(r), 0);
 
+  // colores
   const promEl = document.getElementById('kpi-promedio-diario');
   const efEl   = document.getElementById('kpi-efectividad-prom');
-
-  let promColor = (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500';
-  setColor(promEl, promColor);
-
+  setColor(promEl, (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500');
   const efPct = ef*100;
-  let efColor = (efPct<=75) ? 'text-red-600'
-                : (efPct<87) ? 'text-orange-500'
-                : (efPct<90) ? 'text-yellow-500'
-                : 'text-green-600';
-  setColor(efEl, efColor);
+  setColor(efEl, (efPct<=75) ? 'text-red-600' : (efPct<87) ? 'text-orange-500' : (efPct<90) ? 'text-yellow-500' : 'text-green-600');
 
-  document.getElementById('kpi-total-tareas').textContent     = fmt.int(totalFlujo);
-  document.getElementById('kpi-ids').textContent              = fmt.int(idsTrab);
-  document.getElementById('kpi-usuarios').textContent         = fmt.int(usuarios);
-  document.getElementById('kpi-correcciones').textContent     = fmt.int(correcc);
+  document.getElementById('kpi-total-tareas').textContent = fmt.int(totalFlujo);
+  document.getElementById('kpi-ids').textContent          = fmt.int(idsTrab);
+  document.getElementById('kpi-usuarios').textContent     = fmt.int(usuarios);
+  document.getElementById('kpi-correcciones').textContent = fmt.int(correcc);
   promEl.textContent = fmt.dec(prom);
   efEl.textContent   = fmt.pct(ef);
 }
 
-// KPIs sección Evolución
+// Evolución
 function updateEvolutionKPIs(){
   const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
   const usuarios = new Set(currentData.map(r=>r.usuario)).size;
@@ -878,7 +918,6 @@ function updateEvolutionKPIs(){
   const promEl = document.getElementById('evo-kpi-prom');
   const efEl   = document.getElementById('evo-kpi-ef');
   setColor(promEl, (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500');
-
   const efPct = ef*100;
   setColor(efEl, (efPct<=75) ? 'text-red-600' : (efPct<87) ? 'text-orange-500' : (efPct<90) ? 'text-yellow-500' : 'text-green-600');
 
@@ -888,7 +927,7 @@ function updateEvolutionKPIs(){
   document.getElementById('evo-kpi-users').textContent = fmt.int(usuarios);
 }
 
-// KPIs sección Detalle
+// Detalle
 function updateDetailKPIs(){
   const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
   const prom = promedioDiario(currentData);
@@ -898,7 +937,6 @@ function updateDetailKPIs(){
   const promEl = document.getElementById('det-kpi-prom');
   const efEl   = document.getElementById('det-kpi-ef');
   setColor(promEl, (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500');
-
   const efPct = ef*100;
   setColor(efEl, (efPct<=75) ? 'text-red-600' : (efPct<87) ? 'text-orange-500' : (efPct<90) ? 'text-yellow-500' : 'text-green-600');
 
@@ -908,38 +946,42 @@ function updateDetailKPIs(){
 }
 
 /* ---------- Nine-box ---------- */
+function prodBandByTeam(value, team){
+  const cfg = TEAM_CONFIG[team] || TEAM_CONFIG['PM'];
+  const { low, high } = cfg.prodDaily;
+  if(value>=high) return 'alta';
+  if(value>=low)  return 'media';
+  return 'baja';
+}
 function renderNineBox(){
   const flows = selectedFlows();
-
-  const map = new Map(); // user -> {num,den, effSum, effN}
+  const map = new Map(); // user -> {num,den, effSum, effN, team:Set}
   currentData.forEach(r=>{
     const u=r.usuario;
-    const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
+    const o=map.get(u)||{num:0,den:0,effSum:0,effN:0, teams:new Set()};
     o.num += tareasByFlows(r,flows); o.den += (r.dias_activos||0);
     if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){ o.effSum+=r.efectividad; o.effN++; }
+    if(r.equipo) o.teams.add(r.equipo);
     map.set(u,o);
   });
 
   const users = Array.from(map.entries()).map(([u,o])=>{
     const prom = o.den? o.num/o.den : null;
     const eff  = o.effN? o.effSum/o.effN : null;
-    return {u, prom, eff};
+    const team = o.teams.values().next().value || 'PM';
+    return {u, prom, eff, team};
   });
 
-  const prodBand = p => (p>=80 ? 'alta' : p>=70 ? 'media' : 'baja');
   const calBand  = e => (e>=0.90 ? 'alta' : e>=0.75 ? 'media' : 'baja');
-
   const rows=['alta','media','baja']; const cols=['alta','media','baja'];
-
   const buckets = {}; const details = {};
   rows.forEach(r=>cols.forEach(c=>{ buckets[`${r}-${c}`]=[]; details[`${r}-${c}`]=[]; }));
 
   const missing = [];
   users.forEach(x=>{
-    if(x.prom===null || x.eff===null){
-      missing.push(x);
-    }else{
-      const key = `${prodBand(x.prom)}-${calBand(x.eff)}`;
+    if(x.prom===null || x.eff===null){ missing.push(x); }
+    else{
+      const key = `${prodBandByTeam(x.prom,x.team)}-${calBand(x.eff)}`;
       buckets[key].push(x.u);
       details[key].push({usuario:x.u, prom:x.prom, eff:x.eff});
     }
@@ -967,97 +1009,70 @@ function renderNineBox(){
     html += hdrCell('Prod. '+label(r));
     cols.forEach(c=>{
       const arr = buckets[`${r}-${c}`]||[];
-      html += `<div class="nb-cell ${cellClass(r,c)}" data-bucket="${r}-${c}" title="Prod ${label(r)} / Calidad ${label(c)}">
-                <span class="nb-badge">${arr.length}</span>
-              </div>`;
+      html += `<div class="nb-cell ${cellClass(r,c)}" data-bucket="${r}-${c}" title="Prod ${label(r)} / Calidad ${label(c)}"><span class="nb-badge">${arr.length}</span></div>`;
     });
   });
   grid.innerHTML = html;
 
   nineboxDetailsData = details;
 
-  grid.onclick = (ev)=>{
-    const cell = ev.target.closest('.nb-cell[data-bucket]');
-    if(!cell) return;
-    const key = cell.getAttribute('data-bucket');
-    showNineboxDetails(key, label);
-  };
+  grid.onclick = (ev)=>{ const cell = ev.target.closest('.nb-cell[data-bucket]'); if(!cell) return; const key = cell.getAttribute('data-bucket'); showNineboxDetails(key, label); };
 
   const missDiv = document.getElementById('ninebox-missing');
   if(missing.length){
-    const lines = missing
-      .sort((a,b)=> (a.u>b.u?1:-1))
-      .map(m=>{
-        const parts = [];
-        if(m.prom!==null) parts.push(`Promedio Diario: ${m.prom.toFixed(2)}`);
-        if(m.eff!==null)  parts.push(`% Efectividad: ${(m.eff*100).toFixed(2)}%`);
-        return `• ${m.u} — ${parts.join(' | ') || 'sin datos'}`;
-      });
+    const lines = missing.sort((a,b)=> (a.u>b.u?1:-1)).map(m=>{
+      const parts=[]; if(m.prom!==null) parts.push(`Promedio Diario: ${m.prom?.toFixed(2)}`); if(m.eff!==null) parts.push(`% Efectividad: ${(m.eff*100)?.toFixed(2)}%`);
+      return `• ${m.u} — ${parts.join(' | ') || 'sin datos'}`;
+    });
     missDiv.innerHTML = `<div class="font-medium mb-1">Perfiles no incluidos por datos faltantes</div><div class="whitespace-pre-line">${lines.join('\n')}</div>`;
-  }else{
-    missDiv.innerHTML = '';
-  }
+  }else missDiv.innerHTML='';
 }
-
 function showNineboxDetails(bucketKey, labelFn){
   const box = document.getElementById('ninebox-details');
   const rows = (nineboxDetailsData[bucketKey]||[]).slice().sort((a,b)=>b.prom-a.prom);
   const [prod, cal] = bucketKey.split('-').map(labelFn);
-  if(!rows.length){
-    box.innerHTML = `
-      <div class="flex items-center justify-between mb-2">
-        <div class="font-semibold">Prod. ${prod} / Calidad ${cal}</div>
-        <button class="text-sm" style="color:var(--muted)" id="nb-close">Cerrar</button>
-      </div>
-      <div class="text-sm" style="color:var(--muted)">Sin perfiles en este cuadrante para los filtros actuales.</div>`;
-    box.classList.remove('hidden');
-    document.getElementById('nb-close').onclick = ()=> box.classList.add('hidden');
-    return;
-  }
-
   const header = `
     <div class="flex items-center justify-between mb-2">
       <div class="font-semibold">Prod. ${prod} / Calidad ${cal} — <span class="font-normal" style="color:var(--muted)">${rows.length} perfiles</span></div>
       <button class="text-sm" style="color:var(--muted)" id="nb-close">Cerrar</button>
     </div>`;
-
-  const table = `
+  const table = rows.length? `
     <div class="overflow-x-auto border rounded-md" style="border-color:var(--border)">
       <table class="min-w-full text-sm">
-        <thead style="background:var(--panel-2);color:var(--muted)">
-          <tr>
-            <th class="text-left px-3 py-2">Usuario</th>
-            <th class="text-right px-3 py-2">Prom. Diario</th>
-            <th class="text-right px-3 py-2">% Efectividad</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rows.map(r=>`
-            <tr style="border-top:1px solid var(--border)">
-              <td class="px-3 py-2">${r.usuario}</td>
-              <td class="px-3 py-2 text-right">${fmt.dec(r.prom)}</td>
-              <td class="px-3 py-2 text-right">${fmt.pct(r.eff)}</td>
-            </tr>
-          `).join('')}
+        <thead style="background:var(--panel-2);color:var(--muted)"><tr>
+          <th class="text-left px-3 py-2">Usuario</th>
+          <th class="text-right px-3 py-2">Prom. Diario</th>
+          <th class="text-right px-3 py-2">% Efectividad</th>
+        </tr></thead>
+        <tbody>${rows.map(r=>`
+          <tr style="border-top:1px solid var(--border)">
+            <td class="px-3 py-2">${r.usuario}</td>
+            <td class="px-3 py-2 text-right">${fmt.dec(r.prom)}</td>
+            <td class="px-3 py-2 text-right">${fmt.pct(r.eff)}</td>
+          </tr>`).join('')}
         </tbody>
       </table>
-    </div>`;
-
-  box.innerHTML = header + table;
-  box.classList.remove('hidden');
-  document.getElementById('nb-close').onclick = ()=> box.classList.add('hidden');
+    </div>` : `<div class="text-sm" style="color:var(--muted)">Sin perfiles en este cuadrante para los filtros actuales.</div>`;
+  box.innerHTML = header+table; box.classList.remove('hidden'); document.getElementById('nb-close').onclick=()=>box.classList.add('hidden');
 }
 
 /* ---------- Tareas por Flujo (pie) ---------- */
 function renderDemandPie(){
   const flows = selectedFlows();
+  const colorsVars = {
+    demanda: getComputedStyle(document.body).getPropertyValue('--pie1').trim()||PALETTE.c0,
+    enhancement: getComputedStyle(document.body).getPropertyValue('--pie2').trim()||PALETTE.c4,
+    'creación': getComputedStyle(document.body).getPropertyValue('--pie3').trim()||PALETTE.c3,
+    merge: getComputedStyle(document.body).getPropertyValue('--pie4').trim()||PALETTE.c6,
+  };
 
-  let demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
-  let enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
+  const labels=[]; const values=[]; const colors=[];
+  function push(flow, value){ labels.push(titleFlow(flow)); values.push(value); colors.push(colorsVars[flow]); }
 
-  const labels=[], values=[], colors=[];
-  if(flows.has('demanda')){ labels.push('Demanda'); values.push(demand); colors.push(getComputedStyle(document.body).getPropertyValue('--pie1').trim()||PALETTE.c0); }
-  if(flows.has('enhancement')){ labels.push('Enhancement'); values.push(enh); colors.push(getComputedStyle(document.body).getPropertyValue('--pie2').trim()||PALETTE.c4); }
+  if(flows.has('demanda'))     push('demanda',     currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0));
+  if(flows.has('enhancement')) push('enhancement', currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0));
+  if(flows.has('creación'))    push('creación',    currentData.filter(r=>r.equipo==='KV' && r.flujo==='creación').reduce((s,r)=> s + (r.total_tareas||0), 0));
+  if(flows.has('merge'))       push('merge',       currentData.filter(r=>r.equipo==='KV' && r.flujo==='merge').reduce((s,r)=> s + (r.total_tareas||0), 0));
 
   const tot = values.reduce((a,b)=>a+b,0);
 
@@ -1070,16 +1085,10 @@ function renderDemandPie(){
         legend:{
           position:'bottom',
           labels:{
-            generateLabels: (chart)=>{
-              const ds=chart.data.datasets[0];
-              return chart.data.labels.map((lbl,i)=>({
-                text: `${lbl} (${fmt.int(ds.data[i])})`,
-                fillStyle: ds.backgroundColor[i],
-                strokeStyle: ds.backgroundColor[i],
-                lineWidth:1,
-                index:i
-              }));
-            }
+            generateLabels:(chart)=> chart.data.labels.map((lbl,i)=>{
+              const ds=chart.data.datasets[0]; const v=ds.data[i]; const p = tot? (100*v/tot) : 0;
+              return { text: `${lbl} (${fmt.int(v)} · ${p.toFixed(1)}%)`, fillStyle: ds.backgroundColor[i], strokeStyle: ds.backgroundColor[i], lineWidth:1, index:i };
+            })
           }
         },
         tooltip:{ callbacks:{ label:(ctx)=> `${ctx.label}: ${fmt.int(ctx.parsed)} (${(tot? (100*ctx.parsed/tot):0).toFixed(1)}%)` } }
@@ -1088,19 +1097,16 @@ function renderDemandPie(){
   });
 
   const pairs = labels.map((l,i)=>`${l}: ${fmt.int(values[i])}`).join(' | ');
-  document.getElementById('demandTotals').textContent =
-    `Total Tareas: ${fmt.int(tot)} — ${pairs}`;
+  document.getElementById('demandTotals').textContent = `Total Tareas: ${fmt.int(tot)} — ${pairs}`;
 }
 
 /* ---------- Detalle por usuario ---------- */
 function renderTasksByUser(){
   const flows = selectedFlows();
-
   const agg = new Map(); // user -> {num,den, effNum, effDen}
   currentData.forEach(r=>{
     const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
-    o.num += tareasByFlows(r,flows);
-    o.den += (r.dias_activos||0);
+    o.num += tareasByFlows(r,flows); o.den += (r.dias_activos||0);
     if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
       const w=(r.correcciones_auditadas||0)||1;
       o.effNum += r.efectividad*w; o.effDen += w;
@@ -1115,10 +1121,7 @@ function renderTasksByUser(){
   }).sort((a,b)=>b.prom-a.prom);
 
   createOrUpdateChart('tasksByUserChart',{
-    data:{
-      labels:arr.map(x=>x.user),
-      datasets:[ barDataset('Prom. diario', arr.map(x=>x.prom)), lineEffDataset('% Efectividad', arr.map(x=>x.effPct)) ]
-    },
+    data:{ labels:arr.map(x=>x.user), datasets:[ barDataset('Prom. diario', arr.map(x=>x.prom)), lineEffDataset('% Efectividad', arr.map(x=>x.effPct)) ] },
     options:{
       responsive:true,
       scales:{
@@ -1135,7 +1138,7 @@ function renderTasksByLeader(){
   const flows = selectedFlows();
   const agg = new Map(); // líder -> {num,den, effNum, effDen}
   currentData.forEach(r=>{
-    const l = r['líder']; if(!l || l.toLowerCase()==='sin líder' || l.toLowerCase()==='sin lider') return;
+    const l = r['líder']; if(!l || String(l).toLowerCase().startsWith('sin ')) return;
     const o = agg.get(l) || {num:0,den:0,effNum:0,effDen:0};
     o.num += tareasByFlows(r,flows);
     o.den += (r.dias_activos||0);
@@ -1153,10 +1156,7 @@ function renderTasksByLeader(){
   }).sort((a,b)=>b.prom-a.prom);
 
   createOrUpdateChart('tasksByLeaderChart',{
-    data:{
-      labels:arr.map(x=>x.lider),
-      datasets:[ barDataset('Prom. diario', arr.map(x=>x.prom)), lineEffDataset('% Efectividad', arr.map(x=>x.effPct)) ]
-    },
+    data:{ labels:arr.map(x=>x.lider), datasets:[ barDataset('Prom. diario', arr.map(x=>x.prom)), lineEffDataset('% Efectividad', arr.map(x=>x.effPct)) ] },
     options:{
       responsive:true,
       scales:{
@@ -1186,10 +1186,7 @@ function renderWeeklyEvolution(){
   });
 
   const weeks = Array.from(agg.keys());
-  if(!weeks.length){
-    createOrUpdateChart('weeklyEvolutionChart',{type:'line',data:{labels:[],datasets:[]},options:{}});
-    return;
-  }
+  if(!weeks.length){ createOrUpdateChart('weeklyEvolutionChart',{type:'line',data:{labels:[],datasets:[]},options:{}}); return; }
   const minW=Math.min(...weeks), maxW=Math.max(...weeks);
   const labels=[], promValues=[], effValues=[];
   for(let w=minW; w<=maxW; w++){
@@ -1199,10 +1196,7 @@ function renderWeeklyEvolution(){
     effValues.push(o.effDen? 100*o.effNum/o.effDen : null);
   }
   createOrUpdateChart('weeklyEvolutionChart',{
-    data:{
-      labels,
-      datasets:[ barDataset('Prom. diario', promValues), lineEffDataset('% Efectividad', effValues) ]
-    },
+    data:{ labels, datasets:[ barDataset('Prom. diario', promValues), lineEffDataset('% Efectividad', effValues) ] },
     options:{
       responsive:true,
       plugins:{ legend:{display:true} },
@@ -1218,10 +1212,9 @@ function renderWeeklyEvolution(){
 /* ---------- Ubicación (comparativo y evolutivo) ---------- */
 function renderByLocation(){
   const flows = selectedFlows();
-  const byLoc = new Map(); // ciudad -> {num,den}
+  const byLoc = new Map();  // ciudad -> {num,den}
   const effLoc = new Map(); // ciudad -> {num,den}
-  const antig = {}; // ciudad -> {sum, n}
-
+  const antig = {};
   currentData.forEach(r=>{
     const c=r.ciudad||'Sin ubicación';
     const o=byLoc.get(c)||{num:0,den:0};
@@ -1232,10 +1225,7 @@ function renderByLocation(){
       const e=effLoc.get(c)||{num:0,den:0};
       e.num += r.efectividad*w; e.den += w; effLoc.set(c,e);
     }
-
-    const a = Number(r.antigüedad||0);
-    if(!antig[c]) antig[c]={sum:0,n:0};
-    if(Number.isFinite(a)){ antig[c].sum+=a; antig[c].n++; }
+    const a = Number(r.antigüedad||0); if(!antig[c]) antig[c]={sum:0,n:0}; if(Number.isFinite(a)){ antig[c].sum+=a; antig[c].n++; }
   });
 
   const labels = Array.from(byLoc.keys()).sort((a,b)=>{
@@ -1248,10 +1238,7 @@ function renderByLocation(){
   const effData  = labels.map(c=>{ const e=effLoc.get(c)||{num:0,den:0}; return e.den? 100*e.num/e.den : null; });
 
   createOrUpdateChart('locCombinedChart',{
-    data:{
-      labels,
-      datasets:[ barDataset('Prom. diario', promData), lineEffDataset('% Efectividad', effData) ]
-    },
+    data:{ labels, datasets:[ barDataset('Prom. diario', promData), lineEffDataset('% Efectividad', effData) ] },
     options:{
       responsive:true,
       scales:{
@@ -1264,26 +1251,17 @@ function renderByLocation(){
   });
 
   // Antigüedad tarjetas
-  const list = labels.map(loc=>{
-    const v=antig[loc]||{sum:0,n:0}; const avg=v.n? v.sum/v.n : 0;
-    return [loc, avg];
-  }).sort((a,b)=>b[1]-a[1]);
-
+  const list = labels.map(loc=>{ const v=antig[loc]||{sum:0,n:0}; const avg=v.n? v.sum/v.n : 0; return [loc, avg]; }).sort((a,b)=>b[1]-a[1]);
   const grid = document.getElementById('avg-antiguedad-cards');
   grid.innerHTML = list.map(([loc,avg])=>`
-    <div class="kpi-card">
-      <div class="flex items-baseline justify-between">
-        <div class="kpi-title">${loc}</div>
-        <div class="kpi-value">${fmt.dec(avg)}</div>
-      </div>
-    </div>
-  `).join('');
+    <div class="kpi-card"><div class="flex items-baseline justify-between">
+      <div class="kpi-title">${loc}</div><div class="kpi-value">${fmt.dec(avg)}</div>
+    </div></div>`).join('');
 }
 
 function renderLocationTimeline(){
   const flows = selectedFlows();
-  // week -> city -> {num, den}
-  const byWeekCity = new Map();
+  const byWeekCity = new Map(); // week -> city -> {num, den}
   currentData.forEach(r=>{
     const w = Number(r.week); if(!Number.isFinite(w)) return;
     const c = r.ciudad || 'Sin ubicación';
@@ -1291,32 +1269,18 @@ function renderLocationTimeline(){
     const o = wk.get(c) || {num:0, den:0};
     o.num += tareasByFlows(r,flows);
     o.den += (r.dias_activos||0);
-    wk.set(c,o);
-    byWeekCity.set(w, wk);
+    wk.set(c,o); byWeekCity.set(w, wk);
   });
 
   const weeks = Array.from(byWeekCity.keys()).sort((a,b)=>a-b);
-  if(!weeks.length){
-    createOrUpdateChart('locTimeChart',{type:'line',data:{labels:[],datasets:[]},options:{}});
-    return;
-  }
+  if(!weeks.length){ createOrUpdateChart('locTimeChart',{type:'line',data:{labels:[],datasets:[]},options:{}}); return; }
 
-  // Ranking de ubicaciones por volumen total
   const totalsByCity = new Map();
-  byWeekCity.forEach((wk, _w)=>{
-    wk.forEach((o, city)=>{
-      const t = totalsByCity.get(city)||0;
-      totalsByCity.set(city, t + o.num);
-    });
-  });
-  const topCities = Array.from(totalsByCity.entries())
-    .sort((a,b)=>b[1]-a[1])
-    .slice(0,5)
-    .map(([city])=>city);
+  byWeekCity.forEach((wk)=> wk.forEach((o,city)=> totalsByCity.set(city, (totalsByCity.get(city)||0)+o.num)));
+  const topCities = Array.from(totalsByCity.entries()).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([city])=>city);
 
   const labels = weeks.map(w=>'W'+String(w).padStart(2,'0'));
-  const colors = [PALETTE.c2, PALETTE.c4, PALETTE.c1, PALETTE.c0, PALETTE.c5];
-
+  const colors = [PALETTE.c2, PALETTE.c4, PALETTE.c1, PALETTE.c0, PALETTE.c6];
   const datasets = topCities.map((city,idx)=>{
     const data = weeks.map(w=>{
       const wk = byWeekCity.get(w)||new Map();
@@ -1342,10 +1306,7 @@ function renderLocationTimeline(){
 /**********************
  * EXPORTS
  **********************/
-function getActiveSectionId(){
-  const sec=[...document.querySelectorAll('.page-section')].find(s=>!s.classList.contains('hidden'));
-  return sec ? sec.id : 'resumen';
-}
+function getActiveSectionId(){ const sec=[...document.querySelectorAll('.page-section')].find(s=>!s.classList.contains('hidden')); return sec ? sec.id : 'resumen'; }
 function download(filename, blob){ saveAs(blob, filename); }
 
 async function exportSectionPNGs(){
@@ -1356,74 +1317,47 @@ async function exportSectionPNGs(){
     const el=document.getElementById('ninebox-card');
     const canvas = await html2canvas(el,{scale:2,backgroundColor:null});
     canvas.toBlob(b=>download('productividad-calidad.png',b));
-  }else if(id==='detalle'){
-    canvases.push(document.getElementById('tasksByUserChart'));
-  }else if(id==='lideres'){
-    canvases.push(document.getElementById('tasksByLeaderChart'));
-  }else if(id==='evolucion'){
-    canvases.push(document.getElementById('weeklyEvolutionChart'));
-  }else if(id==='ubicacion'){
-    canvases.push(document.getElementById('locCombinedChart'));
-    canvases.push(document.getElementById('locTimeChart'));
-  }
-  canvases.forEach((c,i)=>{
-    if(!c) return;
-    const url=c.toDataURL('image/png');
-    fetch(url).then(r=>r.blob()).then(b=>download(`${id}-chart${i+1}.png`, b));
-  });
+  }else if(id==='detalle'){ canvases.push(document.getElementById('tasksByUserChart'));
+  }else if(id==='lideres'){ canvases.push(document.getElementById('tasksByLeaderChart'));
+  }else if(id==='evolucion'){ canvases.push(document.getElementById('weeklyEvolutionChart'));
+  }else if(id==='ubicacion'){ canvases.push(document.getElementById('locCombinedChart')); canvases.push(document.getElementById('locTimeChart')); }
+  canvases.forEach((c,i)=>{ if(!c) return; const url=c.toDataURL('image/png'); fetch(url).then(r=>r.blob()).then(b=>download(`${id}-chart${i+1}.png`, b)); });
 }
 
 async function sendSectionToGoogleSheets(){
   const section = getActiveSectionId();
   const flows = Array.from(selectedFlows());
-  const payload = {
-    section,
-    filters: {...state.filtros},
-    generatedAt: new Date().toISOString(),
-    data: buildSectionDataForExport(section, flows)
-  };
+  const payload = { section, filters:{...state.filtros}, generatedAt:new Date().toISOString(), data: buildSectionDataForExport(section, flows) };
   try{
-    const r = await fetch(SHEETS_WEB_APP, {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify(payload),
-      mode:'cors'
-    });
-    if(!r.ok) throw new Error(`HTTP ${r.status}`);
-    alert('✅ Enviado a Google Sheets');
-  }catch(e){
-    alert('❌ No pude enviar a Google Sheets: ' + e.message);
-  }
+    const r = await fetch(SHEETS_WEB_APP, { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload), mode:'cors' });
+    if(!r.ok) throw new Error(`HTTP ${r.status}`); alert('✅ Enviado a Google Sheets');
+  }catch(e){ alert('❌ No pude enviar a Google Sheets: ' + e.message); }
 }
-
 function buildSectionDataForExport(section, flows){
   if(section==='resumen'){
-    let demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
-    let enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
-    const rows = [];
-    if(flows.includes('demanda')) rows.push({ Flujo:'Demanda', Total:demand });
-    if(flows.includes('enhancement')) rows.push({ Flujo:'Enhancement', Total:enh });
+    const rows=[];
+    if(flows.includes('demanda')) rows.push({ Flujo:'Demanda',     Total: currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0) });
+    if(flows.includes('enhancement')) rows.push({ Flujo:'Enhancement', Total: currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0) });
+    if(flows.includes('creación')) rows.push({ Flujo:'Creación',   Total: currentData.filter(r=>r.equipo==='KV' && r.flujo==='creación').reduce((s,r)=> s + (r.total_tareas||0), 0) });
+    if(flows.includes('merge'))    rows.push({ Flujo:'Merge',       Total: currentData.filter(r=>r.equipo==='KV' && r.flujo==='merge').reduce((s,r)=> s + (r.total_tareas||0), 0) });
     return rows;
   }
   if(section==='detalle'){
     const agg = new Map();
-    currentData.forEach(r=>{
-      const u=r.usuario; const o=agg.get(u)||{num:0,den:0};
-      o.num += tareasByFlows(r); o.den += (r.dias_activos||0);
-      agg.set(u,o);
-    });
+    currentData.forEach(r=>{ const u=r.usuario; const o=agg.get(u)||{num:0,den:0}; o.num += tareasByFlows(r); o.den += (r.dias_activos||0); agg.set(u,o); });
     return Array.from(agg.entries()).map(([user,o])=>({Usuario:user, Promedio:o.den?o.num/o.den:0}));
   }
   return currentData;
 }
 
 /**********************
- * GEMINI (igual que antes)
+ * GEMINI (igual)
  **********************/
 function filtersSummary() {
   const f = state.filtros;
-  const flows = (f.flujo.length===0 || f.flujo.length===2) ? 'Todos' : f.flujo.map(x=>x==='demanda'?'Demanda':'Enhancement').join(' + ');
+  const flows = (f.flujo.length===0) ? 'Todos' : f.flujo.map(titleFlow).join(' + ');
   return {
+    Equipo: f.equipo.join(' | ') || '',
     Trimestre: f.q.join(' | ') || '',
     Mes: f.mes.join(' | ') || '',
     Semana: f.semana.join(' | ') || '',
@@ -1440,7 +1374,7 @@ function buildNineboxPrompt(){
   const efVals= currentData.map(r=>r.efectividad).filter(v=>v!==''&&v!=null);
   const efectividad = (efVals.length? (100*efVals.reduce((a,b)=>a+b,0)/efVals.length) : 0).toFixed(2);
 
-  const prodBand=p=>(p>=80?'Alta':p>=70?'Media':'Baja');
+  const prodBand=p=>(p>=80?'Alta':p>=70?'Media':'Baja'); // referencia PM para el texto
   const calBand=e=>(e>=0.90?'Alta':e>=0.75?'Media':'Baja');
   const buckets = { 'Prod Alta / Cal Alta':0,'Prod Alta / Cal Media':0,'Prod Alta / Cal Baja':0,'Prod Media / Cal Alta':0,'Prod Media / Cal Media':0,'Prod Media / Cal Baja':0,'Prod Baja / Cal Alta':0,'Prod Baja / Cal Media':0,'Prod Baja / Cal Baja':0 };
   const map=new Map();
@@ -1471,15 +1405,14 @@ Instrucciones:
 Formato bullets.`;
 }
 function buildGlobalInsightsPrompt(){
-  const filtros_activos = JSON.stringify(filtersSummary());
+  const f = JSON.stringify(filtersSummary());
   const usuarios = new Set(currentData.map(r=>r.usuario)).size;
   const ids = currentData.reduce((s,r)=>s+(r.ids_trabajados||0),0);
   const prom = promedioDiario(currentData).toFixed(2);
   const efVals= currentData.map(r=>r.efectividad).filter(v=>v!==''&&v!=null);
   const ef = (efVals.length? (100*efVals.reduce((a,b)=>a+b,0)/efVals.length) : 0).toFixed(2);
-
   return `🔹 Análisis Global
-Filtros: ${filtros_activos}
+Filtros: ${f}
 Usuarios=${usuarios} | IDs=${ids} | Promedio=${prom} | Efectividad=${ef}%
 
 Necesito:
@@ -1507,22 +1440,16 @@ async function geminiRequest(prompt) {
 function setupGeminiFeatures(){
   document.getElementById('generate-summary-btn').addEventListener('click', async ()=>{
     const block = document.getElementById('ninebox-missing');
-    block.classList.remove('hidden');
-    block.innerHTML = 'Generando…';
-    try{
-      const resp = await geminiRequest(buildNineboxPrompt());
-      block.innerHTML = resp;
-    }catch(e){ block.textContent = e.message; }
+    block.classList.remove('hidden'); block.innerHTML = 'Generando…';
+    try{ const resp = await geminiRequest(buildNineboxPrompt()); block.innerHTML = resp; }
+    catch(e){ block.textContent = e.message; }
   });
 
   document.getElementById('generate-insights-btn').addEventListener('click', async ()=>{
     const out = document.getElementById('insights-output');
-    out.classList.remove('hidden');
-    out.innerHTML = 'Analizando…';
-    try{
-      const resp = await geminiRequest(buildGlobalInsightsPrompt());
-      out.innerHTML = resp;
-    }catch(e){ out.textContent = e.message; }
+    out.classList.remove('hidden'); out.innerHTML = 'Analizando…';
+    try{ const resp = await geminiRequest(buildGlobalInsightsPrompt()); out.innerHTML = resp; }
+    catch(e){ out.textContent = e.message; }
   });
 }
 
@@ -1531,18 +1458,31 @@ function setupGeminiFeatures(){
  **********************/
 document.addEventListener('DOMContentLoaded', async ()=>{
   try{
-    const [tProd,tCal,tBase,tLid] = await Promise.all([
+    const [tProd,tCal,tBase,tLid, tCrea, tCreaQ, tMerge, tMergeQ] = await Promise.all([
       fetchCSVFile(FILES.productividad),
       fetchCSVFile(FILES.calidad),
       fetchCSVFile(FILES.base),
-      fetchCSVFile(FILES.lideres)
+      fetchCSVFile(FILES.lideres),
+      fetchCSVFile(FILES_KV.crea),
+      fetchCSVFile(FILES_KV.creaQ),
+      fetchCSVFile(FILES_KV.merge),
+      fetchCSVFile(FILES_KV.mergeQ)
     ]);
+
     const prod = parseCSV(tProd);
     const cal  = parseCSV(tCal);
     const base = parseCSV(tBase);
     const lids = parseCSV(tLid);
 
-    originalData = buildWeeklyRows(prod, cal, base, lids);
+    const kvCrea   = parseCSV(tCrea);
+    const kvCreaQ  = parseCSV(tCreaQ);
+    const kvMerge  = parseCSV(tMerge);
+    const kvMergeQ = parseCSV(tMergeQ);
+
+    const pmRows = buildWeeklyRows(prod, cal, base, lids); // PM
+    const kvRows = buildKVRows(kvMerge, kvMergeQ, kvCrea, kvCreaQ); // KV
+
+    originalData = [...pmRows, ...kvRows];
 
     renderFiltersBar();
     setupNavigation();
@@ -1558,5 +1498,3 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 </script>
 </body>
 </html>
-
-
