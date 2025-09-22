@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Catálogo · Dashboard de Métricas</title>
 
 <!-- Tailwind -->
@@ -24,199 +24,137 @@
 
 <style>
   :root{
-    /* LIGHT THEME */
-    --bg:#f1f5f9;              /* page background */
-    --text:#0f172a;            /* base text */
-    --muted:#64748b;           /* secondary text */
-    --card-bg:#ffffff;         /* card background */
-    --card-border:#e2e8f0;     /* card border */
-    --sidebar-bg:#6b7280;      /* sidebar background */
-    --sidebar-text:#ffffff;    /* sidebar text */
-    --sidebar-active:#7a7a7a;  /* active/hover link */
-    --chip-bg:#ffffff;
-    --chip-border:#e2e8f0;
-    --menu-bg:#ffffff;
-
-    /* charts */
-    --chart-grid:#94a3b8;
-    --chart-tick:#334155;
-    --chart-legend:#0f172a;
-
-    /* brand/palette */
-    --c0:#86eae9;
-    --c1:#3edad8;
-    --c2:#37c9ef;
-    --c3:#2c92d5;
-    --c4:#13538a;
-
-    /* KPI states */
-    --ok:#16a34a;      /* green-600 */
-    --warn:#f59e0b;    /* amber-500 */
-    --bad:#ef4444;     /* red-500 */
-
-    /* FILTERS compact */
-    --pill-font:.90rem;
-    --pill-pad-y:.45rem;
-    --pill-pad-x:.65rem;
-    --pill-minw:200px;
-    --menu-minw:280px;
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --muted: #475569;
+    --text: #0f172a;
+    --ring: rgba(15,23,42,.08);
+    --sidebar: #8a8f97;
+    --pill-bg: #ffffff;
+    --pill-br: #e2e8f0;
+    --pill-hov: #f8fafc;
+    --kpi-shadow: 0 4px 18px rgba(0,0,0,.08);
+    --nb-br: #e2e8f0;
+    --grid-br: #e2e8f0;
   }
-  html.dark{
-    --bg:#0b1220;
-    --text:#e5e7eb;
-    --muted:#94a3b8;
-    --card-bg:#0f172a;
-    --card-border:#1f2937;
-    --sidebar-bg:#374151;      /* slate-700 */
-    --sidebar-text:#e5e7eb;
-    --sidebar-active:#475569;  /* slate-600 */
-    --chip-bg:#0f172a;
-    --chip-border:#1f2937;
-    --menu-bg:#0f172a;
-
-    --chart-grid:#2b3a4a;
-    --chart-tick:#cbd5e1;
-    --chart-legend:#e5e7eb;
-
-    /* keep brand readable on dark */
-    --c0:#5eead4;   /* teal-300 */
-    --c1:#22d3ee;   /* cyan-400 */
-    --c2:#38bdf8;   /* sky-400 */
-    --c3:#60a5fa;   /* blue-400 */
-    --c4:#93c5fd;   /* blue-300 */
+  .dark{
+    --bg: #0f1a26;
+    --card: #0f1a26; /* cards mismas que fondo pero con borde sutil */
+    --muted: #aab3c0;
+    --text: #e6edf5;
+    --ring: rgba(255,255,255,.06);
+    --sidebar: #2e3945;
+    --pill-bg: #101b27;
+    --pill-br: #1f2a36;
+    --pill-hov: #0f2335;
+    --kpi-shadow: 0 0 0 rgba(0,0,0,0);
+    --nb-br: #233140;
+    --grid-br: #1c2733;
   }
 
-  /* Base */
-  *{box-sizing:border-box}
-  body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text)}
-  .container{max-width:1400px}
-  a{color:inherit}
+  *{ box-sizing:border-box }
+  body{ font-family:'Montserrat',sans-serif; background:var(--bg); color:var(--text); }
+  .container-xx{ max-width: 1400px; }
 
   /* Sidebar */
-  .sidebar{width:16rem;display:flex;flex-direction:column;background:var(--sidebar-bg);color:var(--sidebar-text)}
-  .sidebar-link{transition:all .2s ease-in-out;border-radius:.5rem;padding:.75rem .75rem;display:flex;align-items:center}
-  .sidebar-link:hover{background:var(--sidebar-active);transform:translateX(4px)}
-  .sidebar-link.active{background:var(--sidebar-active)}
-  .sidebar .title{color:#fff}
+  .sidebar{ background: var(--sidebar); }
+  .sidebar-link{ transition: all .2s ease-in-out; color:#eef2f6; }
+  .sidebar-link.active, .sidebar-link:hover{ background: rgba(255,255,255,.08); color:#fff; transform: translateX(4px); }
+  .brand{ color:#fff; }
 
-  /* Cards */
-  .kpi-card{background:var(--card-bg);border-radius:.9rem;padding:1.25rem;box-shadow:0 4px 8px -2px rgb(0 0 0 / .15);border:1px solid var(--card-border)}
-  .chart-container{height:400px}
-  #mobile-menu{transition:transform .3s ease-in-out}
+  /* Cards KPI */
+  .kpi-card{ background:var(--card); border-radius: 1rem; padding: 1.25rem 1.25rem; box-shadow: var(--kpi-shadow); border:1px solid var(--grid-br); }
+  .kpi-title{ color: var(--muted); font-weight:600; font-size: 0.95rem; }
+  .kpi-value{ font-weight: 800; line-height: 1; letter-spacing: -0.02em;
+              font-size: clamp(28px, 3.2vw, 40px);  /* evita truncado */
+              white-space: nowrap; overflow: visible; }
 
   /* Nine-box */
-  .nb-cell{display:flex;align-items:center;justify-content:center;height:80px;border-radius:.5rem;border:1px solid var(--card-border)}
-  .nb-hdr{font-weight:600;color:var(--muted)}
-  .nb-badge{font-size:1.5rem;font-weight:700}
-  .nb-green{background:#dcfce7}
-  .nb-yellow{background:#fef9c3}
-  .nb-orange{background:#ffedd5}
-  .nb-red{background:#fee2e2}
-  html.dark .nb-green{background:#0e3b2c;color:#d1fae5;border-color:#14532d}
-  html.dark .nb-yellow{background:#3b2f0b;color:#fde68a;border-color:#a16207}
-  html.dark .nb-orange{background:#422006;color:#fed7aa;border-color:#9a3412}
-  html.dark .nb-red{background:#3f0d12;color:#fecaca;border-color:#b91c1c}
-  .nb-cell[data-bucket]{cursor:pointer}
+  .nb-cell{ display:flex; align-items:center; justify-content:center; height:80px; border-radius:.7rem; border:1px solid var(--nb-br); }
+  .nb-hdr{ font-weight:600; color:var(--muted); height:42px; display:flex; align-items:center; justify-content:center; }
+  .nb-badge{ font-size:1.5rem; font-weight:800 }
+  .nb-green{ background:#dcfce7 }
+  .nb-yellow{ background:#fef9c3 }
+  .nb-orange{ background:#ffedd5 }
+  .nb-red{ background:#fee2e2 }
+  .nb-cell[data-bucket]{ cursor:pointer }
 
-  /* KPI text */
-  .kpi-title{color:var(--muted);font-weight:700;letter-spacing:.2px}
-  /* — Ajuste tipográfico: sin elipsis + auto-fit por JS — */
-  .kpi-number{
-    display:block;
-    font-weight:800;
-    line-height:1.05;
-    font-variant-numeric: tabular-nums;
-    letter-spacing:.5px;
-    white-space:nowrap;           /* una sola línea */
-  }
-  .t-ok{color:var(--ok)}
-  .t-warn{color:var(--warn)}
-  .t-bad{color:var(--bad)}
-
-  /* Pills de filtros (compactos) */
-  .pill{display:flex;align-items:center;gap:.5rem;background:var(--chip-bg);border:1px solid var(--chip-border);border-radius:.75rem;padding:var(--pill-pad-y) var(--pill-pad-x);box-shadow:0 1px 2px rgb(0 0 0 / .06);position:relative;min-width:var(--pill-minw);font-size:var(--pill-font)}
-  .pill:hover{box-shadow:0 2px 6px rgb(0 0 0 / .08)}
-  .pill .label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px;color:var(--muted);font-size:var(--pill-font)}
-  .pill .chev{color:#64748b;font-size:.85rem}
-  .menu{position:absolute;z-index:50;top:110%;left:0;min-width:var(--menu-minw);background:var(--menu-bg);border:1px solid var(--card-border);border-radius:.75rem;box-shadow:0 18px 30px -12px rgb(0 0 0 / .25);display:none}
-  .menu.open{display:block}
-  .menu .head{display:flex;align-items:center;justify-content:space-between;padding:.5rem .6rem;border-bottom:1px solid var(--card-border)}
-  .menu .search{width:100%;padding:.4rem .6rem;border:1px solid var(--card-border);border-radius:.5rem;background:#f8fafc;font-size:.85rem}
-  html.dark .menu .search{background:#0b1220;color:var(--text)}
-  .menu .clear{font-size:.8rem;color:#0ea5e9}
-  .menu .list{max-height:260px;overflow:auto;padding:.4rem}
-  .menu .item{display:flex;align-items:center;gap:.6rem;padding:.3rem .3rem;border-radius:.5rem;cursor:pointer}
-  .menu .item:hover{background:#f8fafc}
-  html.dark .menu .item:hover{background:#0b1220}
-  .menu .foot{padding:.45rem .6rem;border-top:1px solid var(--card-border);font-size:.75rem;color:var(--muted)}
+  /* Pills de filtros */
+  .pill{ display:flex; align-items:center; gap:.5rem; background:var(--pill-bg); border:1px solid var(--pill-br); border-radius:.9rem; padding:.55rem .8rem; position:relative; min-width:220px; box-shadow:0 1px 2px var(--ring); }
+  .pill:hover{ background:var(--pill-hov) }
+  .pill .label{ font-size:.92rem; color:var(--muted); }
+  .pill .value{ font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:150px; }
+  .pill .chev{ color:#8aa0b5; }
+  .menu{ position:absolute; z-index:50; top:110%; left:0; min-width:320px; background:var(--card); border:1px solid var(--pill-br); border-radius:.9rem; box-shadow:0 18px 30px -12px rgba(0,0,0,.25); display:none }
+  .menu.open{ display:block }
+  .menu .head{ display:flex; align-items:center; justify-content:space-between; padding:.6rem .75rem; border-bottom:1px solid var(--pill-br) }
+  .menu .search{ width:100%; padding:.55rem .75rem; border:1px solid var(--pill-br); border-radius:.6rem; background:var(--bg); font-size:.9rem; color:var(--text); }
+  .menu .clear{ font-size:.85rem; color:#0ea5e9 }
+  .menu .list{ max-height:260px; overflow:auto; padding:.5rem }
+  .menu .item{ display:flex; align-items:center; gap:.6rem; padding:.45rem .4rem; border-radius:.5rem; cursor:pointer }
+  .menu .item:hover{ background:var(--pill-hov) }
+  .menu .foot{ padding:.6rem .75rem; border-top:1px solid var(--pill-br); font-size:.85rem; color:var(--muted) }
 
   /* Export dropdown */
-  .dropdown{position:relative;display:inline-block}
-  .dropdown-menu{position:absolute;right:0;top:100%;background:var(--menu-bg);border:1px solid var(--card-border);border-radius:.5rem;box-shadow:0 10px 20px rgba(0,0,0,.12);min-width:270px;z-index:50}
-  .dropdown-menu a{display:block;padding:.6rem .8rem;font-size:.95rem;color:var(--text)}
-  .dropdown-menu a:hover{background:#f1f5f9}
-  html.dark .dropdown-menu a:hover{background:#111827}
+  .dropdown{ position:relative; display:inline-block }
+  .dropdown-menu{ position:absolute; right:0; top:100%; background:var(--card); border:1px solid var(--pill-br); border-radius:.7rem; box-shadow:0 10px 20px rgba(0,0,0,.08); min-width:270px; z-index:50 }
+  .dropdown-menu a{ display:block; padding:.72rem .9rem; font-size:.95rem; color:var(--text) }
+  .dropdown-menu a:hover{ background:var(--pill-hov) }
 
   /* IA enriched output */
-  .ai-output p{margin-bottom:.75rem;line-height:1.55}
-  .ai-output ul{list-style:disc;margin-left:1.5rem;margin-bottom:1rem}
-  .ai-output table{width:100%;border-collapse:collapse;margin-top:1rem}
-  .ai-output th,.ai-output td{border:1px solid #cbd5e1;padding:.5rem;text-align:left}
-  .ai-output th{background:#f1f5f9}
-  html.dark .ai-output th{background:#111827;border-color:#334155}
-  .ai-output code{background:#f3f4f6;padding:.2rem .4rem;border-radius:4px}
-
-  /* Buttons */
-  .btn{border-radius:.75rem;padding:.55rem .8rem;font-weight:600}
-  .btn-outline{border:1px solid var(--chip-border);background:transparent}
-  .btn-sky{background:#0284c7;color:#fff}
-  .btn-sky:hover{background:#0369a1}
-
-  /* Small utility */
-  .shadow-soft{box-shadow:0 4px 6px -1px rgb(0 0 0 / .1),0 2px 4px -2px rgb(0 0 0 / .1)}
+  .ai-output p{ margin-bottom:.75rem; line-height:1.55 }
+  .ai-output ul{ list-style:disc; margin-left:1.5rem; margin-bottom:1rem }
+  .ai-output table{ width:100%; border-collapse:collapse; margin-top:1rem }
+  .ai-output th,.ai-output td{ border:1px solid #cbd5e1; padding:.5rem; text-align:left }
+  .ai-output th{ background:#f1f5f9 }
+  .ai-output code{ background:#f3f4f6; padding:.2rem .4rem; border-radius:4px }
 </style>
 </head>
 
-<body>
-<div class="flex h-screen overflow-hidden">
+<body class="">
+<div class="flex min-h-screen overflow-hidden">
   <!-- Sidebar -->
-  <aside class="hidden md:flex sidebar p-4">
+  <aside class="hidden md:flex w-64 flex-col sidebar text-white p-4">
     <div class="flex items-center mb-8">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-3 text-white" viewBox="0 0 20 20" fill="currentColor">
-        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
-      </svg>
-      <h1 class="text-2xl font-bold title">Catálogo</h1>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 mr-3" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h4v18H3V3zm7 6h4v12h-4V9zm7-4h4v16h-4V5z"/></svg>
+      <h1 class="text-2xl font-extrabold brand">Catálogo</h1>
     </div>
     <nav id="nav-menu" class="flex-1 space-y-2">
-      <a href="#resumen" class="sidebar-link active">Resumen General</a>
-      <a href="#detalle" class="sidebar-link">Detalle por Usuario</a>
-      <a href="#lideres" class="sidebar-link">Comparativa por Equipo</a>
-      <a href="#evolucion" class="sidebar-link">Evolución Semanal</a>
-      <a href="#ubicacion" class="sidebar-link">Análisis por Ubicación</a>
-      <a href="#analisis" class="sidebar-link">Análisis Inteligente</a>
+      <a href="#resumen"   class="sidebar-link active flex items-center p-3 rounded-lg">Resumen General</a>
+      <a href="#detalle"   class="sidebar-link flex items-center p-3 rounded-lg">Detalle por Usuario</a>
+      <a href="#lideres"   class="sidebar-link flex items-center p-3 rounded-lg">Comparativa por Equipo</a>
+      <a href="#evolucion" class="sidebar-link flex items-center p-3 rounded-lg">Evolución Semanal</a>
+      <a href="#ubicacion" class="sidebar-link flex items-center p-3 rounded-lg">Análisis por Ubicación</a>
+      <a href="#analisis"  class="sidebar-link flex items-center p-3 rounded-lg">Análisis Inteligente</a>
     </nav>
   </aside>
 
   <!-- Main -->
   <main class="flex-1 overflow-x-hidden overflow-y-auto">
-    <div class="container mx-auto px-6 py-8">
+    <div class="container-xx mx-auto px-6 py-8">
       <!-- Header -->
       <div class="flex flex-wrap justify-between items-center mb-6 gap-3">
-        <h2 id="page-title" class="text-3xl font-extrabold">Resumen General</h2>
+        <h2 id="page-title" class="text-3xl md:text-[2.2rem] font-extrabold" style="letter-spacing:-0.02em">Resumen General</h2>
         <div class="flex items-center gap-2">
-          <button id="btn-clear-filters" class="btn btn-outline">Limpiar todos los filtros</button>
+          <button id="btn-clear-filters" class="px-3 py-2 rounded-lg border border-slate-300/30 bg-transparent hover:bg-white/10 text-white/90 dark:text-white text-sm shadow-sm">
+            Limpiar todos los filtros
+          </button>
 
           <!-- Theme toggle -->
-          <button id="btn-theme" class="btn btn-outline" title="Cambiar tema">
-            <span id="theme-emoji">🌞</span>
+          <button id="btn-theme" class="p-2 rounded-lg border border-slate-300/30 bg-transparent hover:bg-white/10" title="Cambiar tema">
+            <!-- icono cambia por JS -->
+            <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 1 0 9.79 9.79z"/></svg>
+            <svg id="icon-sun"  xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" viewBox="0 0 24 24" fill="currentColor"><path d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12zm0 4a1 1 0 0 1-1-1v-1a1 1 0 1 1 2 0v1a1 1 0 0 1-1 1zM4.22 19.78a1 1 0 0 1 0-1.41l.7-.71a1 1 0 0 1 1.42 1.41l-.71.71a1 1 0 0 1-1.41 0zM1 13a1 1 0 1 1 0-2h1a1 1 0 1 1 0 2H1zm3.22-8.78a1 1 0 0 1 1.41 0l.71.71A1 1 0 1 1 3.93 6.1l-.71-.7a1 1 0 0 1 0-1.42zM12 3a1 1 0 0 1-1-1V1a1 1 0 1 1 2 0v1a1 1 0 0 1-1 1zm8 11a1 1 0 1 1 0-2h1a1 1 0 1 1 0 2h-1zm-.22 5.78a1 1 0 0 1-1.41 0l-.71-.71a1 1 0 1 1 1.41-1.41l.71.71a1 1 0 0 1 0 1.41z"/></svg>
           </button>
 
           <div class="dropdown">
-            <button id="btn-export" class="btn btn-sky">Exportar</button>
+            <button id="btn-export" class="px-3 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-sm">
+              Exportar
+            </button>
             <div id="export-menu" class="dropdown-menu hidden">
               <a href="#" data-exp="csv">Exportar datos (CSV)</a>
-              <a href="#" data-exp="sheets">Exportar a Google Sheets</a>
               <a href="#" data-exp="png">Exportar gráficos (PNG)</a>
+              <a href="#" data-exp="gsheets">Enviar sección a Google Sheets</a>
             </div>
           </div>
         </div>
@@ -230,29 +168,29 @@
         <!-- Resumen -->
         <section id="resumen" class="page-section">
           <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-6 mb-6">
-            <div class="kpi-card text-center">
+            <div class="kpi-card text-left">
               <h3 class="kpi-title">Total Tareas</h3>
-              <p id="kpi-total-tareas" class="kpi-number mt-2"></p>
+              <p id="kpi-total-tareas" class="kpi-value mt-2"></p>
             </div>
-            <div class="kpi-card text-center">
+            <div class="kpi-card text-left">
               <h3 class="kpi-title">IDs trabajados</h3>
-              <p id="kpi-ids" class="kpi-number mt-2"></p>
+              <p id="kpi-ids" class="kpi-value mt-2"></p>
             </div>
-            <div class="kpi-card text-center">
+            <div class="kpi-card text-left">
               <h3 class="kpi-title">Promedio Diario</h3>
-              <p id="kpi-promedio-diario" class="kpi-number mt-2"></p>
+              <p id="kpi-promedio-diario" class="kpi-value mt-2" style="color:#f59e0b"></p>
             </div>
-            <div class="kpi-card text-center">
+            <div class="kpi-card text-left">
               <h3 class="kpi-title">% Efectividad</h3>
-              <p id="kpi-efectividad-prom" class="kpi-number mt-2"></p>
+              <p id="kpi-efectividad-prom" class="kpi-value mt-2" style="color:#16a34a"></p>
             </div>
-            <div class="kpi-card text-center">
+            <div class="kpi-card text-left">
               <h3 class="kpi-title">Correcciones Auditadas</h3>
-              <p id="kpi-correcciones" class="kpi-number mt-2"></p>
+              <p id="kpi-correcciones" class="kpi-value mt-2"></p>
             </div>
-            <div class="kpi-card text-center">
+            <div class="kpi-card text-left">
               <h3 class="kpi-title">Usuarios Activos</h3>
-              <p id="kpi-usuarios" class="kpi-number mt-2"></p>
+              <p id="kpi-usuarios" class="kpi-value mt-2"></p>
             </div>
           </div>
 
@@ -261,9 +199,9 @@
             <div id="ninebox-card" class="kpi-card">
               <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Productividad - Calidad</h3>
-                <button id="generate-summary-btn" class="btn btn-sky text-sm">✨ Generar Resumen</button>
+                <button id="generate-summary-btn" class="bg-sky-600 text-white px-4 py-2 rounded-lg hover:bg-sky-700 transition-colors text-sm font-medium">✨ Generar Resumen</button>
               </div>
-              <div class="grid grid-cols-4 gap-2" id="ninebox-grid"></div>
+              <div id="ninebox-grid" class="grid grid-cols-4 gap-2"></div>
               <p class="mt-3 text-xs text-slate-500">
                 Productividad: Alta ≥80; Media 70–&lt;80; Baja &lt;70. &nbsp;|&nbsp;
                 Calidad: Alta ≥90%; Media 75%–&lt;90%; Baja &lt;75%.
@@ -275,10 +213,10 @@
             <!-- Demanda vs Enhancement -->
             <div class="kpi-card">
               <h3 class="text-xl font-semibold mb-4">Tareas Demanda vs. Enhancement</h3>
-              <div class="chart-container relative mx-auto" style="height:320px;max-width:360px">
+              <div class="relative mx-auto" style="height:320px;max-width:420px">
                 <canvas id="demandPieChart"></canvas>
               </div>
-              <div id="demandTotals" class="mt-3 text-center text-sm"></div>
+              <div id="demandTotals" class="mt-3 text-center text-sm text-slate-500"></div>
             </div>
           </div>
         </section>
@@ -288,20 +226,20 @@
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="kpi-card lg:col-span-2">
               <h3 class="text-xl font-semibold mb-4">Promedio Diario - % Efectividad</h3>
-              <div class="chart-container"><canvas id="tasksByUserChart"></canvas></div>
+              <div class="h-[400px]"><canvas id="tasksByUserChart"></canvas></div>
             </div>
             <div class="grid grid-cols-1 gap-4">
-              <div class="kpi-card text-center">
+              <div class="kpi-card text-left">
                 <h3 class="kpi-title">Promedio Diario</h3>
-                <p id="det-kpi-prom" class="kpi-number mt-2"></p>
+                <p id="det-kpi-prom" class="kpi-value mt-2"></p>
               </div>
-              <div class="kpi-card text-center">
+              <div class="kpi-card text-left">
                 <h3 class="kpi-title">% Efectividad</h3>
-                <p id="det-kpi-ef" class="kpi-number mt-2"></p>
+                <p id="det-kpi-ef" class="kpi-value mt-2"></p>
               </div>
-              <div class="kpi-card text-center">
+              <div class="kpi-card text-left">
                 <h3 class="kpi-title">IDs trabajados</h3>
-                <p id="det-kpi-ids" class="kpi-number mt-2"></p>
+                <p id="det-kpi-ids" class="kpi-value mt-2"></p>
               </div>
             </div>
           </div>
@@ -311,7 +249,7 @@
         <section id="lideres" class="page-section hidden">
           <div class="kpi-card">
             <h3 class="text-xl font-semibold mb-4">Comparativa por Equipo</h3>
-            <div class="chart-container"><canvas id="tasksByLeaderChart"></canvas></div>
+            <div class="h-[400px]"><canvas id="tasksByLeaderChart"></canvas></div>
           </div>
         </section>
 
@@ -320,24 +258,24 @@
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="kpi-card lg:col-span-2">
               <h3 class="text-xl font-semibold mb-4">Promedio Diario - % Efectividad</h3>
-              <div class="chart-container"><canvas id="weeklyEvolutionChart"></canvas></div>
+              <div class="h-[400px]"><canvas id="weeklyEvolutionChart"></canvas></div>
             </div>
             <div class="grid grid-cols-1 gap-4">
-              <div class="kpi-card text-center">
+              <div class="kpi-card text-left">
                 <h3 class="kpi-title">Promedio Diario</h3>
-                <p id="evo-kpi-prom" class="kpi-number mt-2"></p>
+                <p id="evo-kpi-prom" class="kpi-value mt-2"></p>
               </div>
-              <div class="kpi-card text-center">
+              <div class="kpi-card text-left">
                 <h3 class="kpi-title">% Efectividad</h3>
-                <p id="evo-kpi-ef" class="kpi-number mt-2"></p>
+                <p id="evo-kpi-ef" class="kpi-value mt-2"></p>
               </div>
-              <div class="kpi-card text-center">
+              <div class="kpi-card text-left">
                 <h3 class="kpi-title">IDs trabajados</h3>
-                <p id="evo-kpi-ids" class="kpi-number mt-2"></p>
+                <p id="evo-kpi-ids" class="kpi-value mt-2"></p>
               </div>
-              <div class="kpi-card text-center">
+              <div class="kpi-card text-left">
                 <h3 class="kpi-title">Usuarios Activos</h3>
-                <p id="evo-kpi-users" class="kpi-number mt-2"></p>
+                <p id="evo-kpi-users" class="kpi-value mt-2"></p>
               </div>
             </div>
           </div>
@@ -348,7 +286,7 @@
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div class="kpi-card">
               <h3 class="text-xl font-semibold mb-4">Promedio Diario - % Efectividad</h3>
-              <div class="chart-container"><canvas id="locCombinedChart"></canvas></div>
+              <div class="h-[400px]"><canvas id="locCombinedChart"></canvas></div>
             </div>
             <div class="kpi-card">
               <h3 class="text-xl font-semibold mb-4">Antigüedad Promedio (meses)</h3>
@@ -362,8 +300,10 @@
           <div class="kpi-card">
             <h3 class="text-xl font-semibold mb-2">Análisis Inteligente con Gemini</h3>
             <p class="text-slate-500 mb-4">Insights basados en los datos y filtros actuales.</p>
-            <button id="generate-insights-btn" class="btn btn-sky text-base">✨ Analizar Datos y Generar Sugerencias</button>
-            <div id="insights-output" class="mt-6 p-4 bg-slate-50 rounded-md border border-slate-200 hidden ai-output"></div>
+            <button id="generate-insights-btn" class="bg-sky-600 text-white px-6 py-3 rounded-lg hover:bg-sky-700 transition-colors text-base font-semibold">
+              ✨ Analizar Datos y Generar Sugerencias
+            </button>
+            <div id="insights-output" class="mt-6 p-4 rounded-md border hidden ai-output"></div>
           </div>
         </section>
       </div>
@@ -371,15 +311,13 @@
   </main>
 </div>
 
-<!-- Menú móvil -->
-<div id="mobile-menu" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden md:hidden">
-  <aside class="absolute top-0 left-0 h-full w-64 sidebar p-4 transform -translate-x-full transition-transform duration-300">
+<!-- Menú móvil (opcional) -->
+<div id="mobile-menu" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden">
+  <aside class="absolute top-0 left-0 h-full w-64 sidebar text-white p-4 transform -translate-x-full transition-transform duration-300">
     <div class="flex justify-between items-center mb-8">
-      <h1 class="text-2xl font-bold title">Menú</h1>
+      <h1 class="text-2xl font-extrabold brand">Menú</h1>
       <button id="close-mobile-menu">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
     <nav id="mobile-nav-menu" class="flex-1 space-y-2"></nav>
@@ -393,13 +331,13 @@
 const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
 const FILES = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
 
-/* Google Apps Script Web App URL (provista) */
-const GAS_SHEETS_URL = "https://script.google.com/macros/s/AKfycbxqTzxdY090fV2JWIFxiqAVnkre_dtUw1M09ZMv9mNKYz3GQW-d1ONSP_FIJTswZ9t2qA/exec";
+// Paleta
+const PALETTE = { c0:'#86eae9', c1:'#3edad8', c2:'#37c9ef', c3:'#2c92d5', c4:'#1f87d8', c5:'#13538a' };
+const BAR_BG = 'rgba(55,201,239,0.5)';
+const LINE_ACC = PALETTE.c1;
 
-/* Paleta base (se ajusta por tema más abajo) */
-const PALETTE = { c0:getCss('--c0'), c1:getCss('--c1'), c2:getCss('--c2'), c3:getCss('--c3'), c4:getCss('--c4') };
-let BAR_BG = 'rgba(55,201,239,0.5)';
-let LINE_ACC = getCss('--c1');
+// Google Apps Script endpoint (Sheets)
+const GSHEETS_WEBAPP = 'https://script.google.com/macros/s/AKfycbxqTzxdY090fV2JWIFxiqAVnkre_dtUw1M09ZMv9mNKYz3GQW-d1ONSP_FIJTswZ9t2qA/exec';
 
 Chart.defaults.elements.bar.borderRadius = 6;
 Chart.defaults.elements.line.borderWidth = 4;
@@ -407,63 +345,6 @@ Chart.defaults.elements.point.radius = 3;
 Chart.defaults.elements.point.hoverRadius = 5;
 Chart.defaults.elements.point.borderWidth = 2;
 Chart.defaults.plugins.legend.labels.usePointStyle = true;
-
-/**********************
- * THEME
- **********************/
-function getCss(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
-
-function applyThemeToCharts(){
-  const tick = getCss('--chart-tick'), grid = getCss('--chart-grid');
-  Chart.defaults.color = tick;
-  Chart.defaults.borderColor = grid;
-  LINE_ACC = getCss('--c1');
-  BAR_BG = hexToRgba(getCss('--c2'), .45);
-  Object.values(charts).forEach(ch=>{
-    if(!ch) return;
-    ch.data.datasets.forEach(ds=>{
-      if(ds.type==='line'){
-        ds.borderColor = LINE_ACC;
-        ds.backgroundColor = LINE_ACC;
-        ds.pointBorderColor = LINE_ACC;
-      }else if(ds.type==='bar'){
-        ds.backgroundColor = BAR_BG;
-        ds.borderColor = 'rgba(0,0,0,0)';
-      }
-      if(ch.config.type==='pie' || ds.type==='pie'){
-        ds.backgroundColor = [getCss('--c0'), getCss('--c3')];
-        ds.borderColor = getCss('--bg');
-      }
-    });
-    if(ch.options && ch.options.scales){
-      for(const k of Object.keys(ch.options.scales)){
-        const sc = ch.options.scales[k];
-        if(!sc.ticks) sc.ticks = {};
-        sc.ticks.color = tick;
-        if(!sc.grid) sc.grid = {};
-        sc.grid.color = grid;
-      }
-    }
-    if(ch.options?.plugins?.legend?.labels){
-      ch.options.plugins.legend.labels.color = getCss('--chart-legend');
-    }
-    ch.update();
-  });
-}
-function hexToRgba(hex, a){
-  const h = hex.replace('#','');
-  const bigint = parseInt(h.length===3 ? h.split('').map(x=>x+x).join('') : h, 16);
-  const r = (bigint>>16)&255, g=(bigint>>8)&255, b=bigint&255;
-  return `rgba(${r},${g},${b},${a})`;
-}
-
-function setTheme(mode){
-  const html = document.documentElement;
-  html.classList.toggle('dark', mode==='dark');
-  localStorage.setItem('theme', mode);
-  document.getElementById('theme-emoji').textContent = mode==='dark' ? '🌙' : '🌞';
-  applyThemeToCharts();
-}
 
 /**********************
  * HELPERS
@@ -512,40 +393,25 @@ const fmt = {
   dec: x => (x ?? 0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})
 };
 
-const flujoSel = ()=> (state.filtros.flujo[0] || 'mixto');
-const tareasFlujo = (r, f) => f==='demanda' ? (r.tareas_demanda||0) : f==='enhancement' ? (r.tareas_enhancement||0) : (r.total_tareas||0);
-function promedioDiario(rows, f){
+/* Flujos múltiples */
+const defaultFlows = ['demanda','enhancement'];
+const flowsSelected = ()=> (state.filtros.flujos.length? state.filtros.flujos.slice() : defaultFlows.slice());
+function tareasByFlows(r, flows){
+  const wantD = flows.includes('demanda');
+  const wantE = flows.includes('enhancement');
+  if(wantD && wantE) return r.total_tareas || 0;
+  let s=0; if(wantD) s += (r.tareas_demanda||0); if(wantE) s += (r.tareas_enhancement||0);
+  return s;
+}
+function promedioDiario(rows, flows){
   const den = rows.reduce((s,r)=> s + (r.dias_activos||0), 0);
-  const num = rows.reduce((s,r)=> s + tareasFlujo(r,f), 0);
+  const num = rows.reduce((s,r)=> s + tareasByFlows(r,flows), 0);
   return den ? num/den : 0;
 }
 function setColor(el, color){
-  el.classList.remove('t-bad','t-warn','t-ok');
+  el.classList.remove('text-red-600','text-yellow-500','text-green-600','text-orange-500');
   if(color) el.classList.add(color);
 }
-
-/* ---- Auto-fit para que los números NUNCA queden con "..." ---- */
-const KPI_FIT_MAX = 40;   // px
-const KPI_FIT_MIN = 18;   // px
-function fitNumber(el){
-  // iniciar grande y achicar hasta que quepa
-  el.style.fontSize = KPI_FIT_MAX + 'px';
-  // fallback por si el contenedor aún no tiene ancho
-  const tryFit = ()=>{
-    let size = KPI_FIT_MAX;
-    const w = el.clientWidth || el.parentElement.clientWidth;
-    if(!w){ requestAnimationFrame(tryFit); return; }
-    while(el.scrollWidth > el.clientWidth && size > KPI_FIT_MIN){
-      size -= 1;
-      el.style.fontSize = size + 'px';
-    }
-  };
-  tryFit();
-}
-function fitAllKPINumbers(){
-  document.querySelectorAll('.kpi-number').forEach(fitNumber);
-}
-const debounce = (fn,ms)=>{ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; };
 
 /**********************
  * CONSOLIDADO
@@ -647,14 +513,14 @@ const state = {
     ubic: [],
     lider: [],
     usuario: [],
-    flujo: ['mixto'] // única selección
+    flujos: defaultFlows.slice() // multi, por defecto TODOS
   }
 };
 
 /**********************
  * UI FILTROS (pills)
  **********************/
-const FILTER_ORDER = ['q','mes','semana','ubic','lider','usuario','flujo'];
+const FILTER_ORDER = ['q','mes','semana','ubic','lider','usuario','flujos'];
 const FILTER_LABEL = {
   q:'Trimestre',
   mes:'Mes',
@@ -662,7 +528,7 @@ const FILTER_LABEL = {
   ubic:'Ubicación',
   lider:'Líder',
   usuario:'Usuario',
-  flujo:'Flujo'
+  flujos:'Flujos'
 };
 
 function uniqueSorted(arr){ return Array.from(new Set(arr)).sort(); }
@@ -696,17 +562,21 @@ function computeFilterOptions(){
     ubic: uniqueSorted(forUbic.map(r=>r.ciudad).filter(Boolean)),
     lider: uniqueSorted(forLider.map(r=>r['líder']).filter(l => l && l.toLowerCase()!=='sin líder' && l.toLowerCase()!=='sin lider')),
     usuario: uniqueSorted(forUser.map(r=>r.usuario)),
-    flujo: ['mixto','demanda','enhancement']
+    flujos: defaultFlows.slice()
   };
   return opts;
 }
 
 function pillSummary(key){
   const sel = state.filtros[key];
-  if(key==='flujo') return sel[0] || FILTER_LABEL[key];
+  if(key==='flujos'){
+    if(sel.length===defaultFlows.length) return FILTER_LABEL[key]; // “Flujos”
+    if(sel.length===1) return `Flujos: ${sel[0]}`;
+    return `Flujos (${sel.length})`;
+  }
   if(!sel.length) return FILTER_LABEL[key];
-  if(sel.length===1) return sel[0];
-  return `${sel.length} seleccionados`;
+  if(sel.length===1) return `${FILTER_LABEL[key]}: ${sel[0]}`;
+  return `${FILTER_LABEL[key]} (${sel.length})`;
 }
 
 function closeAllMenus(){ document.querySelectorAll('.menu').forEach(m=>m.classList.remove('open')); }
@@ -720,7 +590,8 @@ function renderFiltersBar(){
     const pill = document.createElement('div');
     pill.className = 'pill';
     pill.innerHTML = `
-      <span class="label">${pillSummary(key)}</span>
+      <span class="label">${FILTER_LABEL[key]}</span>
+      <span class="value">${pillSummary(key)}</span>
       <span class="chev">▾</span>
       <div class="menu">
         <div class="head">
@@ -728,7 +599,7 @@ function renderFiltersBar(){
           <button class="clear">Limpiar</button>
         </div>
         <div class="list"></div>
-        <div class="foot">${key==='flujo' ? 'Elegí uno' : 'Selección múltiple'}</div>
+        <div class="foot text-xs">${key==='flujos' ? 'Selección múltiple' : 'Selección múltiple'}</div>
       </div>
     `;
     bar.appendChild(pill);
@@ -742,11 +613,11 @@ function renderFiltersBar(){
       const values = opts[key].filter(v => String(v).toLowerCase().includes(search.value.trim().toLowerCase()));
       values.forEach(v=>{
         const id = `${key}-${v}`.replace(/\s+/g,'_');
-        const selected = (key==='flujo') ? (state.filtros.flujo[0]===v) : state.filtros[key].includes(v);
+        const checked = state.filtros[key].includes(v);
         const item = document.createElement('label');
         item.className = 'item';
         item.innerHTML = `
-          <input ${key==='flujo'?'type="radio" name="radio-'+key+'"':'type="checkbox"'} class="opt" id="${id}" value="${v}" ${selected?'checked':''}/>
+          <input type="checkbox" class="opt" id="${id}" value="${v}" ${checked?'checked':''}/>
           <span>${v}</span>
         `;
         list.appendChild(item);
@@ -760,34 +631,26 @@ function renderFiltersBar(){
       if(!inside) return;
       const isControl = e.target.closest('.menu');
       if(isControl) return;
-      const isChevOrLabel = e.target.closest('.label') || e.target.classList.contains('chev') || e.target===pill;
-      if(isChevOrLabel){
-        const open = menu.classList.contains('open');
-        closeAllMenus();
-        if(!open) menu.classList.add('open');
-      }
+      const open = menu.classList.contains('open');
+      closeAllMenus();
+      if(!open) menu.classList.add('open');
     });
 
     search.addEventListener('input', buildList);
 
     menu.addEventListener('change', ()=>{
       const inputs = menu.querySelectorAll('.opt');
-      if(key==='flujo'){
-        const v = Array.from(inputs).find(i=>i.checked)?.value || 'mixto';
-        state.filtros.flujo = [v];
-      }else{
-        const selected = Array.from(inputs).filter(i=>i.checked).map(i=>i.value);
-        state.filtros[key] = selected;
-      }
-      pill.querySelector('.label').textContent = pillSummary(key);
+      const selected = Array.from(inputs).filter(i=>i.checked).map(i=>i.value);
+      state.filtros[key] = selected;
+      pill.querySelector('.value').textContent = pillSummary(key);
       applyFilters();
     });
 
     menu.querySelector('.clear').addEventListener('click',(e)=>{
       e.stopPropagation();
-      if(key==='flujo'){ state.filtros.flujo=['mixto']; }
+      if(key==='flujos'){ state.filtros.flujos = defaultFlows.slice(); }
       else state.filtros[key]=[];
-      pill.querySelector('.label').textContent = pillSummary(key);
+      pill.querySelector('.value').textContent = pillSummary(key);
       renderFiltersBar();
       applyFilters();
     });
@@ -799,7 +662,7 @@ function renderFiltersBar(){
 }
 
 /**********************
- * NAV + EXPORT + CLEAR ALL + THEME
+ * NAV + EXPORT + THEME + CLEAR ALL
  **********************/
 function setupNavigation(){
   const links=[...document.querySelectorAll('#nav-menu a')];
@@ -817,10 +680,10 @@ function setupNavigation(){
       if(target==='#lideres') renderTasksByLeader();
       if(target==='#evolucion'){ renderWeeklyEvolution(); updateEvolutionKPIs(); }
       if(target==='#ubicacion') renderByLocation();
-      fitAllKPINumbers();
     });
   });
 
+  // Export dropdown
   document.getElementById('btn-export').addEventListener('click', ()=>{
     document.getElementById('export-menu').classList.toggle('hidden');
   });
@@ -835,25 +698,35 @@ function setupNavigation(){
       const type = a.getAttribute('data-exp');
       if(type==='csv') exportSectionCSV();
       if(type==='png') exportSectionPNGs();
-      if(type==='sheets') exportSectionToGoogleSheets();
+      if(type==='gsheets') exportToGoogleSheets();
     });
   });
 
+  // Limpiar todos
   document.getElementById('btn-clear-filters').addEventListener('click', ()=>{
-    state.filtros = { q:[], mes:[], semana:[], ubic:[], lider:[], usuario:[], flujo:['mixto'] };
+    state.filtros = { q:[], mes:[], semana:[], ubic:[], lider:[], usuario:[], flujos: defaultFlows.slice() };
     renderFiltersBar();
     applyFilters();
   });
 
-  const saved = localStorage.getItem('theme') || 'light';
-  setTheme(saved);
+  // Theme toggle
+  const root = document.documentElement;
+  function refreshThemeIcon(){
+    const dark = root.classList.contains('dark');
+    document.getElementById('icon-moon').classList.toggle('hidden', !dark);
+    document.getElementById('icon-sun').classList.toggle('hidden', dark);
+  }
+  // preferencia almacenada
+  const saved = localStorage.getItem('theme') || 'dark';
+  if(saved==='dark') root.classList.add('dark'); else root.classList.remove('dark');
+  refreshThemeIcon();
   document.getElementById('btn-theme').addEventListener('click', ()=>{
-    const now = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-    setTheme(now);
+    root.classList.toggle('dark');
+    localStorage.setItem('theme', root.classList.contains('dark')?'dark':'light');
+    refreshThemeIcon();
+    // Re-render charts para ajustar colores si hiciera falta
+    renderDemandPie(); renderTasksByUser(); renderTasksByLeader(); renderWeeklyEvolution(); renderByLocation();
   });
-
-  // Recalcular auto-fit en resize
-  window.addEventListener('resize', debounce(fitAllKPINumbers, 120));
 }
 
 /**********************
@@ -870,8 +743,10 @@ function applyFilters(){
     (f.q.length===0      || f.q.includes(r.q))
   );
 
+  // actualizar opciones dependientes
   renderFiltersBar();
 
+  // refrescar UI
   updateKPIs();
   renderNineBox();
   renderDemandPie();
@@ -881,34 +756,32 @@ function applyFilters(){
   renderByLocation();
   updateEvolutionKPIs();
   updateDetailKPIs();
-  fitAllKPINumbers();
 }
 
 /**********************
  * KPI + RENDER
  **********************/
 function updateKPIs(){
-  const f = flujoSel();
-
-  const totalFlujo = currentData.reduce((s,r)=> s + tareasFlujo(r,f), 0);
+  const fl = flowsSelected();
+  const totalFlujo = currentData.reduce((s,r)=> s + tareasByFlows(r,fl), 0);
   const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
   const usuarios = new Set(currentData.map(r=>r.usuario)).size;
   const correcc = currentData.reduce((s,r)=> s + (r.correcciones_auditadas||0), 0);
-  const prom = promedioDiario(currentData, f);
+  const prom = promedioDiario(currentData, fl);
   const vals = currentData.map(r=>r.efectividad).filter(v => v!=='' && v!==null && v!==undefined);
   const ef = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
 
   const promEl = document.getElementById('kpi-promedio-diario');
   const efEl   = document.getElementById('kpi-efectividad-prom');
 
-  let promColor = (prom<=70) ? 't-bad' : (prom>=80) ? 't-ok' : 't-warn';
+  let promColor = (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500';
   setColor(promEl, promColor);
 
   const efPct = ef*100;
-  let efColor = (efPct<=75) ? 't-bad'
-                : (efPct<87) ? 't-warn'
-                : (efPct<90) ? 't-warn'
-                : 't-ok';
+  let efColor = (efPct<=75) ? 'text-red-600'
+                : (efPct<87) ? 'text-orange-500'
+                : (efPct<90) ? 'text-yellow-500'
+                : 'text-green-600';
   setColor(efEl, efColor);
 
   document.getElementById('kpi-total-tareas').textContent     = fmt.int(totalFlujo);
@@ -919,20 +792,21 @@ function updateKPIs(){
   efEl.textContent   = fmt.pct(ef);
 }
 
+// KPIs Evolución
 function updateEvolutionKPIs(){
-  const f = flujoSel();
+  const fl = flowsSelected();
   const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
   const usuarios = new Set(currentData.map(r=>r.usuario)).size;
-  const prom = promedioDiario(currentData, f);
+  const prom = promedioDiario(currentData, fl);
   const vals = currentData.map(r=>r.efectividad).filter(v=>v!=='' && v!==null && v!==undefined);
   const ef   = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
 
   const promEl = document.getElementById('evo-kpi-prom');
   const efEl   = document.getElementById('evo-kpi-ef');
-  setColor(promEl, (prom<=70) ? 't-bad' : (prom>=80) ? 't-ok' : 't-warn');
+  setColor(promEl, (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500');
 
   const efPct = ef*100;
-  setColor(efEl, (efPct<=75) ? 't-bad' : (efPct<87) ? 't-warn' : (efPct<90) ? 't-warn' : 't-ok');
+  setColor(efEl, (efPct<=75) ? 'text-red-600' : (efPct<87) ? 'text-orange-500' : (efPct<90) ? 'text-yellow-500' : 'text-green-600');
 
   promEl.textContent = fmt.dec(prom);
   efEl.textContent   = fmt.pct(ef);
@@ -940,19 +814,20 @@ function updateEvolutionKPIs(){
   document.getElementById('evo-kpi-users').textContent = fmt.int(usuarios);
 }
 
+// KPIs Detalle
 function updateDetailKPIs(){
-  const f = flujoSel();
+  const fl = flowsSelected();
   const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
-  const prom = promedioDiario(currentData, f);
+  const prom = promedioDiario(currentData, fl);
   const vals = currentData.map(r=>r.efectividad).filter(v=>v!=='' && v!==null && v!==undefined);
   const ef   = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
 
   const promEl = document.getElementById('det-kpi-prom');
   const efEl   = document.getElementById('det-kpi-ef');
-  setColor(promEl, (prom<=70) ? 't-bad' : (prom>=80) ? 't-ok' : 't-warn');
+  setColor(promEl, (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500');
 
   const efPct = ef*100;
-  setColor(efEl, (efPct<=75) ? 't-bad' : (efPct<87) ? 't-warn' : (efPct<90) ? 't-warn' : 't-ok');
+  setColor(efEl, (efPct<=75) ? 'text-red-600' : (efPct<87) ? 'text-orange-500' : (efPct<90) ? 'text-yellow-500' : 'text-green-600');
 
   promEl.textContent = fmt.dec(prom);
   efEl.textContent   = fmt.pct(ef);
@@ -1000,13 +875,13 @@ function lineEffDataset(label, data){
 
 /* ---------- Nine-box ---------- */
 function renderNineBox(){
-  const f = flujoSel();
+  const fl = flowsSelected();
 
-  const map = new Map();
+  const map = new Map(); // user -> {num,den, effSum, effN}
   currentData.forEach(r=>{
     const u=r.usuario;
     const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
-    o.num += tareasFlujo(r,f); o.den += (r.dias_activos||0);
+    o.num += tareasByFlows(r,fl); o.den += (r.dias_activos||0);
     if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){ o.effSum+=r.efectividad; o.effN++; }
     map.set(u,o);
   });
@@ -1020,8 +895,8 @@ function renderNineBox(){
   const prodBand = p => (p>=80 ? 'alta' : p>=70 ? 'media' : 'baja');
   const calBand  = e => (e>=0.90 ? 'alta' : e>=0.75 ? 'media' : 'baja');
 
-  const rows=['alta','media','baja']; 
-  const cols=['alta','media','baja']; 
+  const rows=['alta','media','baja'];
+  const cols=['alta','media','baja'];
 
   const buckets = {};
   const details = {};
@@ -1051,7 +926,7 @@ function renderNineBox(){
     if(r==='baja' && c==='media') return 'nb-orange';
     return 'nb-red';
   };
-  const hdrCell = (txt)=>`<div class="nb-cell nb-hdr" style="height:42px">${txt}</div>`;
+  const hdrCell = (txt)=>`<div class="nb-hdr">${txt}</div>`;
 
   let html = '';
   html += hdrCell('&nbsp;');
@@ -1143,41 +1018,61 @@ function showNineboxDetails(bucketKey, labelFn){
 
 /* ---------- Demanda vs Enhancement ---------- */
 function renderDemandPie(){
+  const flows = flowsSelected();
   let demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
   let enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
-  const f = flujoSel();
-  if(f==='demanda'){ enh = 0; }
-  if(f==='enhancement'){ demand = 0; }
 
-  const tot = demand+enh;
-  const pctD = tot? (100*demand/tot) : 0;
-  const pctE = tot? (100*enh   /tot) : 0;
+  // Armar dataset según flujos activos
+  const parts = [];
+  if(flows.includes('demanda')) parts.push(['Demanda', demand]);
+  if(flows.includes('enhancement')) parts.push(['Enhancement', enh]);
 
+  const labels = parts.map(p=>p[0]);
+  const values = parts.map(p=>p[1]);
+  const colors = parts.map((p,i)=> i===0 ? PALETTE.c0 : PALETTE.c4);
+
+  const tot = values.reduce((a,b)=>a+b,0);
   createOrUpdateChart('demandPieChart',{
     type:'pie',
-    data:{ labels:['Demanda','Enhancement'], datasets:[{ data:[pctD, pctE], backgroundColor:[getCss('--c0'), getCss('--c3')], borderColor:getCss('--bg') }] },
+    data:{ labels, datasets:[{ data: values.map(v=> tot? (100*v/tot) : 0), backgroundColor: colors }] },
     options:{
       responsive:true,
       plugins:{
-        legend:{ position:'bottom', labels:{ color:getCss('--chart-legend') } },
+        legend:{
+          position:'bottom',
+          labels:{
+            generateLabels(chart){
+              const ds = chart.data.datasets[0];
+              return chart.data.labels.map((lbl, i)=>({
+                text: `${lbl} (${fmt.int(values[i])})`,
+                fillStyle: ds.backgroundColor[i],
+                strokeStyle: ds.backgroundColor[i],
+                lineWidth: 1,
+                hidden: isNaN(ds.data[i]),
+                index: i
+              }));
+            }
+          }
+        },
         tooltip:{ callbacks:{ label:(ctx)=> `${ctx.label}: ${ctx.parsed.toFixed(1)}%` } }
       }
     }
   });
 
-  const label = f==='mixto' ? 'mixto (total)' : f;
+  const sel = flows.length===2 ? 'flujos: todos' : `flujos: ${flows.join(' & ')}`;
   document.getElementById('demandTotals').textContent =
-    `Total ${label}: ${fmt.int(tot)} — Demanda: ${fmt.int(demand)} | Enhancement: ${fmt.int(enh)}`;
+    `Total (${sel}) = ${fmt.int(tot)} — ` +
+    parts.map(([name,val])=> `${name}: ${fmt.int(val)}`).join(' | ');
 }
 
 /* ---------- Detalle por usuario ---------- */
 function renderTasksByUser(){
-  const f = flujoSel();
+  const fl = flowsSelected();
 
-  const agg = new Map();
+  const agg = new Map(); // user -> {num,den, effNum, effDen}
   currentData.forEach(r=>{
     const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
-    o.num += tareasFlujo(r,f);
+    o.num += tareasByFlows(r,fl);
     o.den += (r.dias_activos||0);
     if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
       const w=(r.correcciones_auditadas||0)||1;
@@ -1202,11 +1097,10 @@ function renderTasksByUser(){
     },
     options:{
       responsive:true,
-      plugins:{ legend:{labels:{color:getCss('--chart-legend')}} },
       scales:{
-        y:{ position:'left', ticks:{ color:getCss('--chart-tick'), callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) }, grid:{color:getCss('--chart-grid')} },
-        y1:{ position:'right', grid:{ drawOnChartArea:false,color:getCss('--chart-grid') }, ticks:{ color:getCss('--chart-tick'), callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 },
-        x:{ ticks:{ autoSkip:false, maxRotation:60, minRotation:45, color:getCss('--chart-tick') }, grid:{color:getCss('--chart-grid')} }
+        y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
+        y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 },
+        x:{ ticks:{ autoSkip:false, maxRotation:60, minRotation:45 } }
       }
     }
   });
@@ -1214,12 +1108,12 @@ function renderTasksByUser(){
 
 /* ---------- Comparativa por equipo ---------- */
 function renderTasksByLeader(){
-  const f = flujoSel();
-  const agg = new Map();
+  const fl = flowsSelected();
+  const agg = new Map(); // líder -> {num,den, effNum, effDen}
   currentData.forEach(r=>{
     const l = r['líder']; if(!l || l.toLowerCase()==='sin líder' || l.toLowerCase()==='sin lider') return;
     const o = agg.get(l) || {num:0,den:0,effNum:0,effDen:0};
-    o.num += tareasFlujo(r,f);
+    o.num += tareasByFlows(r,fl);
     o.den += (r.dias_activos||0);
     if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
       const w = (r.correcciones_auditadas || 0) || 1;
@@ -1244,11 +1138,10 @@ function renderTasksByLeader(){
     },
     options:{
       responsive:true,
-      plugins:{ legend:{labels:{color:getCss('--chart-legend')}} },
       scales:{
-        y:{ position:'left', ticks:{ color:getCss('--chart-tick'), callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) }, grid:{color:getCss('--chart-grid')} },
-        y1:{ position:'right', grid:{ drawOnChartArea:false,color:getCss('--chart-grid') }, ticks:{ color:getCss('--chart-tick'), callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 },
-        x:{ ticks:{ autoSkip:false, maxRotation:45, color:getCss('--chart-tick') }, grid:{color:getCss('--chart-grid')} }
+        y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
+        y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 },
+        x:{ ticks:{ autoSkip:false, maxRotation:45 } }
       }
     }
   });
@@ -1256,12 +1149,12 @@ function renderTasksByLeader(){
 
 /* ---------- Evolución semanal ---------- */
 function renderWeeklyEvolution(){
-  const f = flujoSel();
-  const agg = new Map();
+  const fl = flowsSelected();
+  const agg = new Map(); // week -> {num,den, effNum, effDen}
   currentData.forEach(r=>{
     const w = Number(r.week); if(!Number.isFinite(w)) return;
     const o = agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
-    o.num += tareasFlujo(r,f);
+    o.num += tareasByFlows(r,fl);
     o.den += (r.dias_activos||0);
     if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
       const weight = (r.correcciones_auditadas||0)||1;
@@ -1285,6 +1178,7 @@ function renderWeeklyEvolution(){
     effValues.push(o.effDen? 100*o.effNum/o.effDen : null);
   }
   createOrUpdateChart('weeklyEvolutionChart',{
+//@ts-ignore
     data:{
       labels,
       datasets:[
@@ -1294,11 +1188,11 @@ function renderWeeklyEvolution(){
     },
     options:{
       responsive:true,
-      plugins:{ legend:{display:true,labels:{color:getCss('--chart-legend')}} },
+      plugins:{ legend:{display:true} },
       scales:{
-        x:{ ticks:{autoSkip:false,maxRotation:0,color:getCss('--chart-tick')}, grid:{color:getCss('--chart-grid')} },
-        y:{ position:'left', ticks:{ color:getCss('--chart-tick'), callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) }, grid:{color:getCss('--chart-grid')} },
-        y1:{ position:'right', grid:{ drawOnChartArea:false,color:getCss('--chart-grid') }, ticks:{ color:getCss('--chart-tick'), callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 }
+        x:{ ticks:{autoSkip:false,maxRotation:0} },
+        y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
+        y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 }
       }
     }
   });
@@ -1306,15 +1200,15 @@ function renderWeeklyEvolution(){
 
 /* ---------- Ubicación ---------- */
 function renderByLocation(){
-  const f = flujoSel();
-  const byLoc = new Map();
-  const effLoc = new Map();
-  const antig = {};
+  const fl = flowsSelected();
+  const byLoc = new Map(); // ciudad -> {num,den}
+  const effLoc = new Map(); // ciudad -> {num,den}
+  const antig = {}; // ciudad -> {sum, n}
 
   currentData.forEach(r=>{
     const c=r.ciudad||'Sin ubicación';
     const o=byLoc.get(c)||{num:0,den:0};
-    o.num += tareasFlujo(r,f); o.den += (r.dias_activos||0); byLoc.set(c,o);
+    o.num += tareasByFlows(r,fl); o.den += (r.dias_activos||0); byLoc.set(c,o);
 
     if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
       const w=(r.correcciones_auditadas||0)||1;
@@ -1346,15 +1240,16 @@ function renderByLocation(){
     },
     options:{
       responsive:true,
-      plugins:{ legend:{labels:{color:getCss('--chart-legend')}} },
       scales:{
-        y:{ position:'left', ticks:{ color:getCss('--chart-tick'), callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) }, grid:{color:getCss('--chart-grid')} },
-        y1:{ position:'right', grid:{ drawOnChartArea:false,color:getCss('--chart-grid') }, ticks:{ color:getCss('--chart-tick'), callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 },
-        x:{ ticks:{ autoSkip:false, color:getCss('--chart-tick') }, grid:{color:getCss('--chart-grid')} }
-      }
+        y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
+        y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 },
+        x:{ ticks:{ autoSkip:false } }
+      },
+      plugins:{ legend:{display:true} }
     }
   });
 
+  // Antigüedad tarjetas
   const list = labels.map(loc=>{
     const v=antig[loc]||{sum:0,n:0}; const avg=v.n? v.sum/v.n : 0;
     return [loc, avg];
@@ -1364,7 +1259,7 @@ function renderByLocation(){
   grid.innerHTML = list.map(([loc,avg])=>`
     <div class="kpi-card">
       <div class="flex items-baseline justify-between">
-        <div class="kpi-title">${loc}</div>
+        <div class="text-slate-500 font-medium">${loc}</div>
         <div class="text-3xl font-bold">${fmt.dec(avg)}</div>
       </div>
     </div>
@@ -1392,7 +1287,7 @@ async function exportSectionPNGs(){
   if(id==='resumen'){
     canvases.push(document.getElementById('demandPieChart'));
     const el=document.getElementById('ninebox-card');
-    const canvas = await html2canvas(el,{scale:2, backgroundColor:getCss('--bg')});
+    const canvas = await html2canvas(el,{scale:2});
     canvas.toBlob(b=>download('productividad-calidad.png',b));
   }else if(id==='detalle'){
     canvases.push(document.getElementById('tasksByUserChart'));
@@ -1412,57 +1307,41 @@ async function exportSectionPNGs(){
 
 async function exportSectionCSV(){
   const id=getActiveSectionId();
-  const f=flujoSel();
+  const fl = flowsSelected();
 
   if(id==='resumen'){
     let demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
     let enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
-    if(f==='demanda'){ enh=0; }
-    if(f==='enhancement'){ demand=0; }
-    const tot = demand+enh;
-    const rows1 = [
-      { Flujo:'Demanda', Total:demand, Porcentaje: tot? (demand/tot) : 0 },
-      { Flujo:'Enhancement', Total:enh, Porcentaje: tot? (enh/tot) : 0 }
-    ];
-    const csv1 = toCSV(['Flujo','Total','Porcentaje'], rows1);
-    download('resumen_demanda_enhancement.csv', new Blob([csv1],{type:'text/csv;charset=utf-8'}));
-  }else{
-    const headers = ['week','mes','usuario','líder','ciudad','antigüedad','promedio_diario','efectividad','tareas_demanda','tareas_enhancement','total_tareas','ids_trabajados','correcciones_auditadas','dias_activos','q'];
-    const csv = toCSV(headers, currentData);
-    download(`export_${id}.csv`, new Blob([csv],{type:'text/csv;charset=utf-8'}));
+    const parts=[];
+    if(fl.includes('demanda')) parts.push(['Demanda', demand]);
+    if(fl.includes('enhancement')) parts.push(['Enhancement', enh]);
+    const tot = parts.reduce((a,[,v])=>a+v,0);
+    const rows = parts.map(([name,val])=>({ Flujo:name, Total:val, Porcentaje: tot? (val/tot) : 0 }));
+    const csv = toCSV(['Flujo','Total','Porcentaje'], rows);
+    download('resumen_demanda_enhancement.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  }else if(id==='detalle'){
+    // Podés agregar otras exportaciones específicas si hace falta
   }
 }
 
-/* ---- Export to Google Sheets (Apps Script) ---- */
-async function exportSectionToGoogleSheets(){
+async function exportToGoogleSheets(){
   const section = getActiveSectionId();
   const payload = {
     section,
-    filters: filtersSummary(),
-    rows: currentData.map(r=>({
-      week:r.week, mes:r.mes, usuario:r.usuario, lider:r['líder'], ciudad:r.ciudad, antiguedad:r.antigüedad,
-      promedio_diario:r.promedio_diario, efectividad:r.efectividad,
-      tareas_demanda:r.tareas_demanda, tareas_enhancement:r.tareas_enhancement, total_tareas:r.total_tareas,
-      ids_trabajados:r.ids_trabajados, correcciones_auditadas:r.correcciones_auditadas, dias_activos:r.dias_activos, q:r.q
-    })),
-    meta:{ exportedAt: new Date().toISOString() }
+    filters: state.filtros,
+    when: new Date().toISOString(),
+    rows: currentData
   };
-
   try{
-    const res = await fetch(GAS_SHEETS_URL,{
+    const res = await fetch(GSHEETS_WEBAPP, {
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify(payload)
     });
-    const txt = await res.text();
-    toast(res.ok ? '✅ Exportado a Google Sheets' : ('❌ Error: '+txt));
-  }catch(err){
-    try{
-      await fetch(GAS_SHEETS_URL,{ method:'POST', mode:'no-cors', body: JSON.stringify(payload) });
-      toast('✅ Enviado a Google Sheets (modo no-cors)');
-    }catch(e){
-      toast('❌ No se pudo exportar: '+e.message);
-    }
+    // Apps Script puede responder con no-cors; igual avisamos
+    alert('Enviado a Google Sheets ✅');
+  }catch(e){
+    alert('No pude enviar a Google Sheets: '+ e.message);
   }
 }
 
@@ -1478,14 +1357,14 @@ function filtersSummary() {
     Ubicacion: f.ubic.join(' | ') || '',
     Lider: f.lider.join(' | ') || '',
     Usuario: f.usuario.join(' | ') || '',
-    Flujo: f.flujo[0] || 'mixto'
+    Flujos: f.flujos.join(' | ') || defaultFlows.join(' | ')
   };
 }
 function buildNineboxPrompt(){
-  const f=flujoSel();
+  const fl=flowsSelected();
   const filtros_activos = JSON.stringify(filtersSummary());
-  const total_tareas = currentData.reduce((s,r)=>s+tareasFlujo(r,f),0);
-  const promedio_diario = promedioDiario(currentData,f).toFixed(2);
+  const total_tareas = currentData.reduce((s,r)=>s+tareasByFlows(r,fl),0);
+  const promedio_diario = promedioDiario(currentData,fl).toFixed(2);
   const efVals= currentData.map(r=>r.efectividad).filter(v=>v!==''&&v!=null);
   const efectividad = (efVals.length? (100*efVals.reduce((a,b)=>a+b,0)/efVals.length) : 0).toFixed(2);
 
@@ -1495,7 +1374,7 @@ function buildNineboxPrompt(){
   const map=new Map();
   currentData.forEach(r=>{
     const u=r.usuario; const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
-    o.num += tareasFlujo(r,f); o.den += (r.dias_activos||0);
+    o.num += tareasByFlows(r,fl); o.den += (r.dias_activos||0);
     if(r.efectividad!=='' && r.efectividad!=null){ o.effSum+=r.efectividad; o.effN++; }
     map.set(u,o);
   });
@@ -1506,58 +1385,46 @@ function buildNineboxPrompt(){
   });
   const distribucion_ninebox = Object.entries(buckets).map(([k,v])=>`• ${k}: ${v}`).join('\n');
 
-  return `🔹 Prompt 1: *Análisis Nine-box con foco en Productividad x Calidad*
+  return `🔹 Análisis Nine-box (Productividad x Calidad)
 
-Actuá como analista operativo de Catálogo (Netkel). Tu objetivo es identificar focos de mejora en productividad sin comprometer la calidad.
-
-🎯 Objetivo: Sostener o elevar Promedio Diario (target ≥80) con % Efectividad ≥90%.
-
-📊 Filtros activos: ${filtros_activos}
-📈 KPIs:
+Filtros activos: ${filtros_activos}
+KPIs:
 • Total tareas: ${total_tareas}
 • Prom. Diario: ${promedio_diario}
 • % Efectividad: ${efectividad}%
 
-📦 Distribución actual de perfiles (Nine-box Prod x Calidad):
+Distribución:
 ${distribucion_ninebox}
 
-🛑 Importante:
-• Una alta concentración en “Prod Alta / Cal Alta” es positiva. No lo señales como problema.
-• Enfocá SOLO cuadrantes con baja calidad.
-
-🧩 Instrucciones:
-1. 4–6 hallazgos relevantes y accionables.
-2. 3 acciones concretas solo para perfiles fuera de target usando: BTC, feedback 1:1, checklist, acompañamiento individual, plan 3 semanas.
-3. Diferenciación:
-   - “Prod Alta / Cal Baja” → subir calidad
-   - “Prod Baja / Cal Alta” → subir productividad
-
-Formato: bullets, responsable y plazo, sin inventar datos.`;
+Instrucciones:
+1) Lista 4-6 hallazgos relevantes y accionables.
+2) Proponé 3 acciones concretas para perfiles fuera de target usando: BTC, feedback 1:1, checklist, acompañamiento individual, plan 3 semanas.
+3) Diferenciá qué harías en Prod Alta/Cal Baja vs Prod Baja/Cal Alta.
+Formato: bullets claros, responsable + plazo.`;
 }
 
 function buildGlobalInsightsPrompt(){
-  const f=flujoSel();
+  const fl=flowsSelected();
   const filtros_activos = JSON.stringify(filtersSummary());
   const usuarios = new Set(currentData.map(r=>r.usuario)).size;
   const ids = currentData.reduce((s,r)=>s+(r.ids_trabajados||0),0);
-  const prom = promedioDiario(currentData,f).toFixed(2);
+  const prom = promedioDiario(currentData,fl).toFixed(2);
   const efVals= currentData.map(r=>r.efectividad).filter(v=>v!==''&&v!=null);
   const ef = (efVals.length? (100*efVals.reduce((a,b)=>a+b,0)/efVals.length) : 0).toFixed(2);
 
-  return `🔹 Prompt 2: *Análisis Global para Coordinación*
-
-Targets: PD ≥80, Efectividad ≥90%.
+  return `🔹 Análisis Global para Coordinación
 
 Filtros: ${filtros_activos}
 Usuarios activos: ${usuarios}
 IDs trabajados: ${ids}
-Promedio Diario: ${prom}
+Prom. Diario: ${prom}
 % Efectividad: ${ef}
 
-Pedir:
-1) Foto general (4 bullets) — qué va bien / qué mejorar si hay evidencia.
-2) Perfiles LOW: ocasionales vs recurrentes.
-3) 3–5 acciones reales (BTC, 1:1 por error, checklist, plan 3 semanas, acompañamiento). Formato: perfil → acción → plazo → responsable.`;
+Instrucciones:
+1) 4 bullets de foto general (qué va bien / qué mejorar si hay señales).
+2) Detectá perfiles LOW (ocasional vs recurrente).
+3) 3–5 acciones con: BTC, feedback 1:1 por error frecuente, checklist personalizada, plan 3 semanas, acompañamiento individual.
+Formato: concreto, accionable, sin inventar.`;
 }
 
 async function geminiRequest(prompt) {
@@ -1600,31 +1467,10 @@ function setupGeminiFeatures(){
 }
 
 /**********************
- * Toast minimal
- **********************/
-function toast(msg){
-  let el = document.getElementById('toast');
-  if(!el){
-    el = document.createElement('div');
-    el.id='toast';
-    el.style.position='fixed'; el.style.right='16px'; el.style.bottom='16px';
-    el.style.background='var(--card-bg)'; el.style.border='1px solid var(--card-border)';
-    el.style.color='var(--text)'; el.style.padding='10px 14px'; el.style.borderRadius='10px'; el.style.boxShadow='0 6px 18px rgba(0,0,0,.2)';
-    document.body.appendChild(el);
-  }
-  el.textContent = msg;
-  el.style.opacity='1';
-  setTimeout(()=>{ el.style.transition='opacity .6s'; el.style.opacity='0'; }, 2200);
-}
-
-/**********************
  * INIT
  **********************/
 document.addEventListener('DOMContentLoaded', async ()=>{
   try{
-    const saved = localStorage.getItem('theme') || 'light';
-    setTheme(saved);
-
     const [tProd,tCal,tBase,tLid] = await Promise.all([
       fetchCSVFile(FILES.productividad),
       fetchCSVFile(FILES.calidad),
@@ -1644,10 +1490,6 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 
     currentData = originalData.slice();
     applyFilters();
-    applyThemeToCharts();
-
-    // ajuste de números inicial
-    fitAllKPINumbers();
   }catch(err){
     console.error(err);
     document.body.innerHTML = `<div class="p-8 text-center text-red-600 bg-red-100">${err.message}</div>`;
@@ -1656,5 +1498,3 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 </script>
 </body>
 </html>
-
-
