@@ -43,20 +43,20 @@
     --nine-red:#fee2e2;
   }
   [data-theme="dark"]{
-    --bg:#0b1220;
-    --panel:#0f1b2d;
+    --bg:#0b1220;      /* más profundo que slate-900 */
+    --panel:#0f1b2d;   /* navy oscuro legible */
     --panel-2:#0c1626;
-    --text:#e2e8f0;
-    --muted:#a3b2c7;
-    --border:#1e293b;
+    --text:#e2e8f0;    /* slate-200 */
+    --muted:#a3b2c7;   /* slate-400~300 */
+    --border:#1e293b;  /* slate-800 */
     --shadow: 0 10px 28px rgba(0,0,0,.45);
-    --sidebar:#3b4756;
-    --accent:#22c3ee;
+    --sidebar:#3b4756; /* acorde al dark */
+    --accent:#22c3ee;  /* más vivo en dark */
     --success:#22c55e;
     --warn:#f59e0b;
     --pie1:#6ee7e7;
     --pie2:#1d8bd9;
-    --nine-green:#0f3c36;
+    --nine-green:#0f3c36;  /* bloques nine-box legibles en dark */
     --nine-yellow:#3b3416;
     --nine-orange:#422006;
     --nine-red:#3f1d1d;
@@ -68,8 +68,13 @@
   .kpi-card{background:var(--panel);border:1px solid var(--border);border-radius:1rem;box-shadow:var(--shadow);padding:1.2rem}
   .kpi-title{color:var(--muted);font-weight:600}
   .kpi-value{
-    font-weight:800;letter-spacing:.3px;text-align:center;
-    font-size:clamp(1.4rem,3.2vw,2.5rem);line-height:1.1;white-space:nowrap
+    font-weight:800;
+    letter-spacing: .3px;
+    text-align:center;
+    font-size: clamp(1.4rem, 3.2vw, 2.5rem);
+    line-height:1.1;
+    word-break: keep-all;
+    white-space: nowrap;
   }
   .kpi-colors-ef{color:var(--success)}
   .kpi-colors-pd{color:var(--warn)}
@@ -79,7 +84,7 @@
   .sidebar-link{transition:all .2s ease-in-out;border-radius:.75rem}
   .sidebar-link:hover,.sidebar-link.active{background:rgba(255,255,255,.15);color:#fff;transform:translateX(4px)}
 
-  /* Filtros */
+  /* Filtros (pills compactas) */
   .pill{display:flex;align-items:center;gap:.5rem;background:var(--panel);border:1px solid var(--border);border-radius:.9rem;padding:.45rem .7rem;box-shadow:var(--shadow)}
   .pill .prefix{color:var(--muted);font-size:.82rem}
   .pill .value{font-weight:600;color:var(--text);font-size:.9rem;max-width:14rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -110,12 +115,15 @@
   .nb-orange{background:var(--nine-orange)}
   .nb-red{background:var(--nine-red)}
 
+  /* IA output */
   .ai-output p{margin-bottom:.75rem;line-height:1.55}
   .ai-output ul{list-style:disc;margin-left:1.5rem;margin-bottom:1rem}
   .ai-output table{width:100%;border-collapse:collapse;margin-top:1rem}
   .ai-output th,.ai-output td{border:1px solid #cbd5e1;padding:.5rem;text-align:left}
   .ai-output th{background:#f1f5f9}
+  .ai-output code{background:#f3f4f6;padding:.2rem .4rem;border-radius:4px}
 
+  /* Buttons */
   .btn{border-radius:.8rem;padding:.6rem .9rem;font-weight:700}
   .btn-ghost{background:var(--panel);border:1px solid var(--border);color:var(--text)}
   .btn-sky{background:var(--accent);color:#fff}
@@ -129,6 +137,7 @@
   <!-- Sidebar -->
   <aside class="hidden md:flex w-64 flex-col sidebar text-white p-4">
     <div class="flex items-center mb-8">
+      <!-- Logo -->
       <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 mr-3" viewBox="0 0 24 24" fill="currentColor">
         <path d="M5 3a2 2 0 00-2 2v14h2V5h2V3H5zm12 0h-2v4h2V3zm-4 0h-2v10h2V3zm6 6h-2v12h2V9zM9 15H7v6h2v-6z"/>
       </svg>
@@ -157,11 +166,13 @@
           <!-- Theme toggle -->
           <button id="theme-toggle" class="btn btn-ghost" title="Cambiar tema">
             <span id="icon-moon" class="inline-block" aria-hidden="true">
+              <!-- luna -->
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
               </svg>
             </span>
             <span id="icon-sun" class="hidden" aria-hidden="true">
+              <!-- sol -->
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.8 1.42-1.42zm10.48 0l1.8-1.79 1.41 1.41-1.79 1.8-1.42-1.42zM12 4V1h-0v3h0zM4 13H1v-2h3v2zm19 0h-3v-2h3v2zM6.76 19.16l-1.42 1.42-1.79-1.8 1.41-1.41 1.8 1.79zm10.48 0l1.42 1.42 1.79-1.8-1.41-1.41-1.8 1.79zM12 23h-0v-3h0v3zM12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12z"/>
               </svg>
@@ -179,7 +190,7 @@
         </div>
       </div>
 
-      <!-- Barra de filtros -->
+      <!-- Barra de filtros (pills compactas con prefijo) -->
       <div id="filters-bar" class="flex flex-wrap gap-3 mb-8"></div>
 
       <!-- Secciones -->
@@ -214,6 +225,7 @@
           </div>
 
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Nine-box -->
             <div id="ninebox-card" class="kpi-card">
               <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Productividad - Calidad</h3>
@@ -228,6 +240,7 @@
               <div id="ninebox-details" class="mt-4 hidden"></div>
             </div>
 
+            <!-- Tareas por Flujo -->
             <div class="kpi-card">
               <h3 class="text-xl font-semibold mb-4">Tareas por Flujo</h3>
               <div class="relative mx-auto" style="height:320px;max-width:420px">
@@ -238,7 +251,7 @@
           </div>
         </section>
 
-        <!-- Detalle -->
+        <!-- Detalle por Usuario -->
         <section id="detalle" class="page-section hidden">
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="kpi-card lg:col-span-2">
@@ -311,13 +324,9 @@
             </div>
           </div>
 
-          <!-- Evolutivo semanal por ubicación -->
           <div class="kpi-card mt-6">
-            <div class="flex items-center justify-between mb-2">
-              <h3 class="text-xl font-semibold">Evolución por Ubicación (semanal)</h3>
-              <span id="loc-evo-note" class="text-xs" style="color:var(--muted)"></span>
-            </div>
-            <div class="h-[420px]"><canvas id="locEvolutionChart"></canvas></div>
+            <h3 class="text-xl font-semibold mb-4">Evolutivo por Ubicación (Promedio Diario)</h3>
+            <div class="h-[420px]"><canvas id="locTimeChart"></canvas></div>
           </div>
         </section>
 
@@ -343,7 +352,7 @@ const SHEETS_WEB_APP = "https://script.google.com/macros/s/AKfycbxqTzxdY090fV2JW
 const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
 const FILES = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
 
-/* Paleta charts */
+/* Paleta charts acorde a tema */
 const PALETTE = { c0:'#86eae9', c1:'#3edad8', c2:'#37c9ef', c3:'#37c9ef', c4:'#2c92d5', c5:'#13538a' };
 const BAR_BG = 'rgba(55,201,239,0.45)';
 const LINE_ACC = '#22c3ee';
@@ -354,6 +363,74 @@ Chart.defaults.elements.point.radius = 3;
 Chart.defaults.elements.point.hoverRadius = 5;
 Chart.defaults.elements.point.borderWidth = 2;
 Chart.defaults.plugins.legend.labels.usePointStyle = true;
+
+/* --- Helpers de gráficos (imprescindibles) --- */
+const charts = {};
+function createOrUpdateChart(id, cfg){
+  if (charts[id]) {
+    charts[id].data = cfg.data;
+    charts[id].options = cfg.options || {};
+    charts[id].update();
+    return charts[id];
+  }
+  const el = document.getElementById(id);
+  if (!el) return null;
+  const ctx = el.getContext('2d');
+  charts[id] = new Chart(ctx, cfg);
+  return charts[id];
+}
+function barDataset(label, data){
+  return {
+    type:'bar',
+    label,
+    data,
+    yAxisID:'y',
+    backgroundColor: BAR_BG,
+    borderColor:'rgba(0,0,0,0)',
+    order:1,
+    barPercentage:0.8,
+    categoryPercentage:0.8
+  };
+}
+function lineEffDataset(label, data){
+  return {
+    type:'line',
+    label,
+    data,
+    yAxisID:'y1',
+    borderColor: LINE_ACC,
+    backgroundColor: LINE_ACC,
+    order:2,
+    fill:false,
+    tension:0.25,
+    pointRadius:3,
+    pointHoverRadius:5,
+    pointBackgroundColor:'#ffffff',
+    pointBorderColor: LINE_ACC,
+    borderWidth:3,
+    spanGaps:true
+  };
+}
+// línea simple (para evolutivo por ubicación)
+function lineDataset(label, data, color, yAxis='y'){
+  return {
+    type:'line',
+    label,
+    data,
+    yAxisID:yAxis,
+    borderColor: color,
+    backgroundColor: color,
+    order:2,
+    fill:false,
+    tension:0.25,
+    pointRadius:2,
+    pointHoverRadius:4,
+    pointBackgroundColor:'#ffffff',
+    pointBorderColor: color,
+    borderWidth:2,
+    spanGaps:true
+  };
+}
 
 /**********************
  * HELPERS
@@ -496,13 +573,12 @@ function buildWeeklyRows(prod, cal, base, lideres){
  **********************/
 let originalData = [];
 let currentData  = [];
-const charts = {};
 let nineboxDetailsData = {};
 
 const state = {
   filtros: {
     q: [], mes: [], semana: [], ubic: [], lider: [], usuario: [],
-    flujo: ['demanda','enhancement']
+    flujo: ['demanda','enhancement'] // multiselección; por defecto todos
   },
   theme: (localStorage.getItem('theme') || 'dark')
 };
@@ -549,17 +625,14 @@ function computeFilterOptions(){
   return opts;
 }
 
-function emptyLabelByKey(key){
-  // Personalización pedida: Semana y Ubicación -> "Todas"
-  return (key==='semana' || key==='ubic') ? 'Todas' : 'Todos';
-}
 function pillValueText(key){
   const sel = state.filtros[key];
+  const pluralTodos = (key==='semana' || key==='ubic') ? 'Todas' : 'Todos';
   if(key==='flujo'){
     if(sel.length===0 || sel.length===2) return 'Todos';
-    return sel[0]==='demanda' ? 'Demanda' : 'Enhancement';
+    return sel.map(v=>v==='demanda'?'Demanda':'Enhancement').join(' + ');
   }
-  if(sel.length===0) return emptyLabelByKey(key);
+  if(sel.length===0) return pluralTodos;
   if(sel.length===1) return sel[0];
   return `${sel.length} seleccionados`;
 }
@@ -592,11 +665,14 @@ function renderFiltersBar(){
     const list = menu.querySelector('.list');
     const search = menu.querySelector('.search');
 
-    function labelize(v){ return key!=='flujo' ? v : (v==='demanda'?'Demanda':'Enhancement'); }
+    function labelize(v){
+      if(key!=='flujo') return v;
+      return v==='demanda'?'Demanda':'Enhancement';
+    }
 
     function buildList(){
       list.innerHTML='';
-      const values = (opts[key]||[]).filter(v => String(labelize(v)).toLowerCase().includes(search.value.trim().toLowerCase()));
+      const values = opts[key].filter(v => String(labelize(v)).toLowerCase().includes(search.value.trim().toLowerCase()));
       values.forEach(v=>{
         const id = `${key}-${v}`.replace(/\s+/g,'_');
         const selected = state.filtros[key].includes(v);
@@ -612,7 +688,10 @@ function renderFiltersBar(){
     buildList();
 
     pill.addEventListener('click',(e)=>{
-      if(e.target.closest('.menu')) return;
+      const isInside = pill.contains(e.target);
+      if(!isInside) return;
+      const isControl = e.target.closest('.menu');
+      if(isControl) return;
       const open = menu.classList.contains('open');
       closeAllMenus();
       if(!open) menu.classList.add('open');
@@ -621,7 +700,8 @@ function renderFiltersBar(){
     search.addEventListener('input', buildList);
 
     menu.addEventListener('change', ()=>{
-      const selected = Array.from(menu.querySelectorAll('.opt')).filter(i=>i.checked).map(i=>i.value);
+      const selected = Array.from(menu.querySelectorAll('.opt'))
+        .filter(i=>i.checked).map(i=>i.value);
       state.filtros[key] = selected;
       pill.querySelector('.value').textContent = pillValueText(key);
       applyFilters();
@@ -655,7 +735,7 @@ function setupNavigation(){
       if(target==='#detalle'){ renderTasksByUser(); updateDetailKPIs(); }
       if(target==='#lideres') renderTasksByLeader();
       if(target==='#evolucion'){ renderWeeklyEvolution(); updateEvolutionKPIs(); }
-      if(target==='#ubicacion'){ renderByLocation(); renderLocationEvolution(); }
+      if(target==='#ubicacion'){ renderByLocation(); renderLocationTimeline(); }
     });
   });
 
@@ -746,7 +826,7 @@ function applyFilters(){
   renderTasksByLeader();
   renderWeeklyEvolution();
   renderByLocation();
-  renderLocationEvolution();
+  renderLocationTimeline();
   updateEvolutionKPIs();
   updateDetailKPIs();
 }
@@ -767,10 +847,15 @@ function updateKPIs(){
   const promEl = document.getElementById('kpi-promedio-diario');
   const efEl   = document.getElementById('kpi-efectividad-prom');
 
-  setColor(promEl, (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500');
+  let promColor = (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500';
+  setColor(promEl, promColor);
 
   const efPct = ef*100;
-  setColor(efEl, (efPct<=75) ? 'text-red-600' : (efPct<87) ? 'text-orange-500' : (efPct<90) ? 'text-yellow-500' : 'text-green-600');
+  let efColor = (efPct<=75) ? 'text-red-600'
+                : (efPct<87) ? 'text-orange-500'
+                : (efPct<90) ? 'text-yellow-500'
+                : 'text-green-600';
+  setColor(efEl, efColor);
 
   document.getElementById('kpi-total-tareas').textContent     = fmt.int(totalFlujo);
   document.getElementById('kpi-ids').textContent              = fmt.int(idsTrab);
@@ -780,11 +865,51 @@ function updateKPIs(){
   efEl.textContent   = fmt.pct(ef);
 }
 
+// KPIs sección Evolución
+function updateEvolutionKPIs(){
+  const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
+  const usuarios = new Set(currentData.map(r=>r.usuario)).size;
+  const prom = promedioDiario(currentData);
+  const vals = currentData.map(r=>r.efectividad).filter(v=>v!=='' && v!==null && v!==undefined);
+  const ef   = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
+
+  const promEl = document.getElementById('evo-kpi-prom');
+  const efEl   = document.getElementById('evo-kpi-ef');
+  setColor(promEl, (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500');
+
+  const efPct = ef*100;
+  setColor(efEl, (efPct<=75) ? 'text-red-600' : (efPct<87) ? 'text-orange-500' : (efPct<90) ? 'text-yellow-500' : 'text-green-600');
+
+  promEl.textContent = fmt.dec(prom);
+  efEl.textContent   = fmt.pct(ef);
+  document.getElementById('evo-kpi-ids').textContent   = fmt.int(idsTrab);
+  document.getElementById('evo-kpi-users').textContent = fmt.int(usuarios);
+}
+
+// KPIs sección Detalle
+function updateDetailKPIs(){
+  const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
+  const prom = promedioDiario(currentData);
+  const vals = currentData.map(r=>r.efectividad).filter(v=>v!=='' && v!==null && v!==undefined);
+  const ef   = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
+
+  const promEl = document.getElementById('det-kpi-prom');
+  const efEl   = document.getElementById('det-kpi-ef');
+  setColor(promEl, (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500');
+
+  const efPct = ef*100;
+  setColor(efEl, (efPct<=75) ? 'text-red-600' : (efPct<87) ? 'text-orange-500' : (efPct<90) ? 'text-yellow-500' : 'text-green-600');
+
+  promEl.textContent = fmt.dec(prom);
+  efEl.textContent   = fmt.pct(ef);
+  document.getElementById('det-kpi-ids').textContent = fmt.int(idsTrab);
+}
+
 /* ---------- Nine-box ---------- */
 function renderNineBox(){
   const flows = selectedFlows();
 
-  const map = new Map();
+  const map = new Map(); // user -> {num,den, effSum, effN}
   currentData.forEach(r=>{
     const u=r.usuario;
     const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
@@ -945,45 +1070,31 @@ function renderDemandPie(){
           labels:{
             generateLabels: (chart)=>{
               const ds=chart.data.datasets[0];
-              const T = (ds.data||[]).reduce((a,b)=>a+b,0) || 0;
-              return chart.data.labels.map((lbl,i)=>{
-                const val = ds.data[i]||0;
-                const pct = T ? fmt.pct(val/T) : fmt.pct(0);
-                return {
-                  text: `${lbl} (${pct} · ${fmt.int(val)})`,
-                  fillStyle: ds.backgroundColor[i],
-                  strokeStyle: ds.backgroundColor[i],
-                  lineWidth:1,
-                  index:i
-                };
-              });
+              return chart.data.labels.map((lbl,i)=>({
+                text: `${lbl} (${fmt.int(ds.data[i])})`,
+                fillStyle: ds.backgroundColor[i],
+                strokeStyle: ds.backgroundColor[i],
+                lineWidth:1,
+                index:i
+              }));
             }
           }
         },
-        tooltip:{ callbacks:{ 
-          label:(ctx)=>{
-            const ds = ctx.dataset.data || [];
-            const T = ds.reduce((a,b)=>a+b,0) || 0;
-            const val = ctx.parsed || 0;
-            const pct = T ? fmt.pct(val/T) : fmt.pct(0);
-            return `${ctx.label}: ${pct} — ${fmt.int(val)}`;
-          } 
-        } }
+        tooltip:{ callbacks:{ label:(ctx)=> `${ctx.label}: ${fmt.int(ctx.parsed)} (${(tot? (100*ctx.parsed/tot):0).toFixed(1)}%)` } }
       }
     }
   });
 
-  // Texto inferior: "Total Tareas: N — A: X | B: Y ..."
-  const parts = labels.map((l,i)=>`${l}: ${fmt.int(values[i])}`);
+  const pairs = labels.map((l,i)=>`${l}: ${fmt.int(values[i])}`).join(' | ');
   document.getElementById('demandTotals').textContent =
-    `Total Tareas: ${fmt.int(tot)} — ${parts.join(' | ')}`;
+    `Total Tareas: ${fmt.int(tot)} — ${pairs}`;
 }
 
 /* ---------- Detalle por usuario ---------- */
 function renderTasksByUser(){
   const flows = selectedFlows();
 
-  const agg = new Map();
+  const agg = new Map(); // user -> {num,den, effNum, effDen}
   currentData.forEach(r=>{
     const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
     o.num += tareasByFlows(r,flows);
@@ -1020,7 +1131,7 @@ function renderTasksByUser(){
 /* ---------- Comparativa por equipo ---------- */
 function renderTasksByLeader(){
   const flows = selectedFlows();
-  const agg = new Map();
+  const agg = new Map(); // líder -> {num,den, effNum, effDen}
   currentData.forEach(r=>{
     const l = r['líder']; if(!l || l.toLowerCase()==='sin líder' || l.toLowerCase()==='sin lider') return;
     const o = agg.get(l) || {num:0,den:0,effNum:0,effDen:0};
@@ -1058,7 +1169,7 @@ function renderTasksByLeader(){
 /* ---------- Evolución semanal ---------- */
 function renderWeeklyEvolution(){
   const flows = selectedFlows();
-  const agg = new Map();
+  const agg = new Map(); // week -> {num,den, effNum, effDen}
   currentData.forEach(r=>{
     const w = Number(r.week); if(!Number.isFinite(w)) return;
     const o = agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
@@ -1102,12 +1213,12 @@ function renderWeeklyEvolution(){
   });
 }
 
-/* ---------- Ubicación (agregados) ---------- */
+/* ---------- Ubicación (comparativo y evolutivo) ---------- */
 function renderByLocation(){
   const flows = selectedFlows();
-  const byLoc = new Map();
-  const effLoc = new Map();
-  const antig = {};
+  const byLoc = new Map(); // ciudad -> {num,den}
+  const effLoc = new Map(); // ciudad -> {num,den}
+  const antig = {}; // ciudad -> {sum, n}
 
   currentData.forEach(r=>{
     const c=r.ciudad||'Sin ubicación';
@@ -1135,7 +1246,10 @@ function renderByLocation(){
   const effData  = labels.map(c=>{ const e=effLoc.get(c)||{num:0,den:0}; return e.den? 100*e.num/e.den : null; });
 
   createOrUpdateChart('locCombinedChart',{
-    data:{ labels, datasets:[ barDataset('Prom. diario', promData), lineEffDataset('% Efectividad', effData) ] },
+    data:{
+      labels,
+      datasets:[ barDataset('Prom. diario', promData), lineEffDataset('% Efectividad', effData) ]
+    },
     options:{
       responsive:true,
       scales:{
@@ -1164,87 +1278,63 @@ function renderByLocation(){
   `).join('');
 }
 
-/* ---------- Evolutivo semanal por ubicación ---------- */
-function colorForIndex(i){
-  const hues=[190,210,160,40,330,280,15,120];
-  const h=hues[i%hues.length];
-  const isDark = (document.body.getAttribute('data-theme')==='dark');
-  const l = isDark ? 70 : 45;
-  return `hsl(${h} 70% ${l}%)`;
-}
-function chooseLocationsForEvolution(){
-  const sel = state.filtros.ubic || [];
-  if(sel.length) return sel.slice(0,8);
-  const totals = new Map();
-  currentData.forEach(r=>{
-    const c=r.ciudad||'Sin ubicación';
-    totals.set(c,(totals.get(c)||0)+tareasByFlows(r));
-  });
-  return Array.from(totals.entries()).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([c])=>c);
-}
-function renderLocationEvolution(){
-  const locs = chooseLocationsForEvolution();
+function renderLocationTimeline(){
   const flows = selectedFlows();
+  // week -> city -> {num, den}
+  const byWeekCity = new Map();
+  currentData.forEach(r=>{
+    const w = Number(r.week); if(!Number.isFinite(w)) return;
+    const c = r.ciudad || 'Sin ubicación';
+    const wk = byWeekCity.get(w) || new Map();
+    const o = wk.get(c) || {num:0, den:0};
+    o.num += tareasByFlows(r,flows);
+    o.den += (r.dias_activos||0);
+    wk.set(c,o);
+    byWeekCity.set(w, wk);
+  });
 
-  const weeks = Array.from(new Set(currentData.map(r=>Number(r.week)).filter(w=>Number.isFinite(w)))).sort((a,b)=>a-b);
+  const weeks = Array.from(byWeekCity.keys()).sort((a,b)=>a-b);
   if(!weeks.length){
-    createOrUpdateChart('locEvolutionChart',{type:'line',data:{labels:[],datasets:[]},options:{}});
-    document.getElementById('loc-evo-note').textContent = 'Sin datos';
+    createOrUpdateChart('locTimeChart',{type:'line',data:{labels:[],datasets:[]},options:{}});
     return;
   }
 
-  const matrix = new Map();
-  weeks.forEach(w=>matrix.set(w, new Map()));
-  currentData.forEach(r=>{
-    const w=Number(r.week); const loc=r.ciudad||'Sin ubicación';
-    if(!matrix.has(w)) return;
-    if(!locs.includes(loc)) return;
-    const m = matrix.get(w);
-    const o = m.get(loc) || {num:0, den:0};
-    o.num += tareasByFlows(r,flows);
-    o.den += (r.dias_activos||0);
-    m.set(loc, o);
+  // Ranking de ubicaciones por volumen total
+  const totalsByCity = new Map();
+  byWeekCity.forEach((wk, _w)=>{
+    wk.forEach((o, city)=>{
+      const t = totalsByCity.get(city)||0;
+      totalsByCity.set(city, t + o.num);
+    });
   });
+  const topCities = Array.from(totalsByCity.entries())
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,5)
+    .map(([city])=>city);
 
   const labels = weeks.map(w=>'W'+String(w).padStart(2,'0'));
-  const datasets = locs.map((loc, i)=>{
+  const colors = [PALETTE.c2, PALETTE.c4, PALETTE.c1, PALETTE.c0, PALETTE.c5];
+
+  const datasets = topCities.map((city,idx)=>{
     const data = weeks.map(w=>{
-      const o = matrix.get(w).get(loc);
-      if(!o || !o.den) return null;
-      return o.num / o.den;
+      const wk = byWeekCity.get(w)||new Map();
+      const o = wk.get(city)||{num:0,den:0};
+      return o.den ? (o.num/o.den) : null;
     });
-    const color = colorForIndex(i);
-    return {
-      type:'line',
-      label: loc,
-      data,
-      yAxisID:'y',
-      borderColor: color,
-      backgroundColor: color,
-      fill: false,
-      tension: .25,
-      borderWidth: 3,
-      pointRadius: 2,
-      spanGaps: true
-    };
+    return lineDataset(city, data, colors[idx%colors.length], 'y');
   });
 
-  createOrUpdateChart('locEvolutionChart',{
+  createOrUpdateChart('locTimeChart',{
     data:{ labels, datasets },
     options:{
       responsive:true,
-      plugins:{ legend:{ position:'bottom' } },
+      plugins:{ legend:{ position:'bottom'} },
       scales:{
-        x:{ ticks:{ autoSkip:false, maxRotation:0 } },
-        y:{ ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } }
+        y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
+        x:{ ticks:{ autoSkip:false, maxRotation:0 } }
       }
     }
   });
-
-  const note = (state.filtros.ubic && state.filtros.ubic.length)
-    ? `Mostrando: ${locs.join(', ')}`
-    : `Mostrando: Top 5 ubicaciones por tareas`;
-  document.getElementById('loc-evo-note').textContent = note;
 }
 
 /**********************
@@ -1272,7 +1362,7 @@ async function exportSectionPNGs(){
     canvases.push(document.getElementById('weeklyEvolutionChart'));
   }else if(id==='ubicacion'){
     canvases.push(document.getElementById('locCombinedChart'));
-    canvases.push(document.getElementById('locEvolutionChart'));
+    canvases.push(document.getElementById('locTimeChart'));
   }
   canvases.forEach((c,i)=>{
     if(!c) return;
@@ -1326,11 +1416,11 @@ function buildSectionDataForExport(section, flows){
 }
 
 /**********************
- * GEMINI
+ * GEMINI (igual que antes)
  **********************/
 function filtersSummary() {
   const f = state.filtros;
-  const flows = (f.flujo.length===0 || f.flujo.length===2) ? 'Todos' : (f.flujo[0]==='demanda'?'Demanda':'Enhancement');
+  const flows = (f.flujo.length===0 || f.flujo.length===2) ? 'Todos' : f.flujo.map(x=>x==='demanda'?'Demanda':'Enhancement').join(' + ');
   return {
     Trimestre: f.q.join(' | ') || '',
     Mes: f.mes.join(' | ') || '',
