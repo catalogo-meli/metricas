@@ -43,20 +43,20 @@
     --nine-red:#fee2e2;
   }
   [data-theme="dark"]{
-    --bg:#0b1220;      /* más profundo que slate-900 */
-    --panel:#0f1b2d;   /* navy oscuro legible */
+    --bg:#0b1220;
+    --panel:#0f1b2d;
     --panel-2:#0c1626;
-    --text:#e2e8f0;    /* slate-200 */
-    --muted:#a3b2c7;   /* slate-400~300 */
-    --border:#1e293b;  /* slate-800 */
+    --text:#e2e8f0;
+    --muted:#a3b2c7;
+    --border:#1e293b;
     --shadow: 0 10px 28px rgba(0,0,0,.45);
-    --sidebar:#3b4756; /* acorde al dark */
-    --accent:#22c3ee;  /* más vivo en dark */
+    --sidebar:#3b4756;
+    --accent:#22c3ee;
     --success:#22c55e;
     --warn:#f59e0b;
     --pie1:#6ee7e7;
     --pie2:#1d8bd9;
-    --nine-green:#0f3c36;  /* bloques nine-box legibles en dark */
+    --nine-green:#0f3c36;
     --nine-yellow:#3b3416;
     --nine-orange:#422006;
     --nine-red:#3f1d1d;
@@ -68,14 +68,8 @@
   .kpi-card{background:var(--panel);border:1px solid var(--border);border-radius:1rem;box-shadow:var(--shadow);padding:1.2rem}
   .kpi-title{color:var(--muted);font-weight:600}
   .kpi-value{
-    font-weight:800;
-    letter-spacing: .3px;
-    text-align:center;
-    /* se adapta sin cortar números */
-    font-size: clamp(1.4rem, 3.2vw, 2.5rem);
-    line-height:1.1;
-    word-break: keep-all;
-    white-space: nowrap;
+    font-weight:800;letter-spacing:.3px;text-align:center;
+    font-size:clamp(1.4rem,3.2vw,2.5rem);line-height:1.1;white-space:nowrap
   }
   .kpi-colors-ef{color:var(--success)}
   .kpi-colors-pd{color:var(--warn)}
@@ -85,7 +79,7 @@
   .sidebar-link{transition:all .2s ease-in-out;border-radius:.75rem}
   .sidebar-link:hover,.sidebar-link.active{background:rgba(255,255,255,.15);color:#fff;transform:translateX(4px)}
 
-  /* Filtros (pills compactas) */
+  /* Filtros */
   .pill{display:flex;align-items:center;gap:.5rem;background:var(--panel);border:1px solid var(--border);border-radius:.9rem;padding:.45rem .7rem;box-shadow:var(--shadow)}
   .pill .prefix{color:var(--muted);font-size:.82rem}
   .pill .value{font-weight:600;color:var(--text);font-size:.9rem;max-width:14rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -116,15 +110,12 @@
   .nb-orange{background:var(--nine-orange)}
   .nb-red{background:var(--nine-red)}
 
-  /* IA output */
   .ai-output p{margin-bottom:.75rem;line-height:1.55}
   .ai-output ul{list-style:disc;margin-left:1.5rem;margin-bottom:1rem}
   .ai-output table{width:100%;border-collapse:collapse;margin-top:1rem}
   .ai-output th,.ai-output td{border:1px solid #cbd5e1;padding:.5rem;text-align:left}
   .ai-output th{background:#f1f5f9}
-  .ai-output code{background:#f3f4f6;padding:.2rem .4rem;border-radius:4px}
 
-  /* Buttons */
   .btn{border-radius:.8rem;padding:.6rem .9rem;font-weight:700}
   .btn-ghost{background:var(--panel);border:1px solid var(--border);color:var(--text)}
   .btn-sky{background:var(--accent);color:#fff}
@@ -138,7 +129,6 @@
   <!-- Sidebar -->
   <aside class="hidden md:flex w-64 flex-col sidebar text-white p-4">
     <div class="flex items-center mb-8">
-      <!-- Logo -->
       <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 mr-3" viewBox="0 0 24 24" fill="currentColor">
         <path d="M5 3a2 2 0 00-2 2v14h2V5h2V3H5zm12 0h-2v4h2V3zm-4 0h-2v10h2V3zm6 6h-2v12h2V9zM9 15H7v6h2v-6z"/>
       </svg>
@@ -167,13 +157,11 @@
           <!-- Theme toggle -->
           <button id="theme-toggle" class="btn btn-ghost" title="Cambiar tema">
             <span id="icon-moon" class="inline-block" aria-hidden="true">
-              <!-- luna -->
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
               </svg>
             </span>
             <span id="icon-sun" class="hidden" aria-hidden="true">
-              <!-- sol -->
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.8 1.42-1.42zm10.48 0l1.8-1.79 1.41 1.41-1.79 1.8-1.42-1.42zM12 4V1h-0v3h0zM4 13H1v-2h3v2zm19 0h-3v-2h3v2zM6.76 19.16l-1.42 1.42-1.79-1.8 1.41-1.41 1.8 1.79zm10.48 0l1.42 1.42 1.79-1.8-1.41-1.41-1.8 1.79zM12 23h-0v-3h0v3zM12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12z"/>
               </svg>
@@ -191,7 +179,7 @@
         </div>
       </div>
 
-      <!-- Barra de filtros (pills compactas con prefijo) -->
+      <!-- Barra de filtros -->
       <div id="filters-bar" class="flex flex-wrap gap-3 mb-8"></div>
 
       <!-- Secciones -->
@@ -226,7 +214,6 @@
           </div>
 
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Nine-box -->
             <div id="ninebox-card" class="kpi-card">
               <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Productividad - Calidad</h3>
@@ -241,7 +228,6 @@
               <div id="ninebox-details" class="mt-4 hidden"></div>
             </div>
 
-            <!-- Demanda vs Enhancement -->
             <div class="kpi-card">
               <h3 class="text-xl font-semibold mb-4">Tareas Demanda vs. Enhancement</h3>
               <div class="relative mx-auto" style="height:320px;max-width:420px">
@@ -252,7 +238,7 @@
           </div>
         </section>
 
-        <!-- Detalle por Usuario -->
+        <!-- Detalle -->
         <section id="detalle" class="page-section hidden">
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="kpi-card lg:col-span-2">
@@ -324,6 +310,15 @@
               <div id="avg-antiguedad-cards" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
             </div>
           </div>
+
+          <!-- NUEVO: evolutivo semanal por ubicación -->
+          <div class="kpi-card mt-6">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-xl font-semibold">Evolución por Ubicación (semanal)</h3>
+              <span id="loc-evo-note" class="text-xs" style="color:var(--muted)"></span>
+            </div>
+            <div class="h-[420px]"><canvas id="locEvolutionChart"></canvas></div>
+          </div>
         </section>
 
         <!-- IA -->
@@ -348,7 +343,7 @@ const SHEETS_WEB_APP = "https://script.google.com/macros/s/AKfycbxqTzxdY090fV2JW
 const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
 const FILES = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
 
-/* Paleta charts acorde a tema */
+/* Paleta charts */
 const PALETTE = { c0:'#86eae9', c1:'#3edad8', c2:'#37c9ef', c3:'#37c9ef', c4:'#2c92d5', c5:'#13538a' };
 const BAR_BG = 'rgba(55,201,239,0.45)';
 const LINE_ACC = '#22c3ee';
@@ -507,7 +502,7 @@ let nineboxDetailsData = {};
 const state = {
   filtros: {
     q: [], mes: [], semana: [], ubic: [], lider: [], usuario: [],
-    flujo: ['demanda','enhancement'] // multiselección; por defecto todos
+    flujo: ['demanda','enhancement']
   },
   theme: (localStorage.getItem('theme') || 'dark')
 };
@@ -549,7 +544,7 @@ function computeFilterOptions(){
     ubic: uniqueSorted(forUbic.map(r=>r.ciudad).filter(Boolean)),
     lider: uniqueSorted(forLider.map(r=>r['líder']).filter(l => l && l.toLowerCase()!=='sin líder' && l.toLowerCase()!=='sin lider')),
     usuario: uniqueSorted(forUser.map(r=>r.usuario)),
-    flujo: ['demanda','enhancement'] // fijo
+    flujo: ['demanda','enhancement']
   };
   return opts;
 }
@@ -585,7 +580,7 @@ function renderFiltersBar(){
           <button class="clear">Limpiar</button>
         </div>
         <div class="list"></div>
-        <div class="foot text-xs">${key==='flujo' ? 'Selección múltiple' : 'Selección múltiple'}</div>
+        <div class="foot text-xs">Selección múltiple</div>
       </div>`;
     bar.appendChild(pill);
 
@@ -593,14 +588,11 @@ function renderFiltersBar(){
     const list = menu.querySelector('.list');
     const search = menu.querySelector('.search');
 
-    function labelize(v){
-      if(key!=='flujo') return v;
-      return v==='demanda'?'Demanda':'Enhancement';
-    }
+    function labelize(v){ return key!=='flujo' ? v : (v==='demanda'?'Demanda':'Enhancement'); }
 
     function buildList(){
       list.innerHTML='';
-      const values = opts[key].filter(v => String(labelize(v)).toLowerCase().includes(search.value.trim().toLowerCase()));
+      const values = (opts[key]||[]).filter(v => String(labelize(v)).toLowerCase().includes(search.value.trim().toLowerCase()));
       values.forEach(v=>{
         const id = `${key}-${v}`.replace(/\s+/g,'_');
         const selected = state.filtros[key].includes(v);
@@ -616,10 +608,7 @@ function renderFiltersBar(){
     buildList();
 
     pill.addEventListener('click',(e)=>{
-      const isInside = pill.contains(e.target);
-      if(!isInside) return;
-      const isControl = e.target.closest('.menu');
-      if(isControl) return;
+      if(e.target.closest('.menu')) return;
       const open = menu.classList.contains('open');
       closeAllMenus();
       if(!open) menu.classList.add('open');
@@ -628,8 +617,7 @@ function renderFiltersBar(){
     search.addEventListener('input', buildList);
 
     menu.addEventListener('change', ()=>{
-      const selected = Array.from(menu.querySelectorAll('.opt'))
-        .filter(i=>i.checked).map(i=>i.value);
+      const selected = Array.from(menu.querySelectorAll('.opt')).filter(i=>i.checked).map(i=>i.value);
       state.filtros[key] = selected;
       pill.querySelector('.value').textContent = pillValueText(key);
       applyFilters();
@@ -663,7 +651,7 @@ function setupNavigation(){
       if(target==='#detalle'){ renderTasksByUser(); updateDetailKPIs(); }
       if(target==='#lideres') renderTasksByLeader();
       if(target==='#evolucion'){ renderWeeklyEvolution(); updateEvolutionKPIs(); }
-      if(target==='#ubicacion') renderByLocation();
+      if(target==='#ubicacion'){ renderByLocation(); renderLocationEvolution(); }
     });
   });
 
@@ -698,7 +686,6 @@ function setupNavigation(){
     const isDark = state.theme==='dark';
     document.getElementById('icon-moon').classList.toggle('hidden', !isDark);
     document.getElementById('icon-sun').classList.toggle('hidden', isDark);
-    // Ajustar colores de charts
     const col = getComputedStyle(document.body).getPropertyValue('--text').trim() || '#e2e8f0';
     Chart.defaults.color = col;
     Object.values(charts).forEach(c=>c?.update());
@@ -714,7 +701,7 @@ function setupNavigation(){
 /**********************
  * FLOWS HELPERS
  **********************/
-function selectedFlows(){ // devuelve set
+function selectedFlows(){
   let s = state.filtros.flujo;
   if(!s || s.length===0) s=['demanda','enhancement'];
   return new Set(s);
@@ -724,7 +711,7 @@ function tareasByFlows(row, flowsSet){
   if(f.has('demanda') && f.has('enhancement')) return (row.total_tareas||0);
   if(f.has('demanda')) return (row.tareas_demanda||0);
   if(f.has('enhancement')) return (row.tareas_enhancement||0);
-  return (row.total_tareas||0); // resguardo
+  return (row.total_tareas||0);
 }
 function promedioDiario(rows){
   const f = selectedFlows();
@@ -747,7 +734,7 @@ function applyFilters(){
     (f.q.length===0      || f.q.includes(r.q))
   );
 
-  renderFiltersBar();   // refresca opciones dependientes
+  renderFiltersBar();
   updateKPIs();
   renderNineBox();
   renderDemandPie();
@@ -755,6 +742,7 @@ function applyFilters(){
   renderTasksByLeader();
   renderWeeklyEvolution();
   renderByLocation();
+  renderLocationEvolution();   // <-- nuevo
   updateEvolutionKPIs();
   updateDetailKPIs();
 }
@@ -775,15 +763,10 @@ function updateKPIs(){
   const promEl = document.getElementById('kpi-promedio-diario');
   const efEl   = document.getElementById('kpi-efectividad-prom');
 
-  let promColor = (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500';
-  setColor(promEl, promColor);
+  setColor(promEl, (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500');
 
   const efPct = ef*100;
-  let efColor = (efPct<=75) ? 'text-red-600'
-                : (efPct<87) ? 'text-orange-500'
-                : (efPct<90) ? 'text-yellow-500'
-                : 'text-green-600';
-  setColor(efEl, efColor);
+  setColor(efEl, (efPct<=75) ? 'text-red-600' : (efPct<87) ? 'text-orange-500' : (efPct<90) ? 'text-yellow-500' : 'text-green-600');
 
   document.getElementById('kpi-total-tareas').textContent     = fmt.int(totalFlujo);
   document.getElementById('kpi-ids').textContent              = fmt.int(idsTrab);
@@ -793,9 +776,7 @@ function updateKPIs(){
   efEl.textContent   = fmt.pct(ef);
 }
 
-// KPIs sección Evolución
 function updateEvolutionKPIs(){
-  const flows = selectedFlows();
   const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
   const usuarios = new Set(currentData.map(r=>r.usuario)).size;
   const prom = promedioDiario(currentData);
@@ -815,7 +796,6 @@ function updateEvolutionKPIs(){
   document.getElementById('evo-kpi-users').textContent = fmt.int(usuarios);
 }
 
-// KPIs sección Detalle
 function updateDetailKPIs(){
   const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
   const prom = promedioDiario(currentData);
@@ -877,7 +857,7 @@ function lineEffDataset(label, data){
 function renderNineBox(){
   const flows = selectedFlows();
 
-  const map = new Map(); // user -> {num,den, effSum, effN}
+  const map = new Map();
   currentData.forEach(r=>{
     const u=r.usuario;
     const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
@@ -1021,7 +1001,6 @@ function renderDemandPie(){
   let demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
   let enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
 
-  // Si filtran flujos, graficar solo esos segmentos
   const labels=[], values=[], colors=[];
   if(flows.has('demanda')){ labels.push('Demanda'); values.push(demand); colors.push(getComputedStyle(document.body).getPropertyValue('--pie1').trim()||PALETTE.c0); }
   if(flows.has('enhancement')){ labels.push('Enhancement'); values.push(enh); colors.push(getComputedStyle(document.body).getPropertyValue('--pie2').trim()||PALETTE.c4); }
@@ -1063,7 +1042,7 @@ function renderDemandPie(){
 function renderTasksByUser(){
   const flows = selectedFlows();
 
-  const agg = new Map(); // user -> {num,den, effNum, effDen}
+  const agg = new Map();
   currentData.forEach(r=>{
     const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
     o.num += tareasByFlows(r,flows);
@@ -1100,7 +1079,7 @@ function renderTasksByUser(){
 /* ---------- Comparativa por equipo ---------- */
 function renderTasksByLeader(){
   const flows = selectedFlows();
-  const agg = new Map(); // líder -> {num,den, effNum, effDen}
+  const agg = new Map();
   currentData.forEach(r=>{
     const l = r['líder']; if(!l || l.toLowerCase()==='sin líder' || l.toLowerCase()==='sin lider') return;
     const o = agg.get(l) || {num:0,den:0,effNum:0,effDen:0};
@@ -1138,7 +1117,7 @@ function renderTasksByLeader(){
 /* ---------- Evolución semanal ---------- */
 function renderWeeklyEvolution(){
   const flows = selectedFlows();
-  const agg = new Map(); // week -> {num,den, effNum, effDen}
+  const agg = new Map();
   currentData.forEach(r=>{
     const w = Number(r.week); if(!Number.isFinite(w)) return;
     const o = agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
@@ -1182,12 +1161,12 @@ function renderWeeklyEvolution(){
   });
 }
 
-/* ---------- Ubicación ---------- */
+/* ---------- Ubicación (agregados) ---------- */
 function renderByLocation(){
   const flows = selectedFlows();
-  const byLoc = new Map(); // ciudad -> {num,den}
-  const effLoc = new Map(); // ciudad -> {num,den}
-  const antig = {}; // ciudad -> {sum, n}
+  const byLoc = new Map();
+  const effLoc = new Map();
+  const antig = {};
 
   currentData.forEach(r=>{
     const c=r.ciudad||'Sin ubicación';
@@ -1215,10 +1194,7 @@ function renderByLocation(){
   const effData  = labels.map(c=>{ const e=effLoc.get(c)||{num:0,den:0}; return e.den? 100*e.num/e.den : null; });
 
   createOrUpdateChart('locCombinedChart',{
-    data:{
-      labels,
-      datasets:[ barDataset('Prom. diario', promData), lineEffDataset('% Efectividad', effData) ]
-    },
+    data:{ labels, datasets:[ barDataset('Prom. diario', promData), lineEffDataset('% Efectividad', effData) ] },
     options:{
       responsive:true,
       scales:{
@@ -1247,6 +1223,91 @@ function renderByLocation(){
   `).join('');
 }
 
+/* ---------- Evolutivo semanal por ubicación (NUEVO) ---------- */
+function colorForIndex(i){
+  const hues=[190,210,160,40,330,280,15,120];
+  const h=hues[i%hues.length];
+  const isDark = (document.body.getAttribute('data-theme')==='dark');
+  const l = isDark ? 70 : 45;
+  return `hsl(${h} 70% ${l}%)`;
+}
+function chooseLocationsForEvolution(){
+  const sel = state.filtros.ubic || [];
+  if(sel.length) return sel.slice(0,8);
+  // Top 5 por tareas
+  const totals = new Map();
+  currentData.forEach(r=>{
+    const c=r.ciudad||'Sin ubicación';
+    totals.set(c,(totals.get(c)||0)+tareasByFlows(r));
+  });
+  return Array.from(totals.entries()).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([c])=>c);
+}
+function renderLocationEvolution(){
+  const locs = chooseLocationsForEvolution();
+  const flows = selectedFlows();
+
+  const weeks = Array.from(new Set(currentData.map(r=>Number(r.week)).filter(w=>Number.isFinite(w)))).sort((a,b)=>a-b);
+  if(!weeks.length){
+    createOrUpdateChart('locEvolutionChart',{type:'line',data:{labels:[],datasets:[]},options:{}});
+    document.getElementById('loc-evo-note').textContent = 'Sin datos';
+    return;
+  }
+
+  // Estructura: map[week][loc] -> {num, den}
+  const matrix = new Map();
+  weeks.forEach(w=>matrix.set(w, new Map()));
+  currentData.forEach(r=>{
+    const w=Number(r.week); const loc=r.ciudad||'Sin ubicación';
+    if(!matrix.has(w)) return;
+    if(!locs.includes(loc)) return;
+    const m = matrix.get(w);
+    const o = m.get(loc) || {num:0, den:0};
+    o.num += tareasByFlows(r,flows);
+    o.den += (r.dias_activos||0);
+    m.set(loc, o);
+  });
+
+  const labels = weeks.map(w=>'W'+String(w).padStart(2,'0'));
+  const datasets = locs.map((loc, i)=>{
+    const data = weeks.map(w=>{
+      const o = matrix.get(w).get(loc);
+      if(!o || !o.den) return null;
+      return o.num / o.den; // promedio diario
+    });
+    const color = colorForIndex(i);
+    return {
+      type:'line',
+      label: loc,
+      data,
+      yAxisID:'y',
+      borderColor: color,
+      backgroundColor: color,
+      fill: false,
+      tension: .25,
+      borderWidth: 3,
+      pointRadius: 2,
+      spanGaps: true
+    };
+  });
+
+  createOrUpdateChart('locEvolutionChart',{
+    data:{ labels, datasets },
+    options:{
+      responsive:true,
+      plugins:{ legend:{ position:'bottom' } },
+      scales:{
+        x:{ ticks:{ autoSkip:false, maxRotation:0 } },
+        y:{ ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } }
+      }
+    }
+  });
+
+  const note = (state.filtros.ubic && state.filtros.ubic.length)
+    ? `Mostrando: ${locs.join(', ')}`
+    : `Mostrando: Top 5 ubicaciones por tareas`;
+  document.getElementById('loc-evo-note').textContent = note;
+}
+
 /**********************
  * EXPORTS
  **********************/
@@ -1272,6 +1333,7 @@ async function exportSectionPNGs(){
     canvases.push(document.getElementById('weeklyEvolutionChart'));
   }else if(id==='ubicacion'){
     canvases.push(document.getElementById('locCombinedChart'));
+    canvases.push(document.getElementById('locEvolutionChart')); // nuevo
   }
   canvases.forEach((c,i)=>{
     if(!c) return;
@@ -1321,12 +1383,11 @@ function buildSectionDataForExport(section, flows){
     });
     return Array.from(agg.entries()).map(([user,o])=>({Usuario:user, Promedio:o.den?o.num/o.den:0}));
   }
-  // otras secciones: enviar currentData crudamente
   return currentData;
 }
 
 /**********************
- * GEMINI (igual que antes)
+ * GEMINI
  **********************/
 function filtersSummary() {
   const f = state.filtros;
@@ -1466,4 +1527,3 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 </script>
 </body>
 </html>
-
