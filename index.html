@@ -229,7 +229,7 @@
             </div>
 
             <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-4">Tareas Demanda vs. Enhancement</h3>
+              <h3 class="text-xl font-semibold mb-4">Tareas por Flujo</h3>
               <div class="relative mx-auto" style="height:320px;max-width:420px">
                 <canvas id="demandPieChart"></canvas>
               </div>
@@ -311,7 +311,7 @@
             </div>
           </div>
 
-          <!-- NUEVO: evolutivo semanal por ubicación -->
+          <!-- Evolutivo semanal por ubicación -->
           <div class="kpi-card mt-6">
             <div class="flex items-center justify-between mb-2">
               <h3 class="text-xl font-semibold">Evolución por Ubicación (semanal)</h3>
@@ -511,7 +511,7 @@ const state = {
  * UI FILTROS
  **********************/
 const FILTER_ORDER = ['q','mes','semana','ubic','lider','usuario','flujo'];
-const FILTER_PREFIX = { q:'Trimestre', mes:'Mes', semana:'Semana', ubic:'Ubicación', lider:'Líder', usuario:'Usuario', flujo:'Flujos' };
+const FILTER_PREFIX = { q:'Trimestre', mes:'Mes', semana:'Semana', ubic:'Ubicación', lider:'Líder', usuario:'Usuario', flujo:'Flujo' };
 
 function uniqueSorted(arr){ return Array.from(new Set(arr)).sort(); }
 function uniqueSortedNum(arr){ return Array.from(new Set(arr)).sort((a,b)=>a-b); }
@@ -549,13 +549,17 @@ function computeFilterOptions(){
   return opts;
 }
 
+function emptyLabelByKey(key){
+  // Personalización pedida: Semana y Ubicación -> "Todas"
+  return (key==='semana' || key==='ubic') ? 'Todas' : 'Todos';
+}
 function pillValueText(key){
   const sel = state.filtros[key];
   if(key==='flujo'){
     if(sel.length===0 || sel.length===2) return 'Todos';
     return sel[0]==='demanda' ? 'Demanda' : 'Enhancement';
   }
-  if(sel.length===0) return 'Todos';
+  if(sel.length===0) return emptyLabelByKey(key);
   if(sel.length===1) return sel[0];
   return `${sel.length} seleccionados`;
 }
@@ -742,7 +746,7 @@ function applyFilters(){
   renderTasksByLeader();
   renderWeeklyEvolution();
   renderByLocation();
-  renderLocationEvolution();   // <-- nuevo
+  renderLocationEvolution();
   updateEvolutionKPIs();
   updateDetailKPIs();
 }
@@ -774,83 +778,6 @@ function updateKPIs(){
   document.getElementById('kpi-correcciones').textContent     = fmt.int(correcc);
   promEl.textContent = fmt.dec(prom);
   efEl.textContent   = fmt.pct(ef);
-}
-
-function updateEvolutionKPIs(){
-  const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
-  const usuarios = new Set(currentData.map(r=>r.usuario)).size;
-  const prom = promedioDiario(currentData);
-  const vals = currentData.map(r=>r.efectividad).filter(v=>v!=='' && v!==null && v!==undefined);
-  const ef   = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
-
-  const promEl = document.getElementById('evo-kpi-prom');
-  const efEl   = document.getElementById('evo-kpi-ef');
-  setColor(promEl, (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500');
-
-  const efPct = ef*100;
-  setColor(efEl, (efPct<=75) ? 'text-red-600' : (efPct<87) ? 'text-orange-500' : (efPct<90) ? 'text-yellow-500' : 'text-green-600');
-
-  promEl.textContent = fmt.dec(prom);
-  efEl.textContent   = fmt.pct(ef);
-  document.getElementById('evo-kpi-ids').textContent   = fmt.int(idsTrab);
-  document.getElementById('evo-kpi-users').textContent = fmt.int(usuarios);
-}
-
-function updateDetailKPIs(){
-  const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
-  const prom = promedioDiario(currentData);
-  const vals = currentData.map(r=>r.efectividad).filter(v=>v!=='' && v!==null && v!==undefined);
-  const ef   = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
-
-  const promEl = document.getElementById('det-kpi-prom');
-  const efEl   = document.getElementById('det-kpi-ef');
-  setColor(promEl, (prom<=70) ? 'text-red-600' : (prom>=80) ? 'text-green-600' : 'text-yellow-500');
-
-  const efPct = ef*100;
-  setColor(efEl, (efPct<=75) ? 'text-red-600' : (efPct<87) ? 'text-orange-500' : (efPct<90) ? 'text-yellow-500' : 'text-green-600');
-
-  promEl.textContent = fmt.dec(prom);
-  efEl.textContent   = fmt.pct(ef);
-  document.getElementById('det-kpi-ids').textContent = fmt.int(idsTrab);
-}
-
-function createOrUpdateChart(id, cfg){
-  if(charts[id]){ charts[id].data=cfg.data; charts[id].options=cfg.options||{}; charts[id].update(); return charts[id]; }
-  const ctx=document.getElementById(id).getContext('2d');
-  charts[id]=new Chart(ctx,cfg); return charts[id];
-}
-
-function barDataset(label, data){
-  return {
-    type:'bar',
-    label,
-    data,
-    yAxisID:'y',
-    backgroundColor: BAR_BG,
-    borderColor: 'rgba(0,0,0,0)',
-    order: 1,
-    barPercentage: 0.8,
-    categoryPercentage: 0.8
-  };
-}
-function lineEffDataset(label, data){
-  return {
-    type:'line',
-    label,
-    data,
-    yAxisID:'y1',
-    borderColor: LINE_ACC,
-    backgroundColor: LINE_ACC,
-    order: 2,
-    fill: false,
-    tension: 0.25,
-    pointRadius: 3,
-    pointHoverRadius: 5,
-    pointBackgroundColor: '#ffffff',
-    pointBorderColor: LINE_ACC,
-    borderWidth: 3,
-    spanGaps: true
-  };
 }
 
 /* ---------- Nine-box ---------- */
@@ -994,7 +921,7 @@ function showNineboxDetails(bucketKey, labelFn){
   document.getElementById('nb-close').onclick = ()=> box.classList.add('hidden');
 }
 
-/* ---------- Demanda vs Enhancement ---------- */
+/* ---------- Tareas por Flujo (pie) ---------- */
 function renderDemandPie(){
   const flows = selectedFlows();
 
@@ -1018,24 +945,38 @@ function renderDemandPie(){
           labels:{
             generateLabels: (chart)=>{
               const ds=chart.data.datasets[0];
-              return chart.data.labels.map((lbl,i)=>({
-                text: `${lbl} (${fmt.int(ds.data[i])})`,
-                fillStyle: ds.backgroundColor[i],
-                strokeStyle: ds.backgroundColor[i],
-                lineWidth:1,
-                index:i
-              }));
+              const T = (ds.data||[]).reduce((a,b)=>a+b,0) || 0;
+              return chart.data.labels.map((lbl,i)=>{
+                const val = ds.data[i]||0;
+                const pct = T ? fmt.pct(val/T) : fmt.pct(0);
+                return {
+                  text: `${lbl} (${pct} · ${fmt.int(val)})`,
+                  fillStyle: ds.backgroundColor[i],
+                  strokeStyle: ds.backgroundColor[i],
+                  lineWidth:1,
+                  index:i
+                };
+              });
             }
           }
         },
-        tooltip:{ callbacks:{ label:(ctx)=> `${ctx.label}: ${fmt.int(ctx.parsed)}` } }
+        tooltip:{ callbacks:{ 
+          label:(ctx)=>{
+            const ds = ctx.dataset.data || [];
+            const T = ds.reduce((a,b)=>a+b,0) || 0;
+            const val = ctx.parsed || 0;
+            const pct = T ? fmt.pct(val/T) : fmt.pct(0);
+            return `${ctx.label}: ${pct} — ${fmt.int(val)}`;
+          } 
+        } }
       }
     }
   });
 
-  const selTxt = flows.size===2 ? 'todos' : Array.from(flows).map(x=>x==='demanda'?'Demanda':'Enhancement').join(' + ');
+  // Texto inferior: "Total Tareas: N — A: X | B: Y ..."
+  const parts = labels.map((l,i)=>`${l}: ${fmt.int(values[i])}`);
   document.getElementById('demandTotals').textContent =
-    `Total (flujos: ${selTxt}): ${fmt.int(tot)} — ${labels.map((l,i)=>`${l}: ${fmt.int(values[i])}`).join(' | ')}`;
+    `Total Tareas: ${fmt.int(tot)} — ${parts.join(' | ')}`;
 }
 
 /* ---------- Detalle por usuario ---------- */
@@ -1223,7 +1164,7 @@ function renderByLocation(){
   `).join('');
 }
 
-/* ---------- Evolutivo semanal por ubicación (NUEVO) ---------- */
+/* ---------- Evolutivo semanal por ubicación ---------- */
 function colorForIndex(i){
   const hues=[190,210,160,40,330,280,15,120];
   const h=hues[i%hues.length];
@@ -1234,7 +1175,6 @@ function colorForIndex(i){
 function chooseLocationsForEvolution(){
   const sel = state.filtros.ubic || [];
   if(sel.length) return sel.slice(0,8);
-  // Top 5 por tareas
   const totals = new Map();
   currentData.forEach(r=>{
     const c=r.ciudad||'Sin ubicación';
@@ -1253,7 +1193,6 @@ function renderLocationEvolution(){
     return;
   }
 
-  // Estructura: map[week][loc] -> {num, den}
   const matrix = new Map();
   weeks.forEach(w=>matrix.set(w, new Map()));
   currentData.forEach(r=>{
@@ -1272,7 +1211,7 @@ function renderLocationEvolution(){
     const data = weeks.map(w=>{
       const o = matrix.get(w).get(loc);
       if(!o || !o.den) return null;
-      return o.num / o.den; // promedio diario
+      return o.num / o.den;
     });
     const color = colorForIndex(i);
     return {
@@ -1333,7 +1272,7 @@ async function exportSectionPNGs(){
     canvases.push(document.getElementById('weeklyEvolutionChart'));
   }else if(id==='ubicacion'){
     canvases.push(document.getElementById('locCombinedChart'));
-    canvases.push(document.getElementById('locEvolutionChart')); // nuevo
+    canvases.push(document.getElementById('locEvolutionChart'));
   }
   canvases.forEach((c,i)=>{
     if(!c) return;
@@ -1399,7 +1338,7 @@ function filtersSummary() {
     Ubicacion: f.ubic.join(' | ') || '',
     Lider: f.lider.join(' | ') || '',
     Usuario: f.usuario.join(' | ') || '',
-    Flujos: flows
+    Flujo: flows
   };
 }
 function buildNineboxPrompt(){
