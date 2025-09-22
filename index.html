@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Catálogo · Dashboard de Métricas</title>
 
 <!-- Tailwind -->
@@ -24,143 +24,174 @@
 
 <style>
   :root{
-    --bg: #f1f5f9;
-    --card: #ffffff;
-    --muted: #475569;
-    --text: #0f172a;
-    --ring: rgba(15,23,42,.08);
-    --sidebar: #8a8f97;
-    --pill-bg: #ffffff;
-    --pill-br: #e2e8f0;
-    --pill-hov: #f8fafc;
-    --kpi-shadow: 0 4px 18px rgba(0,0,0,.08);
-    --nb-br: #e2e8f0;
-    --grid-br: #e2e8f0;
+    --bg: #f1f5f9;            /* slate-100 */
+    --panel: #ffffff;
+    --panel-2: #f8fafc;       /* slate-50 */
+    --text: #0f172a;          /* slate-900 */
+    --muted:#64748b;          /* slate-500 */
+    --border:#e2e8f0;         /* slate-200 */
+    --shadow: 0 8px 24px rgba(15,23,42,.08);
+    --sidebar:#6b7280;        /* gray-500 */
+    --accent:#0ea5e9;         /* sky-500 */
+    --success:#16a34a;        /* green-600 */
+    --warn:#f59e0b;           /* amber-500 */
+    --pie1:#86eae9;
+    --pie2:#2c92d5;
+    --nine-green:#dcfce7;
+    --nine-yellow:#fef9c3;
+    --nine-orange:#ffedd5;
+    --nine-red:#fee2e2;
   }
-  .dark{
-    --bg: #0f1a26;
-    --card: #0f1a26; /* cards mismas que fondo pero con borde sutil */
-    --muted: #aab3c0;
-    --text: #e6edf5;
-    --ring: rgba(255,255,255,.06);
-    --sidebar: #2e3945;
-    --pill-bg: #101b27;
-    --pill-br: #1f2a36;
-    --pill-hov: #0f2335;
-    --kpi-shadow: 0 0 0 rgba(0,0,0,0);
-    --nb-br: #233140;
-    --grid-br: #1c2733;
+  [data-theme="dark"]{
+    --bg:#0b1220;      /* más profundo que slate-900 */
+    --panel:#0f1b2d;   /* navy oscuro legible */
+    --panel-2:#0c1626;
+    --text:#e2e8f0;    /* slate-200 */
+    --muted:#a3b2c7;   /* slate-400~300 */
+    --border:#1e293b;  /* slate-800 */
+    --shadow: 0 10px 28px rgba(0,0,0,.45);
+    --sidebar:#3b4756; /* acorde al dark */
+    --accent:#22c3ee;  /* más vivo en dark */
+    --success:#22c55e;
+    --warn:#f59e0b;
+    --pie1:#6ee7e7;
+    --pie2:#1d8bd9;
+    --nine-green:#0f3c36;  /* bloques nine-box legibles en dark */
+    --nine-yellow:#3b3416;
+    --nine-orange:#422006;
+    --nine-red:#3f1d1d;
   }
 
-  *{ box-sizing:border-box }
-  body{ font-family:'Montserrat',sans-serif; background:var(--bg); color:var(--text); }
-  .container-xx{ max-width: 1400px; }
+  html,body{height:100%}
+  body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text)}
+
+  .kpi-card{background:var(--panel);border:1px solid var(--border);border-radius:1rem;box-shadow:var(--shadow);padding:1.2rem}
+  .kpi-title{color:var(--muted);font-weight:600}
+  .kpi-value{
+    font-weight:800;
+    letter-spacing: .3px;
+    text-align:center;
+    /* se adapta sin cortar números */
+    font-size: clamp(1.4rem, 3.2vw, 2.5rem);
+    line-height:1.1;
+    word-break: keep-all;
+    white-space: nowrap;
+  }
+  .kpi-colors-ef{color:var(--success)}
+  .kpi-colors-pd{color:var(--warn)}
 
   /* Sidebar */
-  .sidebar{ background: var(--sidebar); }
-  .sidebar-link{ transition: all .2s ease-in-out; color:#eef2f6; }
-  .sidebar-link.active, .sidebar-link:hover{ background: rgba(255,255,255,.08); color:#fff; transform: translateX(4px); }
-  .brand{ color:#fff; }
+  .sidebar{background:var(--sidebar)}
+  .sidebar-link{transition:all .2s ease-in-out;border-radius:.75rem}
+  .sidebar-link:hover,.sidebar-link.active{background:rgba(255,255,255,.15);color:#fff;transform:translateX(4px)}
 
-  /* Cards KPI */
-  .kpi-card{ background:var(--card); border-radius: 1rem; padding: 1.25rem 1.25rem; box-shadow: var(--kpi-shadow); border:1px solid var(--grid-br); }
-  .kpi-title{ color: var(--muted); font-weight:600; font-size: 0.95rem; }
-  .kpi-value{ font-weight: 800; line-height: 1; letter-spacing: -0.02em;
-              font-size: clamp(28px, 3.2vw, 40px);  /* evita truncado */
-              white-space: nowrap; overflow: visible; }
-
-  /* Nine-box */
-  .nb-cell{ display:flex; align-items:center; justify-content:center; height:80px; border-radius:.7rem; border:1px solid var(--nb-br); }
-  .nb-hdr{ font-weight:600; color:var(--muted); height:42px; display:flex; align-items:center; justify-content:center; }
-  .nb-badge{ font-size:1.5rem; font-weight:800 }
-  .nb-green{ background:#dcfce7 }
-  .nb-yellow{ background:#fef9c3 }
-  .nb-orange{ background:#ffedd5 }
-  .nb-red{ background:#fee2e2 }
-  .nb-cell[data-bucket]{ cursor:pointer }
-
-  /* Pills de filtros */
-  .pill{ display:flex; align-items:center; gap:.5rem; background:var(--pill-bg); border:1px solid var(--pill-br); border-radius:.9rem; padding:.55rem .8rem; position:relative; min-width:220px; box-shadow:0 1px 2px var(--ring); }
-  .pill:hover{ background:var(--pill-hov) }
-  .pill .label{ font-size:.92rem; color:var(--muted); }
-  .pill .value{ font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:150px; }
-  .pill .chev{ color:#8aa0b5; }
-  .menu{ position:absolute; z-index:50; top:110%; left:0; min-width:320px; background:var(--card); border:1px solid var(--pill-br); border-radius:.9rem; box-shadow:0 18px 30px -12px rgba(0,0,0,.25); display:none }
-  .menu.open{ display:block }
-  .menu .head{ display:flex; align-items:center; justify-content:space-between; padding:.6rem .75rem; border-bottom:1px solid var(--pill-br) }
-  .menu .search{ width:100%; padding:.55rem .75rem; border:1px solid var(--pill-br); border-radius:.6rem; background:var(--bg); font-size:.9rem; color:var(--text); }
-  .menu .clear{ font-size:.85rem; color:#0ea5e9 }
-  .menu .list{ max-height:260px; overflow:auto; padding:.5rem }
-  .menu .item{ display:flex; align-items:center; gap:.6rem; padding:.45rem .4rem; border-radius:.5rem; cursor:pointer }
-  .menu .item:hover{ background:var(--pill-hov) }
-  .menu .foot{ padding:.6rem .75rem; border-top:1px solid var(--pill-br); font-size:.85rem; color:var(--muted) }
+  /* Filtros (pills compactas) */
+  .pill{display:flex;align-items:center;gap:.5rem;background:var(--panel);border:1px solid var(--border);border-radius:.9rem;padding:.45rem .7rem;box-shadow:var(--shadow)}
+  .pill .prefix{color:var(--muted);font-size:.82rem}
+  .pill .value{font-weight:600;color:var(--text);font-size:.9rem;max-width:14rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pill .chev{color:var(--muted)}
+  .menu{position:absolute;z-index:50;top:110%;left:0;min-width:260px;background:var(--panel);border:1px solid var(--border);border-radius:.9rem;box-shadow:0 18px 30px -12px rgba(0,0,0,.35);display:none}
+  .menu.open{display:block}
+  .menu .head{display:flex;align-items:center;justify-content:space-between;padding:.6rem .75rem;border-bottom:1px solid var(--border)}
+  .menu .search{width:100%;padding:.5rem .75rem;border:1px solid var(--border);border-radius:.5rem;background:var(--panel-2);font-size:.9rem;color:var(--text)}
+  .menu .clear{font-size:.85rem;color:var(--accent)}
+  .menu .list{max-height:260px;overflow:auto;padding:.5rem}
+  .menu .item{display:flex;align-items:center;gap:.6rem;padding:.42rem .35rem;border-radius:.5rem;cursor:pointer;color:var(--text)}
+  .menu .item:hover{background:var(--panel-2)}
+  .menu .foot{padding:.6rem .75rem;border-top:1px solid var(--border);font-size:.83rem;color:var(--muted)}
 
   /* Export dropdown */
-  .dropdown{ position:relative; display:inline-block }
-  .dropdown-menu{ position:absolute; right:0; top:100%; background:var(--card); border:1px solid var(--pill-br); border-radius:.7rem; box-shadow:0 10px 20px rgba(0,0,0,.08); min-width:270px; z-index:50 }
-  .dropdown-menu a{ display:block; padding:.72rem .9rem; font-size:.95rem; color:var(--text) }
-  .dropdown-menu a:hover{ background:var(--pill-hov) }
+  .dropdown{position:relative;display:inline-block;}
+  .dropdown-menu{position:absolute;right:0;top:100%;background:var(--panel);border:1px solid var(--border);border-radius:.75rem;box-shadow:var(--shadow);min-width:260px;z-index:50}
+  .dropdown-menu a{display:block;padding:.68rem .9rem;font-size:.95rem;color:var(--text)}
+  .dropdown-menu a:hover{background:var(--panel-2)}
 
-  /* IA enriched output */
-  .ai-output p{ margin-bottom:.75rem; line-height:1.55 }
-  .ai-output ul{ list-style:disc; margin-left:1.5rem; margin-bottom:1rem }
-  .ai-output table{ width:100%; border-collapse:collapse; margin-top:1rem }
-  .ai-output th,.ai-output td{ border:1px solid #cbd5e1; padding:.5rem; text-align:left }
-  .ai-output th{ background:#f1f5f9 }
-  .ai-output code{ background:#f3f4f6; padding:.2rem .4rem; border-radius:4px }
+  /* Nine-box */
+  .nb-cell{display:flex;align-items:center;justify-content:center;height:84px;border-radius:.7rem;border:1px solid var(--border)}
+  .nb-hdr{font-weight:700;color:var(--muted)}
+  .nb-badge{font-size:1.6rem;font-weight:800}
+  .nb-cell[data-bucket]{cursor:pointer}
+  .nb-green{background:var(--nine-green)}
+  .nb-yellow{background:var(--nine-yellow)}
+  .nb-orange{background:var(--nine-orange)}
+  .nb-red{background:var(--nine-red)}
+
+  /* IA output */
+  .ai-output p{margin-bottom:.75rem;line-height:1.55}
+  .ai-output ul{list-style:disc;margin-left:1.5rem;margin-bottom:1rem}
+  .ai-output table{width:100%;border-collapse:collapse;margin-top:1rem}
+  .ai-output th,.ai-output td{border:1px solid #cbd5e1;padding:.5rem;text-align:left}
+  .ai-output th{background:#f1f5f9}
+  .ai-output code{background:#f3f4f6;padding:.2rem .4rem;border-radius:4px}
+
+  /* Buttons */
+  .btn{border-radius:.8rem;padding:.6rem .9rem;font-weight:700}
+  .btn-ghost{background:var(--panel);border:1px solid var(--border);color:var(--text)}
+  .btn-sky{background:var(--accent);color:#fff}
+  .btn-sky:hover{filter:brightness(0.95)}
 </style>
 </head>
 
-<body class="">
-<div class="flex min-h-screen overflow-hidden">
+<body data-theme="dark">
+<div class="flex h-screen overflow-hidden">
+
   <!-- Sidebar -->
   <aside class="hidden md:flex w-64 flex-col sidebar text-white p-4">
     <div class="flex items-center mb-8">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 mr-3" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h4v18H3V3zm7 6h4v12h-4V9zm7-4h4v16h-4V5z"/></svg>
-      <h1 class="text-2xl font-extrabold brand">Catálogo</h1>
+      <!-- Logo -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 mr-3" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M5 3a2 2 0 00-2 2v14h2V5h2V3H5zm12 0h-2v4h2V3zm-4 0h-2v10h2V3zm6 6h-2v12h2V9zM9 15H7v6h2v-6z"/>
+      </svg>
+      <h1 class="text-2xl font-extrabold">Catálogo</h1>
     </div>
     <nav id="nav-menu" class="flex-1 space-y-2">
-      <a href="#resumen"   class="sidebar-link active flex items-center p-3 rounded-lg">Resumen General</a>
-      <a href="#detalle"   class="sidebar-link flex items-center p-3 rounded-lg">Detalle por Usuario</a>
-      <a href="#lideres"   class="sidebar-link flex items-center p-3 rounded-lg">Comparativa por Equipo</a>
-      <a href="#evolucion" class="sidebar-link flex items-center p-3 rounded-lg">Evolución Semanal</a>
-      <a href="#ubicacion" class="sidebar-link flex items-center p-3 rounded-lg">Análisis por Ubicación</a>
-      <a href="#analisis"  class="sidebar-link flex items-center p-3 rounded-lg">Análisis Inteligente</a>
+      <a href="#resumen"   class="sidebar-link active flex items-center p-3">Resumen General</a>
+      <a href="#detalle"   class="sidebar-link flex items-center p-3">Detalle por Usuario</a>
+      <a href="#lideres"   class="sidebar-link flex items-center p-3">Comparativa por Equipo</a>
+      <a href="#evolucion" class="sidebar-link flex items-center p-3">Evolución Semanal</a>
+      <a href="#ubicacion" class="sidebar-link flex items-center p-3">Análisis por Ubicación</a>
+      <a href="#analisis"  class="sidebar-link flex items-center p-3">Análisis Inteligente</a>
     </nav>
   </aside>
 
   <!-- Main -->
   <main class="flex-1 overflow-x-hidden overflow-y-auto">
-    <div class="container-xx mx-auto px-6 py-8">
+    <div class="container mx-auto px-6 py-8">
       <!-- Header -->
       <div class="flex flex-wrap justify-between items-center mb-6 gap-3">
-        <h2 id="page-title" class="text-3xl md:text-[2.2rem] font-extrabold" style="letter-spacing:-0.02em">Resumen General</h2>
+        <h2 id="page-title" class="text-3xl font-extrabold">Resumen General</h2>
+
         <div class="flex items-center gap-2">
-          <button id="btn-clear-filters" class="px-3 py-2 rounded-lg border border-slate-300/30 bg-transparent hover:bg-white/10 text-white/90 dark:text-white text-sm shadow-sm">
-            Limpiar todos los filtros
-          </button>
+          <button id="btn-clear-filters" class="btn btn-ghost text-sm">Limpiar todos los filtros</button>
 
           <!-- Theme toggle -->
-          <button id="btn-theme" class="p-2 rounded-lg border border-slate-300/30 bg-transparent hover:bg-white/10" title="Cambiar tema">
-            <!-- icono cambia por JS -->
-            <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 1 0 9.79 9.79z"/></svg>
-            <svg id="icon-sun"  xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" viewBox="0 0 24 24" fill="currentColor"><path d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12zm0 4a1 1 0 0 1-1-1v-1a1 1 0 1 1 2 0v1a1 1 0 0 1-1 1zM4.22 19.78a1 1 0 0 1 0-1.41l.7-.71a1 1 0 0 1 1.42 1.41l-.71.71a1 1 0 0 1-1.41 0zM1 13a1 1 0 1 1 0-2h1a1 1 0 1 1 0 2H1zm3.22-8.78a1 1 0 0 1 1.41 0l.71.71A1 1 0 1 1 3.93 6.1l-.71-.7a1 1 0 0 1 0-1.42zM12 3a1 1 0 0 1-1-1V1a1 1 0 1 1 2 0v1a1 1 0 0 1-1 1zm8 11a1 1 0 1 1 0-2h1a1 1 0 1 1 0 2h-1zm-.22 5.78a1 1 0 0 1-1.41 0l-.71-.71a1 1 0 1 1 1.41-1.41l.71.71a1 1 0 0 1 0 1.41z"/></svg>
+          <button id="theme-toggle" class="btn btn-ghost" title="Cambiar tema">
+            <span id="icon-moon" class="inline-block" aria-hidden="true">
+              <!-- luna -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+              </svg>
+            </span>
+            <span id="icon-sun" class="hidden" aria-hidden="true">
+              <!-- sol -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.8 1.42-1.42zm10.48 0l1.8-1.79 1.41 1.41-1.79 1.8-1.42-1.42zM12 4V1h-0v3h0zM4 13H1v-2h3v2zm19 0h-3v-2h3v2zM6.76 19.16l-1.42 1.42-1.79-1.8 1.41-1.41 1.8 1.79zm10.48 0l1.42 1.42 1.79-1.8-1.41-1.41-1.8 1.79zM12 23h-0v-3h0v3zM12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12z"/>
+              </svg>
+            </span>
           </button>
 
+          <!-- Export -->
           <div class="dropdown">
-            <button id="btn-export" class="px-3 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-sm">
-              Exportar
-            </button>
+            <button id="btn-export" class="btn btn-sky text-sm">Exportar</button>
             <div id="export-menu" class="dropdown-menu hidden">
-              <a href="#" data-exp="csv">Exportar datos (CSV)</a>
+              <a href="#" data-exp="gs">Enviar sección a Google Sheets</a>
               <a href="#" data-exp="png">Exportar gráficos (PNG)</a>
-              <a href="#" data-exp="gsheets">Enviar sección a Google Sheets</a>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Barra de filtros -->
+      <!-- Barra de filtros (pills compactas con prefijo) -->
       <div id="filters-bar" class="flex flex-wrap gap-3 mb-8"></div>
 
       <!-- Secciones -->
@@ -168,29 +199,29 @@
         <!-- Resumen -->
         <section id="resumen" class="page-section">
           <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-6 mb-6">
-            <div class="kpi-card text-left">
-              <h3 class="kpi-title">Total Tareas</h3>
-              <p id="kpi-total-tareas" class="kpi-value mt-2"></p>
+            <div class="kpi-card text-center">
+              <div class="kpi-title mb-2">Total Tareas</div>
+              <div id="kpi-total-tareas" class="kpi-value">—</div>
             </div>
-            <div class="kpi-card text-left">
-              <h3 class="kpi-title">IDs trabajados</h3>
-              <p id="kpi-ids" class="kpi-value mt-2"></p>
+            <div class="kpi-card text-center">
+              <div class="kpi-title mb-2">IDs trabajados</div>
+              <div id="kpi-ids" class="kpi-value">—</div>
             </div>
-            <div class="kpi-card text-left">
-              <h3 class="kpi-title">Promedio Diario</h3>
-              <p id="kpi-promedio-diario" class="kpi-value mt-2" style="color:#f59e0b"></p>
+            <div class="kpi-card text-center">
+              <div class="kpi-title mb-2">Promedio Diario</div>
+              <div id="kpi-promedio-diario" class="kpi-value kpi-colors-pd">—</div>
             </div>
-            <div class="kpi-card text-left">
-              <h3 class="kpi-title">% Efectividad</h3>
-              <p id="kpi-efectividad-prom" class="kpi-value mt-2" style="color:#16a34a"></p>
+            <div class="kpi-card text-center">
+              <div class="kpi-title mb-2">% Efectividad</div>
+              <div id="kpi-efectividad-prom" class="kpi-value kpi-colors-ef">—</div>
             </div>
-            <div class="kpi-card text-left">
-              <h3 class="kpi-title">Correcciones Auditadas</h3>
-              <p id="kpi-correcciones" class="kpi-value mt-2"></p>
+            <div class="kpi-card text-center">
+              <div class="kpi-title mb-2">Correcciones Auditadas</div>
+              <div id="kpi-correcciones" class="kpi-value">—</div>
             </div>
-            <div class="kpi-card text-left">
-              <h3 class="kpi-title">Usuarios Activos</h3>
-              <p id="kpi-usuarios" class="kpi-value mt-2"></p>
+            <div class="kpi-card text-center">
+              <div class="kpi-title mb-2">Usuarios Activos</div>
+              <div id="kpi-usuarios" class="kpi-value">—</div>
             </div>
           </div>
 
@@ -199,10 +230,10 @@
             <div id="ninebox-card" class="kpi-card">
               <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Productividad - Calidad</h3>
-                <button id="generate-summary-btn" class="bg-sky-600 text-white px-4 py-2 rounded-lg hover:bg-sky-700 transition-colors text-sm font-medium">✨ Generar Resumen</button>
+                <button id="generate-summary-btn" class="btn btn-sky text-sm">✨ Generar Resumen</button>
               </div>
               <div id="ninebox-grid" class="grid grid-cols-4 gap-2"></div>
-              <p class="mt-3 text-xs text-slate-500">
+              <p class="mt-3 text-xs" style="color:var(--muted)">
                 Productividad: Alta ≥80; Media 70–&lt;80; Baja &lt;70. &nbsp;|&nbsp;
                 Calidad: Alta ≥90%; Media 75%–&lt;90%; Baja &lt;75%.
               </p>
@@ -216,7 +247,7 @@
               <div class="relative mx-auto" style="height:320px;max-width:420px">
                 <canvas id="demandPieChart"></canvas>
               </div>
-              <div id="demandTotals" class="mt-3 text-center text-sm text-slate-500"></div>
+              <div id="demandTotals" class="mt-3 text-center text-sm" style="color:var(--muted)"></div>
             </div>
           </div>
         </section>
@@ -229,17 +260,17 @@
               <div class="h-[400px]"><canvas id="tasksByUserChart"></canvas></div>
             </div>
             <div class="grid grid-cols-1 gap-4">
-              <div class="kpi-card text-left">
-                <h3 class="kpi-title">Promedio Diario</h3>
-                <p id="det-kpi-prom" class="kpi-value mt-2"></p>
+              <div class="kpi-card text-center">
+                <div class="kpi-title mb-2">Promedio Diario</div>
+                <div id="det-kpi-prom" class="kpi-value kpi-colors-pd"></div>
               </div>
-              <div class="kpi-card text-left">
-                <h3 class="kpi-title">% Efectividad</h3>
-                <p id="det-kpi-ef" class="kpi-value mt-2"></p>
+              <div class="kpi-card text-center">
+                <div class="kpi-title mb-2">% Efectividad</div>
+                <div id="det-kpi-ef" class="kpi-value kpi-colors-ef"></div>
               </div>
-              <div class="kpi-card text-left">
-                <h3 class="kpi-title">IDs trabajados</h3>
-                <p id="det-kpi-ids" class="kpi-value mt-2"></p>
+              <div class="kpi-card text-center">
+                <div class="kpi-title mb-2">IDs trabajados</div>
+                <div id="det-kpi-ids" class="kpi-value"></div>
               </div>
             </div>
           </div>
@@ -261,21 +292,21 @@
               <div class="h-[400px]"><canvas id="weeklyEvolutionChart"></canvas></div>
             </div>
             <div class="grid grid-cols-1 gap-4">
-              <div class="kpi-card text-left">
-                <h3 class="kpi-title">Promedio Diario</h3>
-                <p id="evo-kpi-prom" class="kpi-value mt-2"></p>
+              <div class="kpi-card text-center">
+                <div class="kpi-title mb-2">Promedio Diario</div>
+                <div id="evo-kpi-prom" class="kpi-value kpi-colors-pd"></div>
               </div>
-              <div class="kpi-card text-left">
-                <h3 class="kpi-title">% Efectividad</h3>
-                <p id="evo-kpi-ef" class="kpi-value mt-2"></p>
+              <div class="kpi-card text-center">
+                <div class="kpi-title mb-2">% Efectividad</div>
+                <div id="evo-kpi-ef" class="kpi-value kpi-colors-ef"></div>
               </div>
-              <div class="kpi-card text-left">
-                <h3 class="kpi-title">IDs trabajados</h3>
-                <p id="evo-kpi-ids" class="kpi-value mt-2"></p>
+              <div class="kpi-card text-center">
+                <div class="kpi-title mb-2">IDs trabajados</div>
+                <div id="evo-kpi-ids" class="kpi-value"></div>
               </div>
-              <div class="kpi-card text-left">
-                <h3 class="kpi-title">Usuarios Activos</h3>
-                <p id="evo-kpi-users" class="kpi-value mt-2"></p>
+              <div class="kpi-card text-center">
+                <div class="kpi-title mb-2">Usuarios Activos</div>
+                <div id="evo-kpi-users" class="kpi-value"></div>
               </div>
             </div>
           </div>
@@ -299,11 +330,9 @@
         <section id="analisis" class="page-section hidden">
           <div class="kpi-card">
             <h3 class="text-xl font-semibold mb-2">Análisis Inteligente con Gemini</h3>
-            <p class="text-slate-500 mb-4">Insights basados en los datos y filtros actuales.</p>
-            <button id="generate-insights-btn" class="bg-sky-600 text-white px-6 py-3 rounded-lg hover:bg-sky-700 transition-colors text-base font-semibold">
-              ✨ Analizar Datos y Generar Sugerencias
-            </button>
-            <div id="insights-output" class="mt-6 p-4 rounded-md border hidden ai-output"></div>
+            <p class="mb-4" style="color:var(--muted)">Insights basados en los datos y filtros actuales.</p>
+            <button id="generate-insights-btn" class="btn btn-sky text-base">✨ Analizar Datos y Generar Sugerencias</button>
+            <div id="insights-output" class="mt-6 p-4 rounded-md border hidden ai-output" style="background:var(--panel-2);border-color:var(--border)"></div>
           </div>
         </section>
       </div>
@@ -311,33 +340,18 @@
   </main>
 </div>
 
-<!-- Menú móvil (opcional) -->
-<div id="mobile-menu" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden">
-  <aside class="absolute top-0 left-0 h-full w-64 sidebar text-white p-4 transform -translate-x-full transition-transform duration-300">
-    <div class="flex justify-between items-center mb-8">
-      <h1 class="text-2xl font-extrabold brand">Menú</h1>
-      <button id="close-mobile-menu">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-      </button>
-    </div>
-    <nav id="mobile-nav-menu" class="flex-1 space-y-2"></nav>
-  </aside>
-</div>
-
 <script>
 /**********************
  * CONFIG
  **********************/
+const SHEETS_WEB_APP = "https://script.google.com/macros/s/AKfycbxqTzxdY090fV2JWIFxiqAVnkre_dtUw1M09ZMv9mNKYz3GQW-d1ONSP_FIJTswZ9t2qA/exec";
 const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
 const FILES = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
 
-// Paleta
-const PALETTE = { c0:'#86eae9', c1:'#3edad8', c2:'#37c9ef', c3:'#2c92d5', c4:'#1f87d8', c5:'#13538a' };
-const BAR_BG = 'rgba(55,201,239,0.5)';
-const LINE_ACC = PALETTE.c1;
-
-// Google Apps Script endpoint (Sheets)
-const GSHEETS_WEBAPP = 'https://script.google.com/macros/s/AKfycbxqTzxdY090fV2JWIFxiqAVnkre_dtUw1M09ZMv9mNKYz3GQW-d1ONSP_FIJTswZ9t2qA/exec';
+/* Paleta charts acorde a tema */
+const PALETTE = { c0:'#86eae9', c1:'#3edad8', c2:'#37c9ef', c3:'#37c9ef', c4:'#2c92d5', c5:'#13538a' };
+const BAR_BG = 'rgba(55,201,239,0.45)';
+const LINE_ACC = '#22c3ee';
 
 Chart.defaults.elements.bar.borderRadius = 6;
 Chart.defaults.elements.line.borderWidth = 4;
@@ -393,21 +407,6 @@ const fmt = {
   dec: x => (x ?? 0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})
 };
 
-/* Flujos múltiples */
-const defaultFlows = ['demanda','enhancement'];
-const flowsSelected = ()=> (state.filtros.flujos.length? state.filtros.flujos.slice() : defaultFlows.slice());
-function tareasByFlows(r, flows){
-  const wantD = flows.includes('demanda');
-  const wantE = flows.includes('enhancement');
-  if(wantD && wantE) return r.total_tareas || 0;
-  let s=0; if(wantD) s += (r.tareas_demanda||0); if(wantE) s += (r.tareas_enhancement||0);
-  return s;
-}
-function promedioDiario(rows, flows){
-  const den = rows.reduce((s,r)=> s + (r.dias_activos||0), 0);
-  const num = rows.reduce((s,r)=> s + tareasByFlows(r,flows), 0);
-  return den ? num/den : 0;
-}
 function setColor(el, color){
   el.classList.remove('text-red-600','text-yellow-500','text-green-600','text-orange-500');
   if(color) el.classList.add(color);
@@ -507,29 +506,17 @@ let nineboxDetailsData = {};
 
 const state = {
   filtros: {
-    q: [],
-    mes: [],
-    semana: [],
-    ubic: [],
-    lider: [],
-    usuario: [],
-    flujos: defaultFlows.slice() // multi, por defecto TODOS
-  }
+    q: [], mes: [], semana: [], ubic: [], lider: [], usuario: [],
+    flujo: ['demanda','enhancement'] // multiselección; por defecto todos
+  },
+  theme: (localStorage.getItem('theme') || 'dark')
 };
 
 /**********************
- * UI FILTROS (pills)
+ * UI FILTROS
  **********************/
-const FILTER_ORDER = ['q','mes','semana','ubic','lider','usuario','flujos'];
-const FILTER_LABEL = {
-  q:'Trimestre',
-  mes:'Mes',
-  semana:'Semana',
-  ubic:'Ubicación',
-  lider:'Líder',
-  usuario:'Usuario',
-  flujos:'Flujos'
-};
+const FILTER_ORDER = ['q','mes','semana','ubic','lider','usuario','flujo'];
+const FILTER_PREFIX = { q:'Trimestre', mes:'Mes', semana:'Semana', ubic:'Ubicación', lider:'Líder', usuario:'Usuario', flujo:'Flujos' };
 
 function uniqueSorted(arr){ return Array.from(new Set(arr)).sort(); }
 function uniqueSortedNum(arr){ return Array.from(new Set(arr)).sort((a,b)=>a-b); }
@@ -562,21 +549,20 @@ function computeFilterOptions(){
     ubic: uniqueSorted(forUbic.map(r=>r.ciudad).filter(Boolean)),
     lider: uniqueSorted(forLider.map(r=>r['líder']).filter(l => l && l.toLowerCase()!=='sin líder' && l.toLowerCase()!=='sin lider')),
     usuario: uniqueSorted(forUser.map(r=>r.usuario)),
-    flujos: defaultFlows.slice()
+    flujo: ['demanda','enhancement'] // fijo
   };
   return opts;
 }
 
-function pillSummary(key){
+function pillValueText(key){
   const sel = state.filtros[key];
-  if(key==='flujos'){
-    if(sel.length===defaultFlows.length) return FILTER_LABEL[key]; // “Flujos”
-    if(sel.length===1) return `Flujos: ${sel[0]}`;
-    return `Flujos (${sel.length})`;
+  if(key==='flujo'){
+    if(sel.length===0 || sel.length===2) return 'Todos';
+    return sel[0]==='demanda' ? 'Demanda' : 'Enhancement';
   }
-  if(!sel.length) return FILTER_LABEL[key];
-  if(sel.length===1) return `${FILTER_LABEL[key]}: ${sel[0]}`;
-  return `${FILTER_LABEL[key]} (${sel.length})`;
+  if(sel.length===0) return 'Todos';
+  if(sel.length===1) return sel[0];
+  return `${sel.length} seleccionados`;
 }
 
 function closeAllMenus(){ document.querySelectorAll('.menu').forEach(m=>m.classList.remove('open')); }
@@ -588,10 +574,10 @@ function renderFiltersBar(){
 
   FILTER_ORDER.forEach(key=>{
     const pill = document.createElement('div');
-    pill.className = 'pill';
+    pill.className = 'pill relative';
     pill.innerHTML = `
-      <span class="label">${FILTER_LABEL[key]}</span>
-      <span class="value">${pillSummary(key)}</span>
+      <span class="prefix">${FILTER_PREFIX[key]}</span>
+      <span class="value">${pillValueText(key)}</span>
       <span class="chev">▾</span>
       <div class="menu">
         <div class="head">
@@ -599,36 +585,39 @@ function renderFiltersBar(){
           <button class="clear">Limpiar</button>
         </div>
         <div class="list"></div>
-        <div class="foot text-xs">${key==='flujos' ? 'Selección múltiple' : 'Selección múltiple'}</div>
-      </div>
-    `;
+        <div class="foot text-xs">${key==='flujo' ? 'Selección múltiple' : 'Selección múltiple'}</div>
+      </div>`;
     bar.appendChild(pill);
 
     const menu = pill.querySelector('.menu');
     const list = menu.querySelector('.list');
     const search = menu.querySelector('.search');
 
+    function labelize(v){
+      if(key!=='flujo') return v;
+      return v==='demanda'?'Demanda':'Enhancement';
+    }
+
     function buildList(){
-      list.innerHTML = '';
-      const values = opts[key].filter(v => String(v).toLowerCase().includes(search.value.trim().toLowerCase()));
+      list.innerHTML='';
+      const values = opts[key].filter(v => String(labelize(v)).toLowerCase().includes(search.value.trim().toLowerCase()));
       values.forEach(v=>{
         const id = `${key}-${v}`.replace(/\s+/g,'_');
-        const checked = state.filtros[key].includes(v);
+        const selected = state.filtros[key].includes(v);
         const item = document.createElement('label');
-        item.className = 'item';
+        item.className='item';
         item.innerHTML = `
-          <input type="checkbox" class="opt" id="${id}" value="${v}" ${checked?'checked':''}/>
-          <span>${v}</span>
-        `;
+          <input type="checkbox" class="opt" id="${id}" value="${v}" ${selected?'checked':''}/>
+          <span>${labelize(v)}</span>`;
         list.appendChild(item);
       });
-      list.style.scrollbarWidth = 'thin';
+      list.style.scrollbarWidth='thin';
     }
     buildList();
 
-    pill.addEventListener('click', (e)=>{
-      const inside = pill.contains(e.target);
-      if(!inside) return;
+    pill.addEventListener('click',(e)=>{
+      const isInside = pill.contains(e.target);
+      if(!isInside) return;
       const isControl = e.target.closest('.menu');
       if(isControl) return;
       const open = menu.classList.contains('open');
@@ -639,35 +628,30 @@ function renderFiltersBar(){
     search.addEventListener('input', buildList);
 
     menu.addEventListener('change', ()=>{
-      const inputs = menu.querySelectorAll('.opt');
-      const selected = Array.from(inputs).filter(i=>i.checked).map(i=>i.value);
+      const selected = Array.from(menu.querySelectorAll('.opt'))
+        .filter(i=>i.checked).map(i=>i.value);
       state.filtros[key] = selected;
-      pill.querySelector('.value').textContent = pillSummary(key);
+      pill.querySelector('.value').textContent = pillValueText(key);
       applyFilters();
     });
 
     menu.querySelector('.clear').addEventListener('click',(e)=>{
       e.stopPropagation();
-      if(key==='flujos'){ state.filtros.flujos = defaultFlows.slice(); }
-      else state.filtros[key]=[];
-      pill.querySelector('.value').textContent = pillSummary(key);
+      state.filtros[key]= key==='flujo' ? ['demanda','enhancement'] : [];
+      pill.querySelector('.value').textContent = pillValueText(key);
       renderFiltersBar();
       applyFilters();
     });
   });
 
-  document.addEventListener('click', (ev)=>{
-    if(!bar.contains(ev.target)) closeAllMenus();
-  }, { once:true });
+  document.addEventListener('click', (ev)=>{ if(!bar.contains(ev.target)) closeAllMenus(); }, { once:true });
 }
 
 /**********************
- * NAV + EXPORT + THEME + CLEAR ALL
+ * NAV + EXPORT + THEME
  **********************/
 function setupNavigation(){
   const links=[...document.querySelectorAll('#nav-menu a')];
-  const mobile=document.getElementById('mobile-nav-menu');
-  mobile.innerHTML = links.map(a=>`<a href="${a.getAttribute('href')}" class="block p-3 rounded-lg hover:bg-gray-700">${a.textContent}</a>`).join('');
   links.forEach(a=>{
     a.addEventListener('click', e=>{
       e.preventDefault();
@@ -687,46 +671,66 @@ function setupNavigation(){
   document.getElementById('btn-export').addEventListener('click', ()=>{
     document.getElementById('export-menu').classList.toggle('hidden');
   });
-  document.addEventListener('click', (e)=>{
-    const dd = document.getElementById('export-menu');
+  document.addEventListener('click',(e)=>{
+    const dd=document.getElementById('export-menu');
     if(!dd.contains(e.target) && !document.getElementById('btn-export').contains(e.target)) dd.classList.add('hidden');
   });
   document.querySelectorAll('#export-menu a').forEach(a=>{
-    a.addEventListener('click', (e)=>{
+    a.addEventListener('click', async (e)=>{
       e.preventDefault();
       document.getElementById('export-menu').classList.add('hidden');
-      const type = a.getAttribute('data-exp');
-      if(type==='csv') exportSectionCSV();
+      const type=a.getAttribute('data-exp');
       if(type==='png') exportSectionPNGs();
-      if(type==='gsheets') exportToGoogleSheets();
+      if(type==='gs')  sendSectionToGoogleSheets();
     });
   });
 
-  // Limpiar todos
+  // Clear all
   document.getElementById('btn-clear-filters').addEventListener('click', ()=>{
-    state.filtros = { q:[], mes:[], semana:[], ubic:[], lider:[], usuario:[], flujos: defaultFlows.slice() };
+    state.filtros = { q:[], mes:[], semana:[], ubic:[], lider:[], usuario:[], flujo:['demanda','enhancement'] };
     renderFiltersBar();
     applyFilters();
   });
 
   // Theme toggle
-  const root = document.documentElement;
-  function refreshThemeIcon(){
-    const dark = root.classList.contains('dark');
-    document.getElementById('icon-moon').classList.toggle('hidden', !dark);
-    document.getElementById('icon-sun').classList.toggle('hidden', dark);
+  function applyTheme(){
+    document.body.setAttribute('data-theme',state.theme);
+    const isDark = state.theme==='dark';
+    document.getElementById('icon-moon').classList.toggle('hidden', !isDark);
+    document.getElementById('icon-sun').classList.toggle('hidden', isDark);
+    // Ajustar colores de charts
+    const col = getComputedStyle(document.body).getPropertyValue('--text').trim() || '#e2e8f0';
+    Chart.defaults.color = col;
+    Object.values(charts).forEach(c=>c?.update());
   }
-  // preferencia almacenada
-  const saved = localStorage.getItem('theme') || 'dark';
-  if(saved==='dark') root.classList.add('dark'); else root.classList.remove('dark');
-  refreshThemeIcon();
-  document.getElementById('btn-theme').addEventListener('click', ()=>{
-    root.classList.toggle('dark');
-    localStorage.setItem('theme', root.classList.contains('dark')?'dark':'light');
-    refreshThemeIcon();
-    // Re-render charts para ajustar colores si hiciera falta
-    renderDemandPie(); renderTasksByUser(); renderTasksByLeader(); renderWeeklyEvolution(); renderByLocation();
+  document.getElementById('theme-toggle').addEventListener('click',()=>{
+    state.theme = (state.theme==='dark')?'light':'dark';
+    localStorage.setItem('theme', state.theme);
+    applyTheme();
   });
+  applyTheme();
+}
+
+/**********************
+ * FLOWS HELPERS
+ **********************/
+function selectedFlows(){ // devuelve set
+  let s = state.filtros.flujo;
+  if(!s || s.length===0) s=['demanda','enhancement'];
+  return new Set(s);
+}
+function tareasByFlows(row, flowsSet){
+  const f=flowsSet||selectedFlows();
+  if(f.has('demanda') && f.has('enhancement')) return (row.total_tareas||0);
+  if(f.has('demanda')) return (row.tareas_demanda||0);
+  if(f.has('enhancement')) return (row.tareas_enhancement||0);
+  return (row.total_tareas||0); // resguardo
+}
+function promedioDiario(rows){
+  const f = selectedFlows();
+  const den = rows.reduce((s,r)=> s + (r.dias_activos||0), 0);
+  const num = rows.reduce((s,r)=> s + tareasByFlows(r,f), 0);
+  return den ? num/den : 0;
 }
 
 /**********************
@@ -743,10 +747,7 @@ function applyFilters(){
     (f.q.length===0      || f.q.includes(r.q))
   );
 
-  // actualizar opciones dependientes
-  renderFiltersBar();
-
-  // refrescar UI
+  renderFiltersBar();   // refresca opciones dependientes
   updateKPIs();
   renderNineBox();
   renderDemandPie();
@@ -762,12 +763,12 @@ function applyFilters(){
  * KPI + RENDER
  **********************/
 function updateKPIs(){
-  const fl = flowsSelected();
-  const totalFlujo = currentData.reduce((s,r)=> s + tareasByFlows(r,fl), 0);
+  const flows = selectedFlows();
+  const totalFlujo = currentData.reduce((s,r)=> s + tareasByFlows(r,flows), 0);
   const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
   const usuarios = new Set(currentData.map(r=>r.usuario)).size;
   const correcc = currentData.reduce((s,r)=> s + (r.correcciones_auditadas||0), 0);
-  const prom = promedioDiario(currentData, fl);
+  const prom = promedioDiario(currentData);
   const vals = currentData.map(r=>r.efectividad).filter(v => v!=='' && v!==null && v!==undefined);
   const ef = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
 
@@ -792,12 +793,12 @@ function updateKPIs(){
   efEl.textContent   = fmt.pct(ef);
 }
 
-// KPIs Evolución
+// KPIs sección Evolución
 function updateEvolutionKPIs(){
-  const fl = flowsSelected();
+  const flows = selectedFlows();
   const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
   const usuarios = new Set(currentData.map(r=>r.usuario)).size;
-  const prom = promedioDiario(currentData, fl);
+  const prom = promedioDiario(currentData);
   const vals = currentData.map(r=>r.efectividad).filter(v=>v!=='' && v!==null && v!==undefined);
   const ef   = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
 
@@ -814,11 +815,10 @@ function updateEvolutionKPIs(){
   document.getElementById('evo-kpi-users').textContent = fmt.int(usuarios);
 }
 
-// KPIs Detalle
+// KPIs sección Detalle
 function updateDetailKPIs(){
-  const fl = flowsSelected();
   const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
-  const prom = promedioDiario(currentData, fl);
+  const prom = promedioDiario(currentData);
   const vals = currentData.map(r=>r.efectividad).filter(v=>v!=='' && v!==null && v!==undefined);
   const ef   = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : 0;
 
@@ -875,13 +875,13 @@ function lineEffDataset(label, data){
 
 /* ---------- Nine-box ---------- */
 function renderNineBox(){
-  const fl = flowsSelected();
+  const flows = selectedFlows();
 
   const map = new Map(); // user -> {num,den, effSum, effN}
   currentData.forEach(r=>{
     const u=r.usuario;
     const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
-    o.num += tareasByFlows(r,fl); o.den += (r.dias_activos||0);
+    o.num += tareasByFlows(r,flows); o.den += (r.dias_activos||0);
     if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){ o.effSum+=r.efectividad; o.effN++; }
     map.set(u,o);
   });
@@ -895,11 +895,9 @@ function renderNineBox(){
   const prodBand = p => (p>=80 ? 'alta' : p>=70 ? 'media' : 'baja');
   const calBand  = e => (e>=0.90 ? 'alta' : e>=0.75 ? 'media' : 'baja');
 
-  const rows=['alta','media','baja'];
-  const cols=['alta','media','baja'];
+  const rows=['alta','media','baja']; const cols=['alta','media','baja'];
 
-  const buckets = {};
-  const details = {};
+  const buckets = {}; const details = {};
   rows.forEach(r=>cols.forEach(c=>{ buckets[`${r}-${c}`]=[]; details[`${r}-${c}`]=[]; }));
 
   const missing = [];
@@ -926,7 +924,7 @@ function renderNineBox(){
     if(r==='baja' && c==='media') return 'nb-orange';
     return 'nb-red';
   };
-  const hdrCell = (txt)=>`<div class="nb-hdr">${txt}</div>`;
+  const hdrCell = (txt)=>`<div class="nb-cell nb-hdr" style="height:42px">${txt}</div>`;
 
   let html = '';
   html += hdrCell('&nbsp;');
@@ -975,9 +973,9 @@ function showNineboxDetails(bucketKey, labelFn){
     box.innerHTML = `
       <div class="flex items-center justify-between mb-2">
         <div class="font-semibold">Prod. ${prod} / Calidad ${cal}</div>
-        <button class="text-slate-500 hover:text-slate-700 text-sm" id="nb-close">Cerrar</button>
+        <button class="text-sm" style="color:var(--muted)" id="nb-close">Cerrar</button>
       </div>
-      <div class="text-slate-500 text-sm">Sin perfiles en este cuadrante para los filtros actuales.</div>`;
+      <div class="text-sm" style="color:var(--muted)">Sin perfiles en este cuadrante para los filtros actuales.</div>`;
     box.classList.remove('hidden');
     document.getElementById('nb-close').onclick = ()=> box.classList.add('hidden');
     return;
@@ -985,14 +983,14 @@ function showNineboxDetails(bucketKey, labelFn){
 
   const header = `
     <div class="flex items-center justify-between mb-2">
-      <div class="font-semibold">Prod. ${prod} / Calidad ${cal} — <span class="text-slate-500 font-normal">${rows.length} perfiles</span></div>
-      <button class="text-slate-500 hover:text-slate-700 text-sm" id="nb-close">Cerrar</button>
+      <div class="font-semibold">Prod. ${prod} / Calidad ${cal} — <span class="font-normal" style="color:var(--muted)">${rows.length} perfiles</span></div>
+      <button class="text-sm" style="color:var(--muted)" id="nb-close">Cerrar</button>
     </div>`;
 
   const table = `
-    <div class="overflow-x-auto border border-slate-200 rounded-md">
+    <div class="overflow-x-auto border rounded-md" style="border-color:var(--border)">
       <table class="min-w-full text-sm">
-        <thead class="bg-slate-50 text-slate-600">
+        <thead style="background:var(--panel-2);color:var(--muted)">
           <tr>
             <th class="text-left px-3 py-2">Usuario</th>
             <th class="text-right px-3 py-2">Prom. Diario</th>
@@ -1001,7 +999,7 @@ function showNineboxDetails(bucketKey, labelFn){
         </thead>
         <tbody>
           ${rows.map(r=>`
-            <tr class="border-t">
+            <tr style="border-top:1px solid var(--border)">
               <td class="px-3 py-2">${r.usuario}</td>
               <td class="px-3 py-2 text-right">${fmt.dec(r.prom)}</td>
               <td class="px-3 py-2 text-right">${fmt.pct(r.eff)}</td>
@@ -1018,61 +1016,57 @@ function showNineboxDetails(bucketKey, labelFn){
 
 /* ---------- Demanda vs Enhancement ---------- */
 function renderDemandPie(){
-  const flows = flowsSelected();
+  const flows = selectedFlows();
+
   let demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
   let enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
 
-  // Armar dataset según flujos activos
-  const parts = [];
-  if(flows.includes('demanda')) parts.push(['Demanda', demand]);
-  if(flows.includes('enhancement')) parts.push(['Enhancement', enh]);
-
-  const labels = parts.map(p=>p[0]);
-  const values = parts.map(p=>p[1]);
-  const colors = parts.map((p,i)=> i===0 ? PALETTE.c0 : PALETTE.c4);
+  // Si filtran flujos, graficar solo esos segmentos
+  const labels=[], values=[], colors=[];
+  if(flows.has('demanda')){ labels.push('Demanda'); values.push(demand); colors.push(getComputedStyle(document.body).getPropertyValue('--pie1').trim()||PALETTE.c0); }
+  if(flows.has('enhancement')){ labels.push('Enhancement'); values.push(enh); colors.push(getComputedStyle(document.body).getPropertyValue('--pie2').trim()||PALETTE.c4); }
 
   const tot = values.reduce((a,b)=>a+b,0);
+
   createOrUpdateChart('demandPieChart',{
     type:'pie',
-    data:{ labels, datasets:[{ data: values.map(v=> tot? (100*v/tot) : 0), backgroundColor: colors }] },
+    data:{ labels, datasets:[{ data: values, backgroundColor: colors }] },
     options:{
       responsive:true,
       plugins:{
         legend:{
           position:'bottom',
           labels:{
-            generateLabels(chart){
-              const ds = chart.data.datasets[0];
-              return chart.data.labels.map((lbl, i)=>({
-                text: `${lbl} (${fmt.int(values[i])})`,
+            generateLabels: (chart)=>{
+              const ds=chart.data.datasets[0];
+              return chart.data.labels.map((lbl,i)=>({
+                text: `${lbl} (${fmt.int(ds.data[i])})`,
                 fillStyle: ds.backgroundColor[i],
                 strokeStyle: ds.backgroundColor[i],
-                lineWidth: 1,
-                hidden: isNaN(ds.data[i]),
-                index: i
+                lineWidth:1,
+                index:i
               }));
             }
           }
         },
-        tooltip:{ callbacks:{ label:(ctx)=> `${ctx.label}: ${ctx.parsed.toFixed(1)}%` } }
+        tooltip:{ callbacks:{ label:(ctx)=> `${ctx.label}: ${fmt.int(ctx.parsed)}` } }
       }
     }
   });
 
-  const sel = flows.length===2 ? 'flujos: todos' : `flujos: ${flows.join(' & ')}`;
+  const selTxt = flows.size===2 ? 'todos' : Array.from(flows).map(x=>x==='demanda'?'Demanda':'Enhancement').join(' + ');
   document.getElementById('demandTotals').textContent =
-    `Total (${sel}) = ${fmt.int(tot)} — ` +
-    parts.map(([name,val])=> `${name}: ${fmt.int(val)}`).join(' | ');
+    `Total (flujos: ${selTxt}): ${fmt.int(tot)} — ${labels.map((l,i)=>`${l}: ${fmt.int(values[i])}`).join(' | ')}`;
 }
 
 /* ---------- Detalle por usuario ---------- */
 function renderTasksByUser(){
-  const fl = flowsSelected();
+  const flows = selectedFlows();
 
   const agg = new Map(); // user -> {num,den, effNum, effDen}
   currentData.forEach(r=>{
     const u=r.usuario; const o=agg.get(u)||{num:0,den:0,effNum:0,effDen:0};
-    o.num += tareasByFlows(r,fl);
+    o.num += tareasByFlows(r,flows);
     o.den += (r.dias_activos||0);
     if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
       const w=(r.correcciones_auditadas||0)||1;
@@ -1090,10 +1084,7 @@ function renderTasksByUser(){
   createOrUpdateChart('tasksByUserChart',{
     data:{
       labels:arr.map(x=>x.user),
-      datasets:[
-        barDataset('Prom. diario', arr.map(x=>x.prom)),
-        lineEffDataset('% Efectividad', arr.map(x=>x.effPct))
-      ]
+      datasets:[ barDataset('Prom. diario', arr.map(x=>x.prom)), lineEffDataset('% Efectividad', arr.map(x=>x.effPct)) ]
     },
     options:{
       responsive:true,
@@ -1108,12 +1099,12 @@ function renderTasksByUser(){
 
 /* ---------- Comparativa por equipo ---------- */
 function renderTasksByLeader(){
-  const fl = flowsSelected();
+  const flows = selectedFlows();
   const agg = new Map(); // líder -> {num,den, effNum, effDen}
   currentData.forEach(r=>{
     const l = r['líder']; if(!l || l.toLowerCase()==='sin líder' || l.toLowerCase()==='sin lider') return;
     const o = agg.get(l) || {num:0,den:0,effNum:0,effDen:0};
-    o.num += tareasByFlows(r,fl);
+    o.num += tareasByFlows(r,flows);
     o.den += (r.dias_activos||0);
     if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
       const w = (r.correcciones_auditadas || 0) || 1;
@@ -1131,10 +1122,7 @@ function renderTasksByLeader(){
   createOrUpdateChart('tasksByLeaderChart',{
     data:{
       labels:arr.map(x=>x.lider),
-      datasets:[
-        barDataset('Prom. diario', arr.map(x=>x.prom)),
-        lineEffDataset('% Efectividad', arr.map(x=>x.effPct))
-      ]
+      datasets:[ barDataset('Prom. diario', arr.map(x=>x.prom)), lineEffDataset('% Efectividad', arr.map(x=>x.effPct)) ]
     },
     options:{
       responsive:true,
@@ -1149,12 +1137,12 @@ function renderTasksByLeader(){
 
 /* ---------- Evolución semanal ---------- */
 function renderWeeklyEvolution(){
-  const fl = flowsSelected();
+  const flows = selectedFlows();
   const agg = new Map(); // week -> {num,den, effNum, effDen}
   currentData.forEach(r=>{
     const w = Number(r.week); if(!Number.isFinite(w)) return;
     const o = agg.get(w)||{num:0,den:0,effNum:0,effDen:0};
-    o.num += tareasByFlows(r,fl);
+    o.num += tareasByFlows(r,flows);
     o.den += (r.dias_activos||0);
     if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
       const weight = (r.correcciones_auditadas||0)||1;
@@ -1178,13 +1166,9 @@ function renderWeeklyEvolution(){
     effValues.push(o.effDen? 100*o.effNum/o.effDen : null);
   }
   createOrUpdateChart('weeklyEvolutionChart',{
-//@ts-ignore
     data:{
       labels,
-      datasets:[
-        barDataset('Prom. diario', promValues),
-        lineEffDataset('% Efectividad', effValues)
-      ]
+      datasets:[ barDataset('Prom. diario', promValues), lineEffDataset('% Efectividad', effValues) ]
     },
     options:{
       responsive:true,
@@ -1200,7 +1184,7 @@ function renderWeeklyEvolution(){
 
 /* ---------- Ubicación ---------- */
 function renderByLocation(){
-  const fl = flowsSelected();
+  const flows = selectedFlows();
   const byLoc = new Map(); // ciudad -> {num,den}
   const effLoc = new Map(); // ciudad -> {num,den}
   const antig = {}; // ciudad -> {sum, n}
@@ -1208,7 +1192,7 @@ function renderByLocation(){
   currentData.forEach(r=>{
     const c=r.ciudad||'Sin ubicación';
     const o=byLoc.get(c)||{num:0,den:0};
-    o.num += tareasByFlows(r,fl); o.den += (r.dias_activos||0); byLoc.set(c,o);
+    o.num += tareasByFlows(r,flows); o.den += (r.dias_activos||0); byLoc.set(c,o);
 
     if(r.efectividad!=='' && r.efectividad!==null && r.efectividad!==undefined){
       const w=(r.correcciones_auditadas||0)||1;
@@ -1233,10 +1217,7 @@ function renderByLocation(){
   createOrUpdateChart('locCombinedChart',{
     data:{
       labels,
-      datasets:[
-        barDataset('Prom. diario', promData),
-        lineEffDataset('% Efectividad', effData)
-      ]
+      datasets:[ barDataset('Prom. diario', promData), lineEffDataset('% Efectividad', effData) ]
     },
     options:{
       responsive:true,
@@ -1259,8 +1240,8 @@ function renderByLocation(){
   grid.innerHTML = list.map(([loc,avg])=>`
     <div class="kpi-card">
       <div class="flex items-baseline justify-between">
-        <div class="text-slate-500 font-medium">${loc}</div>
-        <div class="text-3xl font-bold">${fmt.dec(avg)}</div>
+        <div class="kpi-title">${loc}</div>
+        <div class="kpi-value">${fmt.dec(avg)}</div>
       </div>
     </div>
   `).join('');
@@ -1274,12 +1255,6 @@ function getActiveSectionId(){
   return sec ? sec.id : 'resumen';
 }
 function download(filename, blob){ saveAs(blob, filename); }
-function toCSV(headers, rows){
-  const esc=v=> `"${String(v??'').replace(/"/g,'""')}"`;
-  const head = headers.map(esc).join(',');
-  const body = rows.map(r=> headers.map(h=>esc(r[h])).join(',')).join('\n');
-  return head + '\n' + body;
-}
 
 async function exportSectionPNGs(){
   const id=getActiveSectionId();
@@ -1287,7 +1262,7 @@ async function exportSectionPNGs(){
   if(id==='resumen'){
     canvases.push(document.getElementById('demandPieChart'));
     const el=document.getElementById('ninebox-card');
-    const canvas = await html2canvas(el,{scale:2});
+    const canvas = await html2canvas(el,{scale:2,backgroundColor:null});
     canvas.toBlob(b=>download('productividad-calidad.png',b));
   }else if(id==='detalle'){
     canvases.push(document.getElementById('tasksByUserChart'));
@@ -1305,51 +1280,57 @@ async function exportSectionPNGs(){
   });
 }
 
-async function exportSectionCSV(){
-  const id=getActiveSectionId();
-  const fl = flowsSelected();
-
-  if(id==='resumen'){
-    let demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
-    let enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
-    const parts=[];
-    if(fl.includes('demanda')) parts.push(['Demanda', demand]);
-    if(fl.includes('enhancement')) parts.push(['Enhancement', enh]);
-    const tot = parts.reduce((a,[,v])=>a+v,0);
-    const rows = parts.map(([name,val])=>({ Flujo:name, Total:val, Porcentaje: tot? (val/tot) : 0 }));
-    const csv = toCSV(['Flujo','Total','Porcentaje'], rows);
-    download('resumen_demanda_enhancement.csv', new Blob([csv],{type:'text/csv;charset=utf-8'}));
-  }else if(id==='detalle'){
-    // Podés agregar otras exportaciones específicas si hace falta
+async function sendSectionToGoogleSheets(){
+  const section = getActiveSectionId();
+  const flows = Array.from(selectedFlows());
+  const payload = {
+    section,
+    filters: {...state.filtros},
+    generatedAt: new Date().toISOString(),
+    data: buildSectionDataForExport(section, flows)
+  };
+  try{
+    const r = await fetch(SHEETS_WEB_APP, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify(payload),
+      mode:'cors'
+    });
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    alert('✅ Enviado a Google Sheets');
+  }catch(e){
+    alert('❌ No pude enviar a Google Sheets: ' + e.message);
   }
 }
 
-async function exportToGoogleSheets(){
-  const section = getActiveSectionId();
-  const payload = {
-    section,
-    filters: state.filtros,
-    when: new Date().toISOString(),
-    rows: currentData
-  };
-  try{
-    const res = await fetch(GSHEETS_WEBAPP, {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify(payload)
-    });
-    // Apps Script puede responder con no-cors; igual avisamos
-    alert('Enviado a Google Sheets ✅');
-  }catch(e){
-    alert('No pude enviar a Google Sheets: '+ e.message);
+function buildSectionDataForExport(section, flows){
+  if(section==='resumen'){
+    let demand = currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0);
+    let enh    = currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0);
+    const rows = [];
+    if(flows.includes('demanda')) rows.push({ Flujo:'Demanda', Total:demand });
+    if(flows.includes('enhancement')) rows.push({ Flujo:'Enhancement', Total:enh });
+    return rows;
   }
+  if(section==='detalle'){
+    const agg = new Map();
+    currentData.forEach(r=>{
+      const u=r.usuario; const o=agg.get(u)||{num:0,den:0};
+      o.num += tareasByFlows(r); o.den += (r.dias_activos||0);
+      agg.set(u,o);
+    });
+    return Array.from(agg.entries()).map(([user,o])=>({Usuario:user, Promedio:o.den?o.num/o.den:0}));
+  }
+  // otras secciones: enviar currentData crudamente
+  return currentData;
 }
 
 /**********************
- * GEMINI (prompts)
+ * GEMINI (igual que antes)
  **********************/
 function filtersSummary() {
   const f = state.filtros;
+  const flows = (f.flujo.length===0 || f.flujo.length===2) ? 'Todos' : (f.flujo[0]==='demanda'?'Demanda':'Enhancement');
   return {
     Trimestre: f.q.join(' | ') || '',
     Mes: f.mes.join(' | ') || '',
@@ -1357,14 +1338,13 @@ function filtersSummary() {
     Ubicacion: f.ubic.join(' | ') || '',
     Lider: f.lider.join(' | ') || '',
     Usuario: f.usuario.join(' | ') || '',
-    Flujos: f.flujos.join(' | ') || defaultFlows.join(' | ')
+    Flujos: flows
   };
 }
 function buildNineboxPrompt(){
-  const fl=flowsSelected();
   const filtros_activos = JSON.stringify(filtersSummary());
-  const total_tareas = currentData.reduce((s,r)=>s+tareasByFlows(r,fl),0);
-  const promedio_diario = promedioDiario(currentData,fl).toFixed(2);
+  const total_tareas = currentData.reduce((s,r)=>s+tareasByFlows(r),0);
+  const promedio = promedioDiario(currentData).toFixed(2);
   const efVals= currentData.map(r=>r.efectividad).filter(v=>v!==''&&v!=null);
   const efectividad = (efVals.length? (100*efVals.reduce((a,b)=>a+b,0)/efVals.length) : 0).toFixed(2);
 
@@ -1374,7 +1354,7 @@ function buildNineboxPrompt(){
   const map=new Map();
   currentData.forEach(r=>{
     const u=r.usuario; const o=map.get(u)||{num:0,den:0,effSum:0,effN:0};
-    o.num += tareasByFlows(r,fl); o.den += (r.dias_activos||0);
+    o.num += tareasByFlows(r); o.den += (r.dias_activos||0);
     if(r.efectividad!=='' && r.efectividad!=null){ o.effSum+=r.efectividad; o.effN++; }
     map.set(u,o);
   });
@@ -1383,50 +1363,39 @@ function buildNineboxPrompt(){
     if(prom==null||eff==null) return;
     buckets[`Prod ${prodBand(prom)} / Cal ${calBand(eff)}`]++;
   });
-  const distribucion_ninebox = Object.entries(buckets).map(([k,v])=>`• ${k}: ${v}`).join('\n');
+  const distrib = Object.entries(buckets).map(([k,v])=>`• ${k}: ${v}`).join('\n');
 
   return `🔹 Análisis Nine-box (Productividad x Calidad)
-
-Filtros activos: ${filtros_activos}
-KPIs:
-• Total tareas: ${total_tareas}
-• Prom. Diario: ${promedio_diario}
-• % Efectividad: ${efectividad}%
+Filtros: ${filtros_activos}
+KPIs: Total=${total_tareas} | Promedio=${promedio} | Efectividad=${efectividad}%
 
 Distribución:
-${distribucion_ninebox}
+${distrib}
 
 Instrucciones:
-1) Lista 4-6 hallazgos relevantes y accionables.
-2) Proponé 3 acciones concretas para perfiles fuera de target usando: BTC, feedback 1:1, checklist, acompañamiento individual, plan 3 semanas.
-3) Diferenciá qué harías en Prod Alta/Cal Baja vs Prod Baja/Cal Alta.
-Formato: bullets claros, responsable + plazo.`;
+1) Lista 4–6 hallazgos accionables (sin inventar).
+2) 3 acciones concretas para perfiles fuera de target (BTC, 1:1, checklist, acompañamiento, plan 3 semanas).
+3) Diferenciar qué hacer en Prod Alta/Cal Baja vs Prod Baja/Cal Alta.
+Formato bullets.`;
 }
-
 function buildGlobalInsightsPrompt(){
-  const fl=flowsSelected();
   const filtros_activos = JSON.stringify(filtersSummary());
   const usuarios = new Set(currentData.map(r=>r.usuario)).size;
   const ids = currentData.reduce((s,r)=>s+(r.ids_trabajados||0),0);
-  const prom = promedioDiario(currentData,fl).toFixed(2);
+  const prom = promedioDiario(currentData).toFixed(2);
   const efVals= currentData.map(r=>r.efectividad).filter(v=>v!==''&&v!=null);
   const ef = (efVals.length? (100*efVals.reduce((a,b)=>a+b,0)/efVals.length) : 0).toFixed(2);
 
-  return `🔹 Análisis Global para Coordinación
-
+  return `🔹 Análisis Global
 Filtros: ${filtros_activos}
-Usuarios activos: ${usuarios}
-IDs trabajados: ${ids}
-Prom. Diario: ${prom}
-% Efectividad: ${ef}
+Usuarios=${usuarios} | IDs=${ids} | Promedio=${prom} | Efectividad=${ef}%
 
-Instrucciones:
-1) 4 bullets de foto general (qué va bien / qué mejorar si hay señales).
-2) Detectá perfiles LOW (ocasional vs recurrente).
-3) 3–5 acciones con: BTC, feedback 1:1 por error frecuente, checklist personalizada, plan 3 semanas, acompañamiento individual.
-Formato: concreto, accionable, sin inventar.`;
+Necesito:
+• 4 bullets: qué va bien / qué mejorar (con datos)
+• Detectar perfiles LOW (ocasional vs recurrente)
+• 3–5 acciones (BTC con casos, 1:1 por error, checklist, plan 3 semanas, acompañamiento)
+Formato conciso, sin generalidades.`;
 }
-
 async function geminiRequest(prompt) {
   if (!GEMINI_PROXY_URL) return "Configura GEMINI_PROXY_URL.";
   const attempts = [{ prompt: String(prompt) }, { contents: [{ parts: [{ text: String(prompt) }]}] }];
@@ -1443,7 +1412,6 @@ async function geminiRequest(prompt) {
   }
   throw lastErr || new Error('Gemini request failed');
 }
-
 function setupGeminiFeatures(){
   document.getElementById('generate-summary-btn').addEventListener('click', async ()=>{
     const block = document.getElementById('ninebox-missing');
@@ -1492,7 +1460,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     applyFilters();
   }catch(err){
     console.error(err);
-    document.body.innerHTML = `<div class="p-8 text-center text-red-600 bg-red-100">${err.message}</div>`;
+    document.body.innerHTML = `<div class="p-8 text-center text-red-600" style="background:#fee2e2">${err.message}</div>`;
   }
 });
 </script>
