@@ -1466,4 +1466,71 @@ async function geminiRequest(prompt) {
       const raw = await r.text();
       if (!r.ok) throw new Error(raw || `HTTP ${r.status}`);
       let data; try { data = JSON.parse(raw); } catch { return raw; }
-      const out = data?.candidates?.[0]?.content?.parts?.
+      const out = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? data?.text ?? data?.output ?? data;
+      return (typeof out === 'string') ? out : JSON.stringify(out);
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('Gemini request failed');
+}
+function setupGeminiFeatures(){
+  document.getElementById('generate-summary-btn').addEventListener('click', async ()=>{
+    const block = document.getElementById('ninebox-missing');
+    block.classList.remove('hidden'); block.innerHTML = 'Generando…';
+    try{ const resp = await geminiRequest(buildNineboxPrompt()); block.innerHTML = resp; }
+    catch(e){ block.textContent = e.message; }
+  });
+
+  document.getElementById('generate-insights-btn').addEventListener('click', async ()=>{
+    const out = document.getElementById('insights-output');
+    out.classList.remove('hidden'); out.innerHTML = 'Analizando…';
+    try{ const resp = await geminiRequest(buildGlobalInsightsPrompt()); out.innerHTML = resp; }
+    catch(e){ out.textContent = e.message; }
+  });
+}
+
+/**********************
+ * INIT
+ **********************/
+document.addEventListener('DOMContentLoaded', async ()=>{
+  try{
+    const [tProd,tCal,tBase,tLid, tCrea, tCreaQ, tMerge, tMergeQ] = await Promise.all([
+      fetchCSVFile(FILES.productividad),
+      fetchCSVFile(FILES.calidad),
+      fetchCSVFile(FILES.base),
+      fetchCSVFile(FILES.lideres),
+      fetchCSVFile(FILES_KV.crea),
+      fetchCSVFile(FILES_KV.creaQ),
+      fetchCSVFile(FILES_KV.merge),
+      fetchCSVFile(FILES_KV.mergeQ)
+    ]);
+
+    const prod = parseCSV(tProd);
+    const cal  = parseCSV(tCal);
+    const base = parseCSV(tBase);
+    const lids = parseCSV(tLid);
+
+    const kvCrea   = parseCSV(tCrea);
+    const kvCreaQ  = parseCSV(tCreaQ);
+    const kvMerge  = parseCSV(tMerge);
+    const kvMergeQ = parseCSV(tMergeQ);
+
+    const pmRows = buildWeeklyRows(prod, cal, base, lids); // PM
+    const kvRows = buildKVRows(kvMerge, kvMergeQ, kvCrea, kvCreaQ); // KV
+
+    originalData = [...pmRows, ...kvRows];
+
+    renderFiltersBar();
+    setupNavigation();
+    setupGeminiFeatures();
+
+    currentData = originalData.slice();
+    applyFilters();
+  }catch(err){
+    console.error(err);
+    document.body.innerHTML = `<div class="p-8 text-center text-red-600" style="background:#fee2e2">${err.message}</div>`;
+  }
+});
+</script>
+</body>
+</html>
+
