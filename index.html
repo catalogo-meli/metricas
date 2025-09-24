@@ -39,15 +39,13 @@
     --accent:#0ea5e9;         /* sky-500 */
     --success:#16a34a;        /* green-600 */
     --warn:#f59e0b;           /* amber-500 */
-    /* Pie colors */
     --pie1:#86eae9;           /* Demanda */
     --pie2:#2c92d5;           /* Enhancement */
     --pie3:#9b8af7;           /* Creación */
     --pie4:#f59e0b;           /* Merge 1ª Rev */
-    --pie5:#10b981;           /* Outsiders */
-    --pie6:#ef4444;           /* Merge 2ª Rev */
+    --pie5:#34d399;           /* Merge 2ª Rev */
+    --pie6:#fb7185;           /* Outsiders */
     --pie7:#f472b6;           /* Tareas Adhoc */
-    /* Nine-box */
     --nine-green:#dcfce7;
     --nine-yellow:#fef9c3;
     --nine-orange:#ffedd5;
@@ -69,9 +67,9 @@
     --pie2:#1d8bd9;
     --pie3:#a78bfa;
     --pie4:#f59e0b;
-    --pie5:#22c55e;
-    --pie6:#f87171;
-    --pie7:#fb7185;
+    --pie5:#10b981;
+    --pie6:#fb7185;
+    --pie7:#f472b6;
     --nine-green:#0f3c36;
     --nine-yellow:#3b3416;
     --nine-orange:#422006;
@@ -134,7 +132,7 @@
   <!-- Sidebar -->
   <aside class="hidden md:flex w-64 flex-col sidebar text-white p-4">
     <div class="flex items-center mb-8">
-      <div class="text-2xl mr-3" aria-hidden="true">📊</div>
+      <div class="text-2xl mr-3" aria-hidden="true">🚀</div>
       <h1 class="text-2xl font-extrabold">Catálogo</h1>
     </div>
     <nav id="nav-menu" class="flex-1 space-y-2">
@@ -346,7 +344,7 @@ const FILES = { productividad:'productividad.csv', calidad:'calidad.csv', base:'
 const FILES_KV = { prod:'productividad-kv.csv', creaQ:'calidad-creacion-kv.csv', mergeQ:'calidad-merge-kv.csv' };
 
 /* Paleta charts acorde a tema */
-const PALETTE = { c0:'#86eae9', c1:'#3edad8', c2:'#37c9ef', c3:'#9b8af7', c4:'#2c92d5', c5:'#13538a', c6:'#f59e0b' };
+const PALETTE = { c0:'#86eae9', c1:'#3edad8', c2:'#37c9ef', c3:'#9b8af7', c4:'#2c92d5', c5:'#13538a', c6:'#f59e0b', c7:'#34d399', c8:'#fb7185', c9:'#f472b6' };
 const BAR_BG = 'rgba(55,201,239,0.45)';
 const LINE_ACC = '#22c3ee';
 
@@ -381,7 +379,8 @@ const TEAM_CONFIG = {
   },
   'KV': {                       // Known Values
     prodDaily: { low:24, high:28 },  // umbrales diarios (semanal 120/140 /5)
-    flows: ['Outsiders','Creación','Merge 1ª Revisión','Merge 2ª Revisión','Tareas Adhoc'],
+    // Nuevos flujos KV (internos): outsiders, creacion, merge1, merge2, adhoc
+    flows: ['outsiders','creacion','merge1','merge2','adhoc'],
     defaultLeader: 'Celeste Cignoli'
   },
   'Matchers': {
@@ -389,6 +388,19 @@ const TEAM_CONFIG = {
     flows: []
   }
 };
+
+// Label de flujos para UI
+const FLOW_LABELS = {
+  demanda: 'Demanda',
+  enhancement: 'Enhancement',
+  outsiders: 'Outsiders',
+  creacion: 'Creación',
+  merge1: 'Merge 1ª Revisión',
+  merge2: 'Merge 2ª Revisión',
+  adhoc: 'Tareas Adhoc'
+};
+
+function titleFlow(key){ return FLOW_LABELS[key] ?? key; }
 
 function ghURL(file){
   const bust = `?v=${Date.now()}`;
@@ -520,116 +532,145 @@ function buildWeeklyRows(prod, cal, base, lideres){
 }
 
 /**********************
- * CONSOLIDADO – KV (nuevo con productividad-kv.csv)
+ * CONSOLIDADO – KV (nuevo con un solo CSV de productividad)
  **********************/
 function normalizeWeekLabel(w){
-  if(w===null||w===undefined||w==='') return null;
-  if(typeof w==='number' && Number.isFinite(w)) return w;
+  if(w===null || w===undefined || w==='') return null;
+  if(typeof w === 'number') return Math.round(w);
   const s=String(w).trim();
-  const m=s.match(/W?(\d{1,2})/i);
-  return m? Number(m[1]) : (Number(s)||null);
+  const m = s.match(/W?(\d{1,2})/i);
+  return m ? Number(m[1]) : null;
 }
-function mapKVFlow(code){
-  const s = String(code||'').trim();
-  const U = s.toUpperCase();
-  if(U==='REMOVE_OUTSIDERS') return 'Outsiders';
-  if(U==='KNOWN_VALUE_CREATION') return 'Creación';
-  if(U==='KNOWN_VALUE_MERGE') return 'Merge 1ª Revisión';
-  if(U==='KNOWN_VALUE_MERGE_DA') return 'Merge 2ª Revisión';
-  if(U==='ENHANCEMENT_AD_HOC') return 'Tareas Adhoc';
-  // Si ya viene con display name, lo dejamos:
-  const known = new Set(['Outsiders','Creación','Merge 1ª Revisión','Merge 2ª Revisión','Tareas Adhoc']);
-  if(known.has(s)) return s;
-  return null; // desconocido -> no lo contamos
+function mapKVFlowKey(detail){
+  if(!detail) return null;
+  const s = String(detail).toUpperCase();
+  if(s.includes('REMOVE_OUTSIDERS')) return 'outsiders';
+  if(s.includes('KNOWN_VALUE_CREATION')) return 'creacion';
+  if(s.includes('KNOWN_VALUE_MERGE_DA')) return 'merge2';
+  if(s.includes('KNOWN_VALUE_MERGE')) return 'merge1';
+  if(s.includes('ENHANCEMENT')) return 'adhoc';
+  if(s.includes('AD_HOC')) return 'adhoc';
+  return null; // desconocido → lo ignoramos
 }
-function truthyCorrect(v){
-  const s=String(v??'').toLowerCase().trim();
-  return ['true','1','ok','correcta','correcto','sí','si','yes'].includes(s);
+function numOr1(...vals){
+  for(const v of vals){
+    const n = Number(v);
+    if(Number.isFinite(n) && n>0) return n;
+  }
+  return 1;
 }
+
 function buildKVRows(kvProd, kvCreaQ, kvMergeQ){
-  const rows = [];
-  const byValueId = new Map(); // para mapear audits de merge por ID → (usuario, week)
-  const agg = new Map();       // usuario|week|flow -> {usuario,week,flow,dias:Set,tareas:number}
-
-  // --- PRODUCTIVIDAD (archivo único) ---
+  // --- AGREGAR PRODUCTIVIDAD POR (usuario, week, flujo) ---
+  const agg = new Map(); // key: user|week|flow
+  const byUW = new Map(); // key: user|week -> {dias:Set, mes, mesIndex}
   kvProd.forEach(r=>{
-    const usuario = correoAUsuario(pick(r,['usuario','user']));
-    const fecha = parseDateAny(pick(r,['fecha_accionamiento','fecha accionamiento','fecha']));
-    const wkRaw = pick(r,['week_accionamiento','week']);
-    const week = normalizeWeekLabel(wkRaw);
-    const flowCode = pick(r,['tarea_detalle','tarea','detalle','flujo','flow']);
-    const flow = mapKVFlow(flowCode);
-    // cantidad
-    let qty = Number(pick(r,['publicaciones','cantidad','count','total']));
-    if(!Number.isFinite(qty) || qty<=0) qty = 1;
-    const valueId = pick(r,['value id','value_id','id de value','id value']);
-
+    const fecha = parseDateAny(pick(r, ['fecha','fecha_accionamiento','date']));
+    const week  = normalizeWeekLabel(pick(r, ['week','week_accionamiento','semana']));
+    const usuario = correoAUsuario(pick(r, ['usuario','user','mail']));
+    const detalle = pick(r, ['tarea_detalle','detalle','task','task_detail','tarea']);
+    const flow = mapKVFlowKey(detalle);
     if(!usuario || !week || !flow) return;
-    const key = `${usuario}|${week}|${flow}`;
-    const o = agg.get(key) || {usuario, week, flow, dias:new Set(), tareas:0};
-    if(fecha) o.dias.add(fecha.toDateString());
-    o.tareas += qty;
-    agg.set(key, o);
 
-    if(valueId) byValueId.set(String(valueId), {usuario, week});
+    const cantidad = numOr1(
+      pick(r, ['publicaciones','cantidad','count','total']),
+      // si no hay campo numérico pero hay un identificador, contamos 1
+      pick(r, ['value id','value_id','id','id_value']) ? 1 : NaN
+    );
+
+    const kUW = `${usuario}|${week}`;
+    if(!byUW.has(kUW)){
+      let mes='', mesIndex=0;
+      if(fecha){ mes = MONTHS_ES[fecha.getMonth()]; mesIndex = fecha.getMonth(); }
+      byUW.set(kUW,{ dias:new Set(), mes, mesIndex });
+    }
+    const uw = byUW.get(kUW);
+    if(fecha) uw.dias.add(fecha.toDateString());
+
+    const key = `${usuario}|${week}|${flow}`;
+    const o = agg.get(key) || { usuario, week, flow, tareas:0 };
+    o.tareas += Number(cantidad)||0;
+    agg.set(key, o);
   });
 
-  // --- CALIDAD: CREACIÓN (por usuario/semana) ---
-  const qCrea = new Map(); // user|week -> {ok,n}
+  // --- CALIDAD CREACIÓN (por usuario|week) ---
+  const creaQ = new Map(); // key: user|week -> {ok,n}
   kvCreaQ.forEach(r=>{
     const usuario = correoAUsuario(pick(r,['usuario','user']));
-    const week = normalizeWeekLabel(pick(r,['week_accionamiento','week']));
+    const week = normalizeWeekLabel(pick(r,['week_accionamiento','week','semana']));
     if(!usuario || !week) return;
+    const v = String(pick(r,['decision','correcta','ok','resultado'])).toLowerCase();
+    const ok = (v==='correcta'||v==='correcto'||v==='true'||v==='1'||v==='ok'||v==='si'||v==='sí');
     const k=`${usuario}|${week}`;
-    const o=qCrea.get(k)||{ok:0,n:0};
-    const dec = pick(r,['decision','correcta','es_correcto','is_correct']);
-    o.n += 1;
-    if(truthyCorrect(dec)) o.ok += 1;
-    qCrea.set(k,o);
+    const o=creaQ.get(k)||{ok:0,n:0};
+    o.n+=1; if(ok) o.ok+=1;
+    creaQ.set(k,o);
   });
 
-  // --- CALIDAD: MERGE (map por usuario/semana; usa week o fallback por Value ID) ---
-  const qMerge = new Map(); // user|week -> {ok,n}
+  // --- CALIDAD MERGE (por usuario|week) ---
+  const mergeQ = new Map(); // key: user|week -> {ok,n}
   kvMergeQ.forEach(r=>{
-    let usuario = correoAUsuario(pick(r,['usuario','user']));
-    let week = normalizeWeekLabel(pick(r,['week_accionamiento','week']));
-    if((!usuario || !week)){
-      const valId = pick(r,['value id','value_id','id value']);
-      const link = valId ? byValueId.get(String(valId)) : null;
-      if(link){ usuario = link.usuario; week = link.week; }
-    }
+    const usuario = correoAUsuario(pick(r,['usuario','user']));
+    const week = normalizeWeekLabel(pick(r,['week_accionamiento','week','semana']));
     if(!usuario || !week) return;
+    const v = String(pick(r,['valor_correcto_audit_tl','decision','ok'])).toLowerCase();
+    const ok = (v==='true'||v==='1'||v==='correcta'||v==='correcto'||v==='ok'||v==='si'||v==='sí');
     const k=`${usuario}|${week}`;
-    const o=qMerge.get(k)||{ok:0,n:0};
-    const okFlag = pick(r,['valor_correcto_audit_tl','correcto','is_correct']);
-    o.n += 1;
-    if(truthyCorrect(okFlag)) o.ok += 1;
-    qMerge.set(k,o);
+    const o=mergeQ.get(k)||{ok:0,n:0};
+    o.n+=1; if(ok) o.ok+=1;
+    mergeQ.set(k,o);
   });
 
-  // --- Construcción de filas KV ---
+  // Totales por user-week para repartir calidad de merge entre merge1 y merge2
+  const mergeTasksByUW = new Map(); // kUW -> {t1,t2}
   agg.forEach(o=>{
-    const dias = o.dias.size || 5;
-    let eff='', audits=0;
-    if(o.flow==='Creación'){
-      const q=qCrea.get(`${o.usuario}|${o.week}`)||{ok:0,n:0};
-      eff = q.n? (q.ok/q.n) : '';
-      audits = q.n;
-    }else if(o.flow.startsWith('Merge')){
-      const q=qMerge.get(`${o.usuario}|${o.week}`)||{ok:0,n:0};
-      eff = q.n? (q.ok/q.n) : '';
-      audits = q.n;
+    if(o.flow==='merge1' || o.flow==='merge2'){
+      const kUW = `${o.usuario}|${o.week}`;
+      const rec = mergeTasksByUW.get(kUW) || {t1:0,t2:0};
+      if(o.flow==='merge1') rec.t1 += o.tareas;
+      if(o.flow==='merge2') rec.t2 += o.tareas;
+      mergeTasksByUW.set(kUW, rec);
+    }
+  });
+
+  // Construir filas KV
+  const rows = [];
+  agg.forEach(o=>{
+    const kUW = `${o.usuario}|${o.week}`;
+    const uw = byUW.get(kUW) || {dias:new Set(), mes:'', mesIndex:0};
+    const dias = uw.dias.size || 5;
+
+    let nCorr=0, okCorr=0, eff='';
+    if(o.flow==='creacion'){
+      const q = creaQ.get(kUW) || {ok:0,n:0};
+      nCorr = q.n; okCorr = q.ok;
+      eff = nCorr ? (okCorr/nCorr) : '';
+    }else if(o.flow==='merge1' || o.flow==='merge2'){
+      const q = mergeQ.get(kUW) || {ok:0,n:0};
+      // Reparto proporcional según tareas merge1 vs merge2
+      const mt = mergeTasksByUW.get(kUW) || {t1:0,t2:0};
+      const totalMerge = (mt.t1||0) + (mt.t2||0);
+      if(totalMerge>0){
+        const part = (o.flow==='merge1') ? (mt.t1/totalMerge) : (mt.t2/totalMerge);
+        nCorr = Math.round(q.n * part);
+        okCorr = Math.round(q.ok * part);
+        eff = nCorr ? (okCorr/nCorr) : '';
+      }else{
+        nCorr = 0; okCorr = 0; eff = '';
+      }
     }else{
-      eff = ''; audits = 0;
+      // Outsiders / Adhoc: no tenemos calidad
+      nCorr = 0; okCorr = 0; eff = '';
     }
 
     rows.push({
-      equipo:'KV', flujo:o.flow,
-      week:o.week, mes:'', mesIndex:0, q:'',
+      equipo:'KV',
+      flujo:o.flow, // outsiders|creacion|merge1|merge2|adhoc
+      week:o.week, mes:uw.mes, mesIndex:uw.mesIndex, q: (uw.mes !== '' ? Q_OF_MONTH_INDEX(uw.mesIndex) : ''),
       usuario:o.usuario, 'líder': TEAM_CONFIG['KV'].defaultLeader, ciudad:'', antigüedad:'',
-      promedio_diario: (dias? o.tareas/dias : 0), efectividad: eff,
+      promedio_diario: (dias ? o.tareas/dias : 0), efectividad: eff,
       tareas_demanda:0, tareas_enhancement:0, total_tareas:o.tareas,
-      ids_trabajados:0, correcciones_auditadas:audits, dias_activos:dias
+      ids_trabajados:0, correcciones_auditadas:nCorr, dias_activos:dias
     });
   });
 
@@ -646,7 +687,7 @@ let nineboxDetailsData = {};
 const state = {
   filtros: {
     equipo: [], q: [], mes: [], semana: [], ubic: [], lider: [], usuario: [],
-    flujo: [] // vacío => todos los flujos del/los equipo/s seleccionado/s
+    flujo: [] // si vacío → todos los flujos de los equipos seleccionados
   },
   theme: (localStorage.getItem('theme') || 'dark')
 };
@@ -680,6 +721,7 @@ function flowsForSelectedEquipos(){
   teams.forEach(t => (TEAM_CONFIG[t]?.flows||[]).forEach(f=>set.add(f)));
   return Array.from(set);
 }
+
 function computeFilterOptions(){
   const forEquipo = filteredOriginalDataExcept('equipo');
   const forQ      = filteredOriginalDataExcept('q');
@@ -701,6 +743,7 @@ function computeFilterOptions(){
   };
   return opts;
 }
+
 function pillValueText(key){
   const sel = state.filtros[key];
   const pluralTodos = (key==='semana' || key==='ubic') ? 'Todas' : 'Todos';
@@ -713,14 +756,7 @@ function pillValueText(key){
   if(sel.length===1) return sel[0];
   return `${sel.length} seleccionados`;
 }
-function titleFlow(f){
-  // PM
-  if(f==='demanda') return 'Demanda';
-  if(f==='enhancement') return 'Enhancement';
-  // KV
-  if(['Outsiders','Creación','Merge 1ª Revisión','Merge 2ª Revisión','Tareas Adhoc'].includes(f)) return f;
-  return f;
-}
+
 function closeAllMenus(){ document.querySelectorAll('.menu').forEach(m=>m.classList.remove('open')); }
 
 function renderFiltersBar(){
@@ -753,7 +789,7 @@ function renderFiltersBar(){
 
     function buildList(){
       list.innerHTML='';
-      const values = opts[key].filter(v => String(labelize(v)).toLowerCase().includes(search.value.trim().toLowerCase()));
+      const values = (opts[key]||[]).filter(v => String(labelize(v)).toLowerCase().includes(search.value.trim().toLowerCase()));
       values.forEach(v=>{
         const id = `${key}-${v}`.replace(/\s+/g,'_');
         const selected = state.filtros[key].includes(v);
@@ -938,6 +974,8 @@ function updateKPIs(){
   promEl.textContent = fmt.dec(prom);
   efEl.textContent   = fmt.pct(ef);
 }
+
+// Evolución
 function updateEvolutionKPIs(){
   const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
   const usuarios = new Set(currentData.map(r=>r.usuario)).size;
@@ -956,6 +994,8 @@ function updateEvolutionKPIs(){
   document.getElementById('evo-kpi-ids').textContent   = fmt.int(idsTrab);
   document.getElementById('evo-kpi-users').textContent = fmt.int(usuarios);
 }
+
+// Detalle
 function updateDetailKPIs(){
   const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
   const prom = promedioDiario(currentData);
@@ -1086,27 +1126,34 @@ function showNineboxDetails(bucketKey, labelFn){
 
 /* ---------- Tareas por Flujo (pie) ---------- */
 function renderDemandPie(){
-  const flows = selectedFlows();
-  const cv = (vname)=>getComputedStyle(document.body).getPropertyValue(vname).trim();
-  const colorsVars = {
-    demanda: cv('--pie1')||PALETTE.c0,
-    enhancement: cv('--pie2')||PALETTE.c4,
-    'Outsiders': cv('--pie5'),
-    'Creación': cv('--pie3'),
-    'Merge 1ª Revisión': cv('--pie4'),
-    'Merge 2ª Revisión': cv('--pie6'),
-    'Tareas Adhoc': cv('--pie7')
+  const flowsSel = selectedFlows();
+
+  const colorVar = (name) => getComputedStyle(document.body).getPropertyValue(name).trim();
+  const colorMap = {
+    demanda:    colorVar('--pie1')||PALETTE.c0,
+    enhancement:colorVar('--pie2')||PALETTE.c4,
+    creacion:   colorVar('--pie3')||PALETTE.c3,
+    merge1:     colorVar('--pie4')||PALETTE.c6,
+    merge2:     colorVar('--pie5')||PALETTE.c7,
+    outsiders:  colorVar('--pie6')||PALETTE.c8,
+    adhoc:      colorVar('--pie7')||PALETTE.c9
   };
 
-  const labels=[]; const values=[]; const colors=[];
-  function push(label, value){ labels.push(label); values.push(value); colors.push(colorsVars[label] || PALETTE.c2); }
+  const order = ['demanda','enhancement','outsiders','creacion','merge1','merge2','adhoc'];
+  const labels=[], values=[], colors=[];
+  function push(flow, value){ labels.push(titleFlow(flow)); values.push(value); colors.push(colorMap[flow]); }
 
   // PM
-  if(flows.has('demanda'))     push('Demanda', currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0));
-  if(flows.has('enhancement')) push('Enhancement', currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0));
+  if(flowsSel.has('demanda'))     push('demanda',     currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0));
+  if(flowsSel.has('enhancement')) push('enhancement', currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0));
   // KV
-  const kvFlows = ['Outsiders','Creación','Merge 1ª Revisión','Merge 2ª Revisión','Tareas Adhoc'];
-  kvFlows.forEach(f=>{ if(flows.has(f)){ push(f, currentData.filter(r=>r.equipo==='KV' && r.flujo===f).reduce((s,r)=> s + (r.total_tareas||0), 0)); } });
+  order.forEach(f=>{
+    if(f==='demanda'||f==='enhancement') return;
+    if(flowsSel.has(f)){
+      const v = currentData.filter(r=>r.equipo==='KV' && r.flujo===f).reduce((s,r)=> s + (r.total_tareas||0), 0);
+      if(v>0) push(f, v);
+    }
+  });
 
   const tot = values.reduce((a,b)=>a+b,0);
 
@@ -1370,11 +1417,13 @@ async function sendSectionToGoogleSheets(){
 function buildSectionDataForExport(section, flows){
   if(section==='resumen'){
     const rows=[];
-    if(flows.includes('demanda')) rows.push({ Flujo:'Demanda',     Total: currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0) });
-    if(flows.includes('enhancement')) rows.push({ Flujo:'Enhancement', Total: currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0) });
-    ['Outsiders','Creación','Merge 1ª Revisión','Merge 2ª Revisión','Tareas Adhoc'].forEach(f=>{
-      if(flows.includes(f)) rows.push({ Flujo:f, Total: currentData.filter(r=>r.equipo==='KV' && r.flujo===f).reduce((s,r)=> s + (r.total_tareas||0), 0) });
-    });
+    if(flows.includes('demanda'))     rows.push({ Flujo:'Demanda',           Total: currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0) });
+    if(flows.includes('enhancement')) rows.push({ Flujo:'Enhancement',       Total: currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0) });
+    if(flows.includes('outsiders'))   rows.push({ Flujo:'Outsiders',         Total: currentData.filter(r=>r.equipo==='KV' && r.flujo==='outsiders').reduce((s,r)=> s + (r.total_tareas||0), 0) });
+    if(flows.includes('creacion'))    rows.push({ Flujo:'Creación',          Total: currentData.filter(r=>r.equipo==='KV' && r.flujo==='creacion').reduce((s,r)=> s + (r.total_tareas||0), 0) });
+    if(flows.includes('merge1'))      rows.push({ Flujo:'Merge 1ª Revisión', Total: currentData.filter(r=>r.equipo==='KV' && r.flujo==='merge1').reduce((s,r)=> s + (r.total_tareas||0), 0) });
+    if(flows.includes('merge2'))      rows.push({ Flujo:'Merge 2ª Revisión', Total: currentData.filter(r=>r.equipo==='KV' && r.flujo==='merge2').reduce((s,r)=> s + (r.total_tareas||0), 0) });
+    if(flows.includes('adhoc'))       rows.push({ Flujo:'Tareas Adhoc',      Total: currentData.filter(r=>r.equipo==='KV' && r.flujo==='adhoc').reduce((s,r)=> s + (r.total_tareas||0), 0) });
     return rows;
   }
   if(section==='detalle'){
@@ -1386,7 +1435,7 @@ function buildSectionDataForExport(section, flows){
 }
 
 /**********************
- * GEMINI
+ * GEMINI (igual)
  **********************/
 function filtersSummary() {
   const f = state.filtros;
@@ -1409,7 +1458,7 @@ function buildNineboxPrompt(){
   const efVals= currentData.map(r=>r.efectividad).filter(v=>v!==''&&v!=null);
   const efectividad = (efVals.length? (100*efVals.reduce((a,b)=>a+b,0)/efVals.length) : 0).toFixed(2);
 
-  const prodBand=p=>(p>=80?'Alta':p>=70?'Media':'Baja'); // referencia PM para texto
+  const prodBand=p=>(p>=80?'Alta':p>=70?'Media':'Baja'); // referencia PM para el texto
   const calBand=e=>(e>=0.90?'Alta':e>=0.75?'Media':'Baja');
   const buckets = { 'Prod Alta / Cal Alta':0,'Prod Alta / Cal Media':0,'Prod Alta / Cal Baja':0,'Prod Media / Cal Alta':0,'Prod Media / Cal Media':0,'Prod Media / Cal Baja':0,'Prod Baja / Cal Alta':0,'Prod Baja / Cal Media':0,'Prod Baja / Cal Baja':0 };
   const map=new Map();
@@ -1493,14 +1542,13 @@ function setupGeminiFeatures(){
  **********************/
 document.addEventListener('DOMContentLoaded', async ()=>{
   try{
-    const [tProd,tCal,tBase,tLid, tCrea, tCreaQ, tMerge, tMergeQ] = await Promise.all([
+    const [tProd,tCal,tBase,tLid, tKVProd, tCreaQ, tMergeQ] = await Promise.all([
       fetchCSVFile(FILES.productividad),
       fetchCSVFile(FILES.calidad),
       fetchCSVFile(FILES.base),
       fetchCSVFile(FILES.lideres),
-      fetchCSVFile(FILES_KV.crea),
+      fetchCSVFile(FILES_KV.prod),
       fetchCSVFile(FILES_KV.creaQ),
-      fetchCSVFile(FILES_KV.merge),
       fetchCSVFile(FILES_KV.mergeQ)
     ]);
 
@@ -1509,13 +1557,12 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     const base = parseCSV(tBase);
     const lids = parseCSV(tLid);
 
-    const kvCrea   = parseCSV(tCrea);
+    const kvProd   = parseCSV(tKVProd);
     const kvCreaQ  = parseCSV(tCreaQ);
-    const kvMerge  = parseCSV(tMerge);
     const kvMergeQ = parseCSV(tMergeQ);
 
-    const pmRows = buildWeeklyRows(prod, cal, base, lids); // PM
-    const kvRows = buildKVRows(kvMerge, kvMergeQ, kvCrea, kvCreaQ); // KV
+    const pmRows = buildWeeklyRows(prod, cal, base, lids);        // PM
+    const kvRows = buildKVRows(kvProd, kvCreaQ, kvMergeQ);         // KV (nuevo)
 
     originalData = [...pmRows, ...kvRows];
 
@@ -1533,4 +1580,3 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 </script>
 </body>
 </html>
-
