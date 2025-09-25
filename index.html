@@ -28,69 +28,25 @@
 
 <style>
   :root{
-    --bg: #f1f5f9;            /* slate-100 */
-    --panel: #ffffff;
-    --panel-2: #f8fafc;       /* slate-50 */
-    --text: #0f172a;          /* slate-900 */
-    --muted:#64748b;          /* slate-500 */
-    --border:#e2e8f0;         /* slate-200 */
-    --shadow: 0 8px 24px rgba(15,23,42,.08);
-    --sidebar:#6b7280;        /* gray-500 */
-    --accent:#0ea5e9;         /* sky-500 */
-    --success:#16a34a;        /* green-600 */
-    --warn:#f59e0b;           /* amber-500 */
-    --pie1:#86eae9;           /* Demanda */
-    --pie2:#2c92d5;           /* Enhancement */
-    --pie3:#9b8af7;           /* Creación */
-    --pie4:#f59e0b;           /* Merge 1ª Rev */
-    --pie5:#34d399;           /* Merge 2ª Rev */
-    --pie6:#fb7185;           /* Outsiders */
-    --pie7:#f472b6;           /* Tareas Adhoc */
-    --nine-green:#dcfce7;
-    --nine-yellow:#fef9c3;
-    --nine-orange:#ffedd5;
-    --nine-red:#fee2e2;
+    --bg:#f1f5f9; --panel:#fff; --panel-2:#f8fafc; --text:#0f172a; --muted:#64748b; --border:#e2e8f0; --shadow:0 8px 24px rgba(15,23,42,.08);
+    --sidebar:#6b7280; --accent:#0ea5e9; --success:#16a34a; --warn:#f59e0b;
+    --pie1:#86eae9; --pie2:#2c92d5; --pie3:#8b5cf6; --pie4:#f59e0b; --pie5:#fb923c; --pie6:#10b981; --pie7:#f87171;
+    --nine-green:#dcfce7; --nine-yellow:#fef9c3; --nine-orange:#ffedd5; --nine-red:#fee2e2;
   }
   [data-theme="dark"]{
-    --bg:#0b1220;
-    --panel:#0f1b2d;
-    --panel-2:#0c1626;
-    --text:#e2e8f0;
-    --muted:#a3b2c7;
-    --border:#1e293b;
-    --shadow: 0 10px 28px rgba(0,0,0,.45);
-    --sidebar:#3b4756;
-    --accent:#22c3ee;
-    --success:#22c55e;
-    --warn:#f59e0b;
-    --pie1:#6ee7e7;
-    --pie2:#1d8bd9;
-    --pie3:#a78bfa;
-    --pie4:#f59e0b;
-    --pie5:#10b981;
-    --pie6:#fb7185;
-    --pie7:#f472b6;
-    --nine-green:#0f3c36;
-    --nine-yellow:#3b3416;
-    --nine-orange:#422006;
-    --nine-red:#3f1d1d;
+    --bg:#0b1220; --panel:#0f1b2d; --panel-2:#0c1626; --text:#e2e8f0; --muted:#a3b2c7; --border:#1e293b; --shadow:0 10px 28px rgba(0,0,0,.45);
+    --sidebar:#3b4756; --accent:#22c3ee; --success:#22c55e; --warn:#f59e0b;
+    --pie1:#6ee7e7; --pie2:#1d8bd9; --pie3:#8b5cf6; --pie4:#f59e0b; --pie5:#fb923c; --pie6:#10b981; --pie7:#f87171;
+    --nine-green:#0f3c36; --nine-yellow:#3b3416; --nine-orange:#422006; --nine-red:#3f1d1d;
   }
-
   html,body{height:100%}
   body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text)}
-
   .kpi-card{background:var(--panel);border:1px solid var(--border);border-radius:1rem;box-shadow:var(--shadow);padding:1.2rem}
   .kpi-title{color:var(--muted);font-weight:600}
-  .kpi-value{
-    font-weight:800; letter-spacing:.3px; text-align:center;
-    font-size:clamp(1.4rem,3.2vw,2.5rem); line-height:1.1;
-    white-space:nowrap;
-  }
-
+  .kpi-value{font-weight:800;letter-spacing:.3px;text-align:center;font-size:clamp(1.4rem,3.2vw,2.5rem);line-height:1.1;white-space:nowrap}
   .sidebar{background:var(--sidebar)}
   .sidebar-link{transition:all .2s ease-in-out;border-radius:.75rem}
   .sidebar-link:hover,.sidebar-link.active{background:rgba(255,255,255,.15);color:#fff;transform:translateX(4px)}
-
   .pill{display:flex;align-items:center;gap:.5rem;background:var(--panel);border:1px solid var(--border);border-radius:.9rem;padding:.45rem .7rem;box-shadow:var(--shadow)}
   .pill .prefix{color:var(--muted);font-size:.82rem}
   .pill .value{font-weight:600;color:var(--text);font-size:.9rem;max-width:14rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -104,12 +60,10 @@
   .menu .item{display:flex;align-items:center;gap:.6rem;padding:.42rem .35rem;border-radius:.5rem;cursor:pointer;color:var(--text)}
   .menu .item:hover{background:var(--panel-2)}
   .menu .foot{padding:.6rem .75rem;border-top:1px solid var(--border);font-size:.83rem;color:var(--muted)}
-
   .dropdown{position:relative;display:inline-block;}
   .dropdown-menu{position:absolute;right:0;top:100%;background:var(--panel);border:1px solid var(--border);border-radius:.75rem;box-shadow:var(--shadow);min-width:260px;z-index:50}
   .dropdown-menu a{display:block;padding:.68rem .9rem;font-size:.95rem;color:var(--text)}
   .dropdown-menu a:hover{background:var(--panel-2)}
-
   .nb-cell{display:flex;align-items:center;justify-content:center;height:84px;border-radius:.7rem;border:1px solid var(--border)}
   .nb-hdr{font-weight:700;color:var(--muted)}
   .nb-badge{font-size:1.6rem;font-weight:800}
@@ -118,7 +72,6 @@
   .nb-yellow{background:var(--nine-yellow)}
   .nb-orange{background:var(--nine-orange)}
   .nb-red{background:var(--nine-red)}
-
   .btn{border-radius:.8rem;padding:.6rem .9rem;font-weight:700}
   .btn-ghost{background:var(--panel);border:1px solid var(--border);color:var(--text)}
   .btn-sky{background:var(--accent);color:#fff}
@@ -128,11 +81,10 @@
 
 <body data-theme="dark">
 <div class="flex h-screen overflow-hidden">
-
   <!-- Sidebar -->
   <aside class="hidden md:flex w-64 flex-col sidebar text-white p-4">
     <div class="flex items-center mb-8">
-      <div class="text-2xl mr-3" aria-hidden="true">🚀</div>
+      <img src="logo-meli.png?v=1" alt="MELI" class="h-7 w-7 mr-3"/>
       <h1 class="text-2xl font-extrabold">Catálogo</h1>
     </div>
     <nav id="nav-menu" class="flex-1 space-y-2">
@@ -154,22 +106,15 @@
 
         <div class="flex items-center gap-2">
           <button id="btn-clear-filters" class="btn btn-ghost text-sm">Limpiar todos los filtros</button>
-
-          <!-- Theme toggle -->
           <button id="theme-toggle" class="btn btn-ghost" title="Cambiar tema">
             <span id="icon-moon" class="inline-block" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
             </span>
             <span id="icon-sun" class="hidden" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.8 1.42-1.42zm10.48 0l1.8-1.79 1.41 1.41-1.79 1.8-1.42-1.42zM12 4V1h-0v3h0zM4 13H1v-2h3v2zm19 0h-3v-2h3v2zM6.76 19.16l-1.42 1.42-1.79-1.8 1.41-1.41 1.8 1.79zm10.48 0l1.42 1.42 1.79-1.8-1.41-1.41-1.8 1.79zM12 23h-0v-3h0v3zM12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12z"/>
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor"><path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.8 1.42-1.42zm10.48 0l1.8-1.79 1.41 1.41-1.79 1.8-1.42-1.42zM12 4V1h-0v3h0zM4 13H1v-2h3v2zm19 0h-3v-2h3v2zM6.76 19.16l-1.42 1.42-1.79-1.8 1.41-1.41 1.8 1.79zm10.48 0l1.42 1.42 1.79-1.8-1.41-1.41-1.8 1.79zM12 23h-0v-3h0v3zM12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12z"/></svg>
             </span>
           </button>
 
-          <!-- Export -->
           <div class="dropdown">
             <button id="btn-export" class="btn btn-sky text-sm">Exportar</button>
             <div id="export-menu" class="dropdown-menu hidden">
@@ -188,34 +133,15 @@
         <!-- Resumen -->
         <section id="resumen" class="page-section">
           <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-6 mb-6">
-            <div class="kpi-card text-center">
-              <div class="kpi-title mb-2">Total Tareas</div>
-              <div id="kpi-total-tareas" class="kpi-value">—</div>
-            </div>
-            <div class="kpi-card text-center">
-              <div class="kpi-title mb-2">IDs trabajados</div>
-              <div id="kpi-ids" class="kpi-value">—</div>
-            </div>
-            <div class="kpi-card text-center">
-              <div class="kpi-title mb-2">Promedio Diario</div>
-              <div id="kpi-promedio-diario" class="kpi-value">—</div>
-            </div>
-            <div class="kpi-card text-center">
-              <div class="kpi-title mb-2">% Efectividad</div>
-              <div id="kpi-efectividad-prom" class="kpi-value">—</div>
-            </div>
-            <div class="kpi-card text-center">
-              <div class="kpi-title mb-2">Correcciones Auditadas</div>
-              <div id="kpi-correcciones" class="kpi-value">—</div>
-            </div>
-            <div class="kpi-card text-center">
-              <div class="kpi-title mb-2">Usuarios Activos</div>
-              <div id="kpi-usuarios" class="kpi-value">—</div>
-            </div>
+            <div class="kpi-card text-center"><div class="kpi-title mb-2">Total Tareas</div><div id="kpi-total-tareas" class="kpi-value">—</div></div>
+            <div class="kpi-card text-center"><div class="kpi-title mb-2">IDs trabajados</div><div id="kpi-ids" class="kpi-value">—</div></div>
+            <div class="kpi-card text-center"><div class="kpi-title mb-2">Promedio Diario</div><div id="kpi-promedio-diario" class="kpi-value">—</div></div>
+            <div class="kpi-card text-center"><div class="kpi-title mb-2">% Efectividad</div><div id="kpi-efectividad-prom" class="kpi-value">—</div></div>
+            <div class="kpi-card text-center"><div class="kpi-title mb-2">Correcciones Auditadas</div><div id="kpi-correcciones" class="kpi-value">—</div></div>
+            <div class="kpi-card text-center"><div class="kpi-title mb-2">Usuarios Activos</div><div id="kpi-usuarios" class="kpi-value">—</div></div>
           </div>
 
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Nine-box -->
             <div id="ninebox-card" class="kpi-card">
               <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-semibold">Productividad - Calidad</h3>
@@ -230,12 +156,9 @@
               <div id="ninebox-details" class="mt-4 hidden"></div>
             </div>
 
-            <!-- Tareas por Flujo -->
             <div class="kpi-card">
               <h3 class="text-xl font-semibold mb-4">Tareas por Flujo</h3>
-              <div class="relative mx-auto" style="height:320px;max-width:460px">
-                <canvas id="demandPieChart"></canvas>
-              </div>
+              <div class="relative mx-auto" style="height:320px;max-width:520px"><canvas id="demandPieChart"></canvas></div>
               <div id="demandTotals" class="mt-3 text-center text-sm" style="color:var(--muted)"></div>
             </div>
           </div>
@@ -244,59 +167,29 @@
         <!-- Detalle por Usuario -->
         <section id="detalle" class="page-section hidden">
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="kpi-card lg:col-span-2">
-              <h3 class="text-xl font-semibold mb-4">Promedio Diario - % Efectividad</h3>
-              <div class="h-[400px]"><canvas id="tasksByUserChart"></canvas></div>
-            </div>
+            <div class="kpi-card lg:col-span-2"><h3 class="text-xl font-semibold mb-4">Promedio Diario - % Efectividad</h3><div class="h-[400px]"><canvas id="tasksByUserChart"></canvas></div></div>
             <div class="grid grid-cols-1 gap-4">
-              <div class="kpi-card text-center">
-                <div class="kpi-title mb-2">Promedio Diario</div>
-                <div id="det-kpi-prom" class="kpi-value"></div>
-              </div>
-              <div class="kpi-card text-center">
-                <div class="kpi-title mb-2">% Efectividad</div>
-                <div id="det-kpi-ef" class="kpi-value"></div>
-              </div>
-              <div class="kpi-card text-center">
-                <div class="kpi-title mb-2">IDs trabajados</div>
-                <div id="det-kpi-ids" class="kpi-value"></div>
-              </div>
+              <div class="kpi-card text-center"><div class="kpi-title mb-2">Promedio Diario</div><div id="det-kpi-prom" class="kpi-value"></div></div>
+              <div class="kpi-card text-center"><div class="kpi-title mb-2">% Efectividad</div><div id="det-kpi-ef" class="kpi-value"></div></div>
+              <div class="kpi-card text-center"><div class="kpi-title mb-2">IDs trabajados</div><div id="det-kpi-ids" class="kpi-value"></div></div>
             </div>
           </div>
         </section>
 
         <!-- Comparativa por equipo -->
         <section id="lideres" class="page-section hidden">
-          <div class="kpi-card">
-            <h3 class="text-xl font-semibold mb-4">Comparativa por Equipo</h3>
-            <div class="h-[400px]"><canvas id="tasksByLeaderChart"></canvas></div>
-          </div>
+          <div class="kpi-card"><h3 class="text-xl font-semibold mb-4">Comparativa por Equipo</h3><div class="h-[400px]"><canvas id="tasksByLeaderChart"></canvas></div></div>
         </section>
 
         <!-- Evolución semanal -->
         <section id="evolucion" class="page-section hidden">
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="kpi-card lg:col-span-2">
-              <h3 class="text-xl font-semibold mb-4">Promedio Diario - % Efectividad</h3>
-              <div class="h-[400px]"><canvas id="weeklyEvolutionChart"></canvas></div>
-            </div>
+            <div class="kpi-card lg:col-span-2"><h3 class="text-xl font-semibold mb-4">Promedio Diario - % Efectividad</h3><div class="h-[400px]"><canvas id="weeklyEvolutionChart"></canvas></div></div>
             <div class="grid grid-cols-1 gap-4">
-              <div class="kpi-card text-center">
-                <div class="kpi-title mb-2">Promedio Diario</div>
-                <div id="evo-kpi-prom" class="kpi-value"></div>
-              </div>
-              <div class="kpi-card text-center">
-                <div class="kpi-title mb-2">% Efectividad</div>
-                <div id="evo-kpi-ef" class="kpi-value"></div>
-              </div>
-              <div class="kpi-card text-center">
-                <div class="kpi-title mb-2">IDs trabajados</div>
-                <div id="evo-kpi-ids" class="kpi-value"></div>
-              </div>
-              <div class="kpi-card text-center">
-                <div class="kpi-title mb-2">Usuarios Activos</div>
-                <div id="evo-kpi-users" class="kpi-value"></div>
-              </div>
+              <div class="kpi-card text-center"><div class="kpi-title mb-2">Promedio Diario</div><div id="evo-kpi-prom" class="kpi-value"></div></div>
+              <div class="kpi-card text-center"><div class="kpi-title mb-2">% Efectividad</div><div id="evo-kpi-ef" class="kpi-value"></div></div>
+              <div class="kpi-card text-center"><div class="kpi-title mb-2">IDs trabajados</div><div id="evo-kpi-ids" class="kpi-value"></div></div>
+              <div class="kpi-card text-center"><div class="kpi-title mb-2">Usuarios Activos</div><div id="evo-kpi-users" class="kpi-value"></div></div>
             </div>
           </div>
         </section>
@@ -304,20 +197,10 @@
         <!-- Ubicación -->
         <section id="ubicacion" class="page-section hidden">
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-4">Promedio Diario - % Efectividad</h3>
-              <div class="h-[400px]"><canvas id="locCombinedChart"></canvas></div>
-            </div>
-            <div class="kpi-card">
-              <h3 class="text-xl font-semibold mb-4">Antigüedad Promedio (meses)</h3>
-              <div id="avg-antiguedad-cards" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
-            </div>
+            <div class="kpi-card"><h3 class="text-xl font-semibold mb-4">Promedio Diario - % Efectividad</h3><div class="h-[400px]"><canvas id="locCombinedChart"></canvas></div></div>
+            <div class="kpi-card"><h3 class="text-xl font-semibold mb-4">Antigüedad Promedio (meses)</h3><div id="avg-antiguedad-cards" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div></div>
           </div>
-
-          <div class="kpi-card mt-6">
-            <h3 class="text-xl font-semibold mb-4">Evolutivo por Ubicación (Promedio Diario)</h3>
-            <div class="h-[420px]"><canvas id="locTimeChart"></canvas></div>
-          </div>
+          <div class="kpi-card mt-6"><h3 class="text-xl font-semibold mb-4">Evolutivo por Ubicación (Promedio Diario)</h3><div class="h-[420px]"><canvas id="locTimeChart"></canvas></div></div>
         </section>
 
         <!-- IA -->
@@ -340,11 +223,16 @@
  **********************/
 const SHEETS_WEB_APP = "https://script.google.com/macros/s/AKfycbxqTzxdY090fV2JWIFxiqAVnkre_dtUw1M09ZMv9mNKYz3GQW-d1ONSP_FIJTswZ9t2qA/exec";
 const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
-const FILES = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
-const FILES_KV = { prod:'productividad-kv.csv', creaQ:'calidad-creacion-kv.csv', mergeQ:'calidad-merge-kv.csv' };
+
+const FILES_PM = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
+const FILES_KV = {
+  productividad:'productividad-kv.csv',          // único file de productividad KV
+  calidad_crea:'calidad-creacion-kv.csv',
+  calidad_merge:'calidad-merge-kv.csv'
+};
 
 /* Paleta charts acorde a tema */
-const PALETTE = { c0:'#86eae9', c1:'#3edad8', c2:'#37c9ef', c3:'#9b8af7', c4:'#2c92d5', c5:'#13538a', c6:'#f59e0b', c7:'#34d399', c8:'#fb7185', c9:'#f472b6' };
+const PALETTE = { c0:'#86eae9', c1:'#3edad8', c2:'#37c9ef', c3:'#8b5cf6', c4:'#2c92d5', c5:'#13538a', c6:'#f59e0b', c7:'#fb923c', c8:'#10b981', c9:'#f87171' };
 const BAR_BG = 'rgba(55,201,239,0.45)';
 const LINE_ACC = '#22c3ee';
 
@@ -373,34 +261,33 @@ const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Ago
 const Q_OF_MONTH_INDEX = m => 'Q' + (Math.floor(m/3)+1);
 
 const TEAM_CONFIG = {
-  'PM': {                       // Product Management (antes Catálogo)
-    prodDaily: { low:70, high:80 },
-    flows: ['demanda','enhancement']
-  },
-  'KV': {                       // Known Values
-    prodDaily: { low:24, high:28 },  // umbrales diarios (semanal 120/140 /5)
-    // Nuevos flujos KV (internos): outsiders, creacion, merge1, merge2, adhoc
-    flows: ['outsiders','creacion','merge1','merge2','adhoc'],
-    defaultLeader: 'Celeste Cignoli'
-  },
-  'Matchers': {
-    prodDaily: { low:70, high:80 },  // placeholder
-    flows: []
+  'PM': { prodDaily: { low:70, high:80 }, flows: ['demanda','enhancement'] },
+  'KV': { prodDaily: { low:24, high:28 }, flows: ['outsiders','creacion','merge1','merge2','adhoc'], defaultLeader: 'Celeste Cignoli' },
+  'Matchers': { prodDaily: { low:70, high:80 }, flows: [] }
+};
+
+// KV: mapeo de tarea_detalle -> clave interna
+function kvFlowKey(codeRaw){
+  const c = String(codeRaw||'').trim().toUpperCase();
+  if(c==='REMOVE_OUTSIDERS') return 'outsiders';
+  if(c==='KNOWN_VALUE_CREATION') return 'creacion';
+  if(c==='KNOWN_VALUE_MERGE') return 'merge1';
+  if(c==='KNOWN_VALUE_MERGE_DA') return 'merge2';
+  if(c==='ENHANCEMENT_AD_HOC') return 'adhoc';
+  return null;
+}
+function flowTitle(key){
+  switch(key){
+    case 'demanda': return 'Demanda';
+    case 'enhancement': return 'Enhancement';
+    case 'outsiders': return 'Outsiders';
+    case 'creacion': return 'Creación';
+    case 'merge1': return 'Merge 1ª Revisión';
+    case 'merge2': return 'Merge 2ª Revisión';
+    case 'adhoc': return 'Tareas Adhoc';
+    default: return key;
   }
-};
-
-// Label de flujos para UI
-const FLOW_LABELS = {
-  demanda: 'Demanda',
-  enhancement: 'Enhancement',
-  outsiders: 'Outsiders',
-  creacion: 'Creación',
-  merge1: 'Merge 1ª Revisión',
-  merge2: 'Merge 2ª Revisión',
-  adhoc: 'Tareas Adhoc'
-};
-
-function titleFlow(key){ return FLOW_LABELS[key] ?? key; }
+}
 
 function ghURL(file){
   const bust = `?v=${Date.now()}`;
@@ -436,24 +323,30 @@ function keyIncludes(k,needle){ return k.toLowerCase().includes(needle); }
 function pick(row,needles){ const keys=Object.keys(row); for(const n of needles){ const k=keys.find(k=>keyIncludes(k,n)); if(k) return row[k]; } }
 function correoAUsuario(mail){ if(!mail) return ''; return String(mail).toLowerCase().replace(/\s/g,'').replace(/@mercadolibre\.com/i,''); }
 
-const fmt = {
-  int: n => (n ?? 0).toLocaleString('es-AR'),
-  pct: x => (x ?? 0).toLocaleString('es-AR',{style:'percent',minimumFractionDigits:2,maximumFractionDigits:2}),
-  dec: x => (x ?? 0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})
-};
-function setColor(el, color){
-  el.classList.remove('text-red-600','text-yellow-500','text-green-600','text-orange-500');
-  if(color) el.classList.add(color);
+const fmt = { int: n => (n ?? 0).toLocaleString('es-AR'), pct: x => (x ?? 0).toLocaleString('es-AR',{style:'percent',minimumFractionDigits:2,maximumFractionDigits:2}), dec: x => (x ?? 0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) };
+function setColor(el, color){ el.classList.remove('text-red-600','text-yellow-500','text-green-600','text-orange-500'); if(color) el.classList.add(color); }
+
+/**********************
+ * LÍDERES MAP
+ **********************/
+function buildLeadersMap(lideresRows){
+  const map = new Map();
+  lideresRows.forEach(r=>{
+    const user = correoAUsuario(pick(r,['usuario','user','mail','email']));
+    const lider= pick(r,['líder','lider']) || '';
+    if(user && lider && !String(lider).toLowerCase().startsWith('sin ')) map.set(user,lider);
+  });
+  return map;
 }
 
 /**********************
- * CONSOLIDADO – PM (existente)
+ * CONSOLIDADO – PM
  **********************/
-function buildWeeklyRows(prod, cal, base, lideres){
+function buildPMRows(prod, cal, base, leadersMap){
   const P = prod.map(r=>({
     fecha: parseDateAny(pick(r,['fecha'])),
     week:  Number(pick(r,['week'])),
-    user:  correoAUsuario(pick(r,['usuario','user'])),
+    user:  correoAUsuario(pick(r,['usuario','user','mail','email'])),
     dem:   Number(pick(r,['tareas de demanda','demanda']))||0,
     enh:   Number(pick(r,['tareas de enhancement','enhancement']))||0,
     total: Number(pick(r,['total tareas','total']))||0,
@@ -462,23 +355,15 @@ function buildWeeklyRows(prod, cal, base, lideres){
 
   const C = cal.map(r=>({
     week: Number(pick(r,['week'])),
-    user: correoAUsuario(pick(r,['usuario','user'])),
+    user: correoAUsuario(pick(r,['usuario','user','mail','email'])),
     idsC: Number(pick(r,['ids audit']))||0,
     err:  Number(pick(r,['total error','errores']))||0
   })).filter(r=>r.week && r.user);
 
   const perfiles = new Map();
   base.forEach(r=>{
-    const user = correoAUsuario(pick(r,['mail','email'])); if(!user) return;
-    perfiles.set(user,{ ciudad: pick(r,['ciudad','ubicación'])||'', ingreso: parseDateAny(pick(r,['fecha ingreso','ingreso'])) });
-  });
-
-  const liderPorUser = new Map();
-  lideres.forEach(r=>{
-    const user = correoAUsuario(pick(r,['usuario','user']));
-    let lider  = pick(r,['líder','lider']) || '';
-    if(String(lider||'').toLowerCase().startsWith('sin ')) return;
-    if(user) liderPorUser.set(user, lider);
+    const user = correoAUsuario(pick(r,['mail','email','usuario'])); if(!user) return;
+    perfiles.set(user,{ ciudad: pick(r,['ciudad','ubicación','ubicacion'])||'', ingreso: parseDateAny(pick(r,['fecha ingreso','ingreso'])) });
   });
 
   const weeks = new Map();
@@ -491,12 +376,7 @@ function buildWeeklyRows(prod, cal, base, lideres){
       const ingreso = perf.ingreso, hoy=new Date();
       const finAnt = (ingreso && ingreso<=hoy)? hoy : ingreso || hoy;
       const antig = ingreso ? Math.max(0,(finAnt.getFullYear()-ingreso.getFullYear())*12+(finAnt.getMonth()-ingreso.getMonth())) : '';
-      weeks.set(key,{
-        week:r.week, mes:MONTHS_ES[m], mesIndex:m,
-        user:r.user, lider:liderPorUser.get(r.user)||'Sin líder',
-        ciudad:perf.ciudad||'', antig,
-        dias:new Set(), demand:0, enh:0, total:0, idsWork:0, idsCal:0, errCal:0
-      });
+      weeks.set(key,{ week:r.week, mes:MONTHS_ES[m], mesIndex:m, user:r.user, lider:leadersMap.get(r.user)||'Sin líder', ciudad:perf.ciudad||'', antig, dias:new Set(), demand:0, enh:0, total:0, idsWork:0, idsCal:0, errCal:0 });
     }
     const o=weeks.get(key);
     o.demand+=r.dem; o.enh+=r.enh; o.total+=r.total; o.idsWork+=r.idsW;
@@ -507,173 +387,87 @@ function buildWeeklyRows(prod, cal, base, lideres){
   for(const r of C){
     const pref = `${r.user}|${r.week}|`;
     for(const key of weeks.keys()){
-      if(key.startsWith(pref)){
-        const o = weeks.get(key);
-        o.idsCal += r.idsC;
-        o.errCal += r.err;
-      }
+      if(key.startsWith(pref)){ const o = weeks.get(key); o.idsCal += r.idsC; o.errCal += r.err; }
     }
   }
 
-  const rows = Array.from(weeks.values()).sort((a,b)=>a.week-b.week).map(o=>{
+  return Array.from(weeks.values()).sort((a,b)=>a.week-b.week).map(o=>{
     const prom = o.dias.size ? (o.total/o.dias.size) : '';
     const pEf  = o.idsCal>0 ? (1 - (o.errCal/o.idsCal)) : '';
-    return {
-      equipo:'PM',
-      flujo:null,
-      week:o.week, mes:o.mes, mesIndex:o.mesIndex, q:Q_OF_MONTH_INDEX(o.mesIndex),
-      usuario:o.user, 'líder':o.lider, ciudad:o.ciudad, antigüedad:o.antig,
-      promedio_diario: prom, efectividad:pEf,
-      tareas_demanda:o.demand, tareas_enhancement:o.enh, total_tareas:o.total,
-      ids_trabajados:o.idsWork, correcciones_auditadas:o.idsCal, dias_activos:o.dias.size
-    };
+    return { equipo:'PM', flujo:null, week:o.week, mes:o.mes, mesIndex:o.mesIndex, q:Q_OF_MONTH_INDEX(o.mesIndex), usuario:o.user, 'líder':o.lider, ciudad:o.ciudad, antigüedad:o.antig, promedio_diario: prom, efectividad:pEf, tareas_demanda:o.demand, tareas_enhancement:o.enh, total_tareas:o.total, ids_trabajados:o.idsWork, correcciones_auditadas:o.idsCal, dias_activos:o.dias.size };
   });
-  return rows;
 }
 
 /**********************
- * CONSOLIDADO – KV (nuevo con un solo CSV de productividad)
+ * CONSOLIDADO – KV
  **********************/
 function normalizeWeekLabel(w){
-  if(w===null || w===undefined || w==='') return null;
-  if(typeof w === 'number') return Math.round(w);
+  if(w==null||w==='') return null;
+  if(typeof w==='number') return Number(w);
   const s=String(w).trim();
-  const m = s.match(/W?(\d{1,2})/i);
-  return m ? Number(m[1]) : null;
+  const wMatch = s.match(/W\s*?(\d{1,2})/i); if(wMatch) return Number(wMatch[1]);
+  const nums = Array.from(s.matchAll(/(\d{1,2})/g)).map(m=>Number(m[1]));
+  const cand = nums.reverse().find(n=>n>=1 && n<=53);
+  return cand || null;
 }
-function mapKVFlowKey(detail){
-  if(!detail) return null;
-  const s = String(detail).toUpperCase();
-  if(s.includes('REMOVE_OUTSIDERS')) return 'outsiders';
-  if(s.includes('KNOWN_VALUE_CREATION')) return 'creacion';
-  if(s.includes('KNOWN_VALUE_MERGE_DA')) return 'merge2';
-  if(s.includes('KNOWN_VALUE_MERGE')) return 'merge1';
-  if(s.includes('ENHANCEMENT')) return 'adhoc';
-  if(s.includes('AD_HOC')) return 'adhoc';
-  return null; // desconocido → lo ignoramos
-}
-function numOr1(...vals){
+function numOrOne(...vals){
   for(const v of vals){
+    if(v===undefined||v===null||v==='') continue;
     const n = Number(v);
     if(Number.isFinite(n) && n>0) return n;
   }
   return 1;
 }
+function buildKVRows(productividad, calidadCrea, calidadMerge, leadersMap){
+  // Calidad por (usuario, semana)
+  const qMap = new Map();
+  const addQ = (user, week, ok)=>{ if(!user||!week) return; const k=`${user}|${week}`; const o=qMap.get(k)||{ok:0,n:0}; o.n+=1; if(ok) o.ok+=1; qMap.set(k,o); };
 
-function buildKVRows(kvProd, kvCreaQ, kvMergeQ){
-  // --- AGREGAR PRODUCTIVIDAD POR (usuario, week, flujo) ---
-  const agg = new Map(); // key: user|week|flow
-  const byUW = new Map(); // key: user|week -> {dias:Set, mes, mesIndex}
-  kvProd.forEach(r=>{
-    const fecha = parseDateAny(pick(r, ['fecha','fecha_accionamiento','date']));
-    const week  = normalizeWeekLabel(pick(r, ['week','week_accionamiento','semana']));
-    const usuario = correoAUsuario(pick(r, ['usuario','user','mail']));
-    const detalle = pick(r, ['tarea_detalle','detalle','task','task_detail','tarea']);
-    const flow = mapKVFlowKey(detalle);
-    if(!usuario || !week || !flow) return;
-
-    const cantidad = numOr1(
-      pick(r, ['publicaciones','cantidad','count','total']),
-      // si no hay campo numérico pero hay un identificador, contamos 1
-      pick(r, ['value id','value_id','id','id_value']) ? 1 : NaN
-    );
-
-    const kUW = `${usuario}|${week}`;
-    if(!byUW.has(kUW)){
-      let mes='', mesIndex=0;
-      if(fecha){ mes = MONTHS_ES[fecha.getMonth()]; mesIndex = fecha.getMonth(); }
-      byUW.set(kUW,{ dias:new Set(), mes, mesIndex });
-    }
-    const uw = byUW.get(kUW);
-    if(fecha) uw.dias.add(fecha.toDateString());
-
-    const key = `${usuario}|${week}|${flow}`;
-    const o = agg.get(key) || { usuario, week, flow, tareas:0 };
-    o.tareas += Number(cantidad)||0;
-    agg.set(key, o);
+  // Calidad CREACIÓN
+  (calidadCrea||[]).forEach(r=>{
+    const usuario = correoAUsuario(pick(r,['usuario','user','mail','email']));
+    const week = normalizeWeekLabel(pick(r,['week','semana','week_accionamiento','week accionamiento']));
+    const decision = String(pick(r,['decision','resultado']||'')).toLowerCase();
+    const ok = decision.includes('correcta') || decision.includes('true') || decision.includes('ok');
+    addQ(usuario, week, ok);
+  });
+  // Calidad MERGE
+  (calidadMerge||[]).forEach(r=>{
+    const usuario = correoAUsuario(pick(r,['usuario','user','mail','email']));
+    const week = normalizeWeekLabel(pick(r,['week','semana','week_accionamiento','week accionamiento']));
+    const val = pick(r,['valor_correcto_audit_tl','correcto','decision','resultado']);
+    const ok = String(val).toLowerCase()==='true' || String(val).toLowerCase().includes('correcta') || String(val).toLowerCase()==='ok';
+    addQ(usuario, week, ok);
   });
 
-  // --- CALIDAD CREACIÓN (por usuario|week) ---
-  const creaQ = new Map(); // key: user|week -> {ok,n}
-  kvCreaQ.forEach(r=>{
-    const usuario = correoAUsuario(pick(r,['usuario','user']));
-    const week = normalizeWeekLabel(pick(r,['week_accionamiento','week','semana']));
-    if(!usuario || !week) return;
-    const v = String(pick(r,['decision','correcta','ok','resultado'])).toLowerCase();
-    const ok = (v==='correcta'||v==='correcto'||v==='true'||v==='1'||v==='ok'||v==='si'||v==='sí');
-    const k=`${usuario}|${week}`;
-    const o=creaQ.get(k)||{ok:0,n:0};
-    o.n+=1; if(ok) o.ok+=1;
-    creaQ.set(k,o);
+  // Productividad unificada
+  const agg = new Map(); // key u|w|flow -> {tareas, dias:Set, usuario, week, flow}
+  (productividad||[]).forEach(r=>{
+    const usuario = correoAUsuario(pick(r,['usuario','user','mail','email']));
+    const week = normalizeWeekLabel(pick(r,['week','semana','week_accionamiento','week accionamiento']));
+    const fecha = parseDateAny(pick(r,['fecha','fecha_accionamiento','fecha accionamiento','date']));
+    const flowKey = kvFlowKey(pick(r,['tarea_detalle','tarea detalle','flow','flujo','task_detail']));
+    if(!usuario || !week || !flowKey) return;
+
+    const cant = numOrOne(pick(r,['publicaciones','publicacion','cantidad','cant','tareas','tasks','count','total','procesadas','items','registros']));
+    const k = `${usuario}|${week}|${flowKey}`;
+    const o = agg.get(k) || {usuario, week, flow:flowKey, tareas:0, dias:new Set()};
+    o.tareas += cant; if(fecha) o.dias.add(fecha.toDateString()); agg.set(k,o);
   });
 
-  // --- CALIDAD MERGE (por usuario|week) ---
-  const mergeQ = new Map(); // key: user|week -> {ok,n}
-  kvMergeQ.forEach(r=>{
-    const usuario = correoAUsuario(pick(r,['usuario','user']));
-    const week = normalizeWeekLabel(pick(r,['week_accionamiento','week','semana']));
-    if(!usuario || !week) return;
-    const v = String(pick(r,['valor_correcto_audit_tl','decision','ok'])).toLowerCase();
-    const ok = (v==='true'||v==='1'||v==='correcta'||v==='correcto'||v==='ok'||v==='si'||v==='sí');
-    const k=`${usuario}|${week}`;
-    const o=mergeQ.get(k)||{ok:0,n:0};
-    o.n+=1; if(ok) o.ok+=1;
-    mergeQ.set(k,o);
-  });
-
-  // Totales por user-week para repartir calidad de merge entre merge1 y merge2
-  const mergeTasksByUW = new Map(); // kUW -> {t1,t2}
-  agg.forEach(o=>{
-    if(o.flow==='merge1' || o.flow==='merge2'){
-      const kUW = `${o.usuario}|${o.week}`;
-      const rec = mergeTasksByUW.get(kUW) || {t1:0,t2:0};
-      if(o.flow==='merge1') rec.t1 += o.tareas;
-      if(o.flow==='merge2') rec.t2 += o.tareas;
-      mergeTasksByUW.set(kUW, rec);
-    }
-  });
-
-  // Construir filas KV
   const rows = [];
   agg.forEach(o=>{
-    const kUW = `${o.usuario}|${o.week}`;
-    const uw = byUW.get(kUW) || {dias:new Set(), mes:'', mesIndex:0};
-    const dias = uw.dias.size || 5;
-
-    let nCorr=0, okCorr=0, eff='';
-    if(o.flow==='creacion'){
-      const q = creaQ.get(kUW) || {ok:0,n:0};
-      nCorr = q.n; okCorr = q.ok;
-      eff = nCorr ? (okCorr/nCorr) : '';
-    }else if(o.flow==='merge1' || o.flow==='merge2'){
-      const q = mergeQ.get(kUW) || {ok:0,n:0};
-      // Reparto proporcional según tareas merge1 vs merge2
-      const mt = mergeTasksByUW.get(kUW) || {t1:0,t2:0};
-      const totalMerge = (mt.t1||0) + (mt.t2||0);
-      if(totalMerge>0){
-        const part = (o.flow==='merge1') ? (mt.t1/totalMerge) : (mt.t2/totalMerge);
-        nCorr = Math.round(q.n * part);
-        okCorr = Math.round(q.ok * part);
-        eff = nCorr ? (okCorr/nCorr) : '';
-      }else{
-        nCorr = 0; okCorr = 0; eff = '';
-      }
-    }else{
-      // Outsiders / Adhoc: no tenemos calidad
-      nCorr = 0; okCorr = 0; eff = '';
-    }
-
+    const q = qMap.get(`${o.usuario}|${o.week}`) || {ok:0,n:0};
+    const dias = o.dias.size || 5;
     rows.push({
-      equipo:'KV',
-      flujo:o.flow, // outsiders|creacion|merge1|merge2|adhoc
-      week:o.week, mes:uw.mes, mesIndex:uw.mesIndex, q: (uw.mes !== '' ? Q_OF_MONTH_INDEX(uw.mesIndex) : ''),
-      usuario:o.usuario, 'líder': TEAM_CONFIG['KV'].defaultLeader, ciudad:'', antigüedad:'',
-      promedio_diario: (dias ? o.tareas/dias : 0), efectividad: eff,
+      equipo:'KV', flujo:o.flow,
+      week:o.week, mes:'', mesIndex:0, q:'',
+      usuario:o.usuario, 'líder': leadersMap.get(o.usuario) || TEAM_CONFIG['KV'].defaultLeader, ciudad:'', antigüedad:'',
+      promedio_diario: (dias? o.tareas/dias : 0), efectividad:(q.n? q.ok/q.n : ''),
       tareas_demanda:0, tareas_enhancement:0, total_tareas:o.tareas,
-      ids_trabajados:0, correcciones_auditadas:nCorr, dias_activos:dias
+      ids_trabajados:0, correcciones_auditadas:q.n, dias_activos:dias
     });
   });
-
   return rows;
 }
 
@@ -685,10 +479,7 @@ let currentData  = [];
 let nineboxDetailsData = {};
 
 const state = {
-  filtros: {
-    equipo: [], q: [], mes: [], semana: [], ubic: [], lider: [], usuario: [],
-    flujo: [] // si vacío → todos los flujos de los equipos seleccionados
-  },
+  filtros: { equipo: [], q: [], mes: [], semana: [], ubic: [], lider: [], usuario: [], flujo: [] },
   theme: (localStorage.getItem('theme') || 'dark')
 };
 
@@ -702,8 +493,7 @@ function uniqueSorted(arr){ return Array.from(new Set(arr)).sort(); }
 function uniqueSortedNum(arr){ return Array.from(new Set(arr)).sort((a,b)=>a-b); }
 
 function filteredOriginalDataExcept(exceptKeys){
-  const v = state.filtros;
-  const exc = new Set([].concat(exceptKeys||[]));
+  const v = state.filtros; const exc = new Set([].concat(exceptKeys||[]));
   return originalData.filter(r =>
     (exc.has('equipo') || v.equipo.length===0  || v.equipo.includes(r.equipo)) &&
     (exc.has('mes')    || v.mes.length===0     || v.mes.includes(r.mes)) &&
@@ -715,23 +505,17 @@ function filteredOriginalDataExcept(exceptKeys){
   );
 }
 function flowsForSelectedEquipos(){
-  const eq = state.filtros.equipo;
-  const teams = (eq.length===0) ? ['PM','KV'] : eq;
-  const set = new Set();
-  teams.forEach(t => (TEAM_CONFIG[t]?.flows||[]).forEach(f=>set.add(f)));
-  return Array.from(set);
+  const eq = state.filtros.equipo; const teams = (eq.length===0) ? ['PM','KV'] : eq;
+  const set = new Set(); teams.forEach(t => (TEAM_CONFIG[t]?.flows||[]).forEach(f=>set.add(f))); return Array.from(set);
 }
-
 function computeFilterOptions(){
-  const forEquipo = filteredOriginalDataExcept('equipo');
   const forQ      = filteredOriginalDataExcept('q');
   const forMes    = filteredOriginalDataExcept('mes');
   const forSemana = filteredOriginalDataExcept('semana');
   const forUbic   = filteredOriginalDataExcept('ubic');
   const forLider  = filteredOriginalDataExcept('lider');
   const forUser   = filteredOriginalDataExcept('usuario');
-
-  const opts = {
+  return {
     equipo: ['PM','KV','Matchers'],
     q: ['Q1','Q2','Q3','Q4'].filter(q => forQ.some(r=>r.q===q)),
     mes: MONTHS_ES.filter(m => forMes.some(r=>r.mes===m)),
@@ -741,95 +525,45 @@ function computeFilterOptions(){
     usuario: uniqueSorted(forUser.map(r=>r.usuario)),
     flujo: flowsForSelectedEquipos()
   };
-  return opts;
 }
-
 function pillValueText(key){
   const sel = state.filtros[key];
   const pluralTodos = (key==='semana' || key==='ubic') ? 'Todas' : 'Todos';
-  if(key==='flujo'){
-    if(sel.length===0) return 'Todos';
-    if(sel.length===1) return titleFlow(sel[0]);
-    return `${sel.length} seleccionados`;
-  }
+  if(key==='flujo'){ if(sel.length===0) return 'Todos'; if(sel.length===1) return flowTitle(sel[0]); return `${sel.length} seleccionados`; }
   if(sel.length===0) return pluralTodos;
   if(sel.length===1) return sel[0];
   return `${sel.length} seleccionados`;
 }
-
 function closeAllMenus(){ document.querySelectorAll('.menu').forEach(m=>m.classList.remove('open')); }
-
 function renderFiltersBar(){
-  const opts = computeFilterOptions();
-  const bar = document.getElementById('filters-bar');
-  bar.innerHTML = '';
-
+  const opts = computeFilterOptions(); const bar = document.getElementById('filters-bar'); bar.innerHTML = '';
   FILTER_ORDER.forEach(key=>{
-    const pill = document.createElement('div');
-    pill.className = 'pill relative';
+    const pill = document.createElement('div'); pill.className = 'pill relative';
     pill.innerHTML = `
       <span class="prefix">${FILTER_PREFIX[key]}</span>
       <span class="value">${pillValueText(key)}</span>
       <span class="chev">▾</span>
-      <div class="menu">
-        <div class="head">
-          <input type="text" class="search" placeholder="Buscar..."/>
-          <button class="clear">Limpiar</button>
-        </div>
-        <div class="list"></div>
-        <div class="foot text-xs">Selección múltiple</div>
-      </div>`;
+      <div class="menu"><div class="head"><input type="text" class="search" placeholder="Buscar..."/><button class="clear">Limpiar</button></div><div class="list"></div><div class="foot text-xs">Selección múltiple</div></div>`;
     bar.appendChild(pill);
-
-    const menu = pill.querySelector('.menu');
-    const list = menu.querySelector('.list');
-    const search = menu.querySelector('.search');
-
-    function labelize(v){ return key==='flujo'? titleFlow(v) : v; }
-
+    const menu = pill.querySelector('.menu'); const list = menu.querySelector('.list'); const search = menu.querySelector('.search');
+    function labelize(v){ return key==='flujo'? flowTitle(v) : v; }
     function buildList(){
       list.innerHTML='';
-      const values = (opts[key]||[]).filter(v => String(labelize(v)).toLowerCase().includes(search.value.trim().toLowerCase()));
+      const values = opts[key].filter(v => String(labelize(v)).toLowerCase().includes(search.value.trim().toLowerCase()));
       values.forEach(v=>{
-        const id = `${key}-${v}`.replace(/\s+/g,'_');
-        const selected = state.filtros[key].includes(v);
-        const item = document.createElement('label');
-        item.className='item';
+        const id = `${key}-${v}`.replace(/\s+/g,'_'); const selected = state.filtros[key].includes(v);
+        const item = document.createElement('label'); item.className='item';
         item.innerHTML = `<input type="checkbox" class="opt" id="${id}" value="${v}" ${selected?'checked':''}/><span>${labelize(v)}</span>`;
         list.appendChild(item);
       });
       list.style.scrollbarWidth='thin';
     }
     buildList();
-
-    pill.addEventListener('click',(e)=>{
-      const isInside = pill.contains(e.target);
-      if(!isInside) return;
-      const isControl = e.target.closest('.menu');
-      if(isControl) return;
-      const open = menu.classList.contains('open');
-      closeAllMenus();
-      if(!open) menu.classList.add('open');
-    });
-
+    pill.addEventListener('click',(e)=>{ const open = menu.classList.contains('open'); if(!e.target.closest('.menu')){ closeAllMenus(); if(!open) menu.classList.add('open'); }});
     search.addEventListener('input', buildList);
-
-    menu.addEventListener('change', ()=>{
-      const selected = Array.from(menu.querySelectorAll('.opt')).filter(i=>i.checked).map(i=>i.value);
-      state.filtros[key] = selected;
-      pill.querySelector('.value').textContent = pillValueText(key);
-      applyFilters();
-    });
-
-    menu.querySelector('.clear').addEventListener('click',(e)=>{
-      e.stopPropagation();
-      state.filtros[key]= [];
-      pill.querySelector('.value').textContent = pillValueText(key);
-      renderFiltersBar();
-      applyFilters();
-    });
+    menu.addEventListener('change', ()=>{ const selected = Array.from(menu.querySelectorAll('.opt')).filter(i=>i.checked).map(i=>i.value); state.filtros[key] = selected; pill.querySelector('.value').textContent = pillValueText(key); applyFilters(); });
+    menu.querySelector('.clear').addEventListener('click',(e)=>{ e.stopPropagation(); state.filtros[key]= []; pill.querySelector('.value').textContent = pillValueText(key); renderFiltersBar(); applyFilters(); });
   });
-
   document.addEventListener('click', (ev)=>{ if(!bar.contains(ev.target)) closeAllMenus(); }, { once:true });
 }
 
@@ -853,7 +587,7 @@ function setupNavigation(){
     });
   });
 
-  // Export dropdown
+  // Export
   document.getElementById('btn-export').addEventListener('click', ()=>{ document.getElementById('export-menu').classList.toggle('hidden'); });
   document.addEventListener('click',(e)=>{
     const dd=document.getElementById('export-menu');
@@ -899,7 +633,6 @@ function selectedFlows(){
 }
 function tareasByFlows(row, flowsSet){
   const f = flowsSet || selectedFlows();
-  // Filas PM
   if(row.equipo==='PM'){
     let sum=0;
     if(f.has('demanda')) sum += (row.tareas_demanda||0);
@@ -907,11 +640,7 @@ function tareasByFlows(row, flowsSet){
     if(f.has('demanda') && f.has('enhancement') && sum===0) sum = row.total_tareas||0;
     return sum;
   }
-  // Filas KV
-  if(row.equipo==='KV'){
-    if(f.has(row.flujo)) return row.total_tareas||0;
-    return 0;
-  }
+  if(row.equipo==='KV'){ return f.has(row.flujo) ? (row.total_tareas||0) : 0; }
   return row.total_tareas||0;
 }
 function promedioDiario(rows){
@@ -974,8 +703,6 @@ function updateKPIs(){
   promEl.textContent = fmt.dec(prom);
   efEl.textContent   = fmt.pct(ef);
 }
-
-// Evolución
 function updateEvolutionKPIs(){
   const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
   const usuarios = new Set(currentData.map(r=>r.usuario)).size;
@@ -994,8 +721,6 @@ function updateEvolutionKPIs(){
   document.getElementById('evo-kpi-ids').textContent   = fmt.int(idsTrab);
   document.getElementById('evo-kpi-users').textContent = fmt.int(usuarios);
 }
-
-// Detalle
 function updateDetailKPIs(){
   const idsTrab = currentData.reduce((s,r)=> s + (r.ids_trabajados||0), 0);
   const prom = promedioDiario(currentData);
@@ -1126,34 +851,26 @@ function showNineboxDetails(bucketKey, labelFn){
 
 /* ---------- Tareas por Flujo (pie) ---------- */
 function renderDemandPie(){
-  const flowsSel = selectedFlows();
-
-  const colorVar = (name) => getComputedStyle(document.body).getPropertyValue(name).trim();
-  const colorMap = {
-    demanda:    colorVar('--pie1')||PALETTE.c0,
-    enhancement:colorVar('--pie2')||PALETTE.c4,
-    creacion:   colorVar('--pie3')||PALETTE.c3,
-    merge1:     colorVar('--pie4')||PALETTE.c6,
-    merge2:     colorVar('--pie5')||PALETTE.c7,
-    outsiders:  colorVar('--pie6')||PALETTE.c8,
-    adhoc:      colorVar('--pie7')||PALETTE.c9
+  const flows = selectedFlows();
+  const css = (v)=> getComputedStyle(document.body).getPropertyValue(v).trim();
+  const colorsVars = {
+    demanda: css('--pie1')||PALETTE.c0,
+    enhancement: css('--pie2')||PALETTE.c4,
+    creacion: css('--pie3')||PALETTE.c3,
+    merge1: css('--pie4')||PALETTE.c6,
+    merge2: css('--pie5')||PALETTE.c7,
+    outsiders: css('--pie6')||PALETTE.c8,
+    adhoc: css('--pie7')||PALETTE.c9
   };
 
-  const order = ['demanda','enhancement','outsiders','creacion','merge1','merge2','adhoc'];
-  const labels=[], values=[], colors=[];
-  function push(flow, value){ labels.push(titleFlow(flow)); values.push(value); colors.push(colorMap[flow]); }
+  const labels=[]; const values=[]; const colors=[];
+  function push(flowKey, value){ labels.push(flowTitle(flowKey)); values.push(value); colors.push(colorsVars[flowKey]); }
 
-  // PM
-  if(flowsSel.has('demanda'))     push('demanda',     currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0));
-  if(flowsSel.has('enhancement')) push('enhancement', currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0));
-  // KV
-  order.forEach(f=>{
-    if(f==='demanda'||f==='enhancement') return;
-    if(flowsSel.has(f)){
-      const v = currentData.filter(r=>r.equipo==='KV' && r.flujo===f).reduce((s,r)=> s + (r.total_tareas||0), 0);
-      if(v>0) push(f, v);
-    }
-  });
+  if(flows.has('demanda'))     push('demanda',     currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0));
+  if(flows.has('enhancement')) push('enhancement', currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0));
+
+  const sumKV = (k)=> currentData.filter(r=>r.equipo==='KV' && r.flujo===k).reduce((s,r)=> s + (r.total_tareas||0), 0);
+  ['outsiders','creacion','merge1','merge2','adhoc'].forEach(k=>{ if(flows.has(k)) push(k, sumKV(k)); });
 
   const tot = values.reduce((a,b)=>a+b,0);
 
@@ -1322,24 +1039,15 @@ function renderByLocation(){
     data:{ labels, datasets:[ barDataset('Prom. diario', promData), lineEffDataset('% Efectividad', effData) ] },
     options:{
       responsive:true,
-      scales:{
-        y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
-        y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 },
-        x:{ ticks:{ autoSkip:false } }
-      },
+      scales:{ y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } }, y1:{ position:'right', grid:{ drawOnChartArea:false }, ticks:{ callback:v=>`${v.toFixed(0)}%` }, suggestedMin: 50, suggestedMax: 100 }, x:{ ticks:{ autoSkip:false } } },
       plugins:{ legend:{display:true} }
     }
   });
 
-  // Antigüedad tarjetas
   const list = labels.map(loc=>{ const v=antig[loc]||{sum:0,n:0}; const avg=v.n? v.sum/v.n : 0; return [loc, avg]; }).sort((a,b)=>b[1]-a[1]);
   const grid = document.getElementById('avg-antiguedad-cards');
-  grid.innerHTML = list.map(([loc,avg])=>`
-    <div class="kpi-card"><div class="flex items-baseline justify-between">
-      <div class="kpi-title">${loc}</div><div class="kpi-value">${fmt.dec(avg)}</div>
-    </div></div>`).join('');
+  grid.innerHTML = list.map(([loc,avg])=>`<div class="kpi-card"><div class="flex items-baseline justify-between"><div class="kpi-title">${loc}</div><div class="kpi-value">${fmt.dec(avg)}</div></div></div>`).join('');
 }
-
 function renderLocationTimeline(){
   const flows = selectedFlows();
   const byWeekCity = new Map(); // week -> city -> {num, den}
@@ -1373,14 +1081,7 @@ function renderLocationTimeline(){
 
   createOrUpdateChart('locTimeChart',{
     data:{ labels, datasets },
-    options:{
-      responsive:true,
-      plugins:{ legend:{ position:'bottom'} },
-      scales:{
-        y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } },
-        x:{ ticks:{ autoSkip:false, maxRotation:0 } }
-      }
-    }
+    options:{ responsive:true, plugins:{ legend:{ position:'bottom'} }, scales:{ y:{ position:'left', ticks:{ callback:v=>Number(v).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) } }, x:{ ticks:{ autoSkip:false, maxRotation:0 } } } }
   });
 }
 
@@ -1389,7 +1090,6 @@ function renderLocationTimeline(){
  **********************/
 function getActiveSectionId(){ const sec=[...document.querySelectorAll('.page-section')].find(s=>!s.classList.contains('hidden')); return sec ? sec.id : 'resumen'; }
 function download(filename, blob){ saveAs(blob, filename); }
-
 async function exportSectionPNGs(){
   const id=getActiveSectionId();
   const canvases=[];
@@ -1404,7 +1104,6 @@ async function exportSectionPNGs(){
   }else if(id==='ubicacion'){ canvases.push(document.getElementById('locCombinedChart')); canvases.push(document.getElementById('locTimeChart')); }
   canvases.forEach((c,i)=>{ if(!c) return; const url=c.toDataURL('image/png'); fetch(url).then(r=>r.blob()).then(b=>download(`${id}-chart${i+1}.png`, b)); });
 }
-
 async function sendSectionToGoogleSheets(){
   const section = getActiveSectionId();
   const flows = Array.from(selectedFlows());
@@ -1417,13 +1116,11 @@ async function sendSectionToGoogleSheets(){
 function buildSectionDataForExport(section, flows){
   if(section==='resumen'){
     const rows=[];
-    if(flows.includes('demanda'))     rows.push({ Flujo:'Demanda',           Total: currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0) });
-    if(flows.includes('enhancement')) rows.push({ Flujo:'Enhancement',       Total: currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0) });
-    if(flows.includes('outsiders'))   rows.push({ Flujo:'Outsiders',         Total: currentData.filter(r=>r.equipo==='KV' && r.flujo==='outsiders').reduce((s,r)=> s + (r.total_tareas||0), 0) });
-    if(flows.includes('creacion'))    rows.push({ Flujo:'Creación',          Total: currentData.filter(r=>r.equipo==='KV' && r.flujo==='creacion').reduce((s,r)=> s + (r.total_tareas||0), 0) });
-    if(flows.includes('merge1'))      rows.push({ Flujo:'Merge 1ª Revisión', Total: currentData.filter(r=>r.equipo==='KV' && r.flujo==='merge1').reduce((s,r)=> s + (r.total_tareas||0), 0) });
-    if(flows.includes('merge2'))      rows.push({ Flujo:'Merge 2ª Revisión', Total: currentData.filter(r=>r.equipo==='KV' && r.flujo==='merge2').reduce((s,r)=> s + (r.total_tareas||0), 0) });
-    if(flows.includes('adhoc'))       rows.push({ Flujo:'Tareas Adhoc',      Total: currentData.filter(r=>r.equipo==='KV' && r.flujo==='adhoc').reduce((s,r)=> s + (r.total_tareas||0), 0) });
+    const add=(key, total)=>{ if(flows.includes(key)) rows.push({ Flujo: flowTitle(key), Total: total }); };
+    add('demanda',     currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0));
+    add('enhancement', currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0));
+    const sumKV = (k)=> currentData.filter(r=>r.equipo==='KV' && r.flujo===k).reduce((s,r)=> s + (r.total_tareas||0), 0);
+    ['outsiders','creacion','merge1','merge2','adhoc'].forEach(k=> add(k, sumKV(k)));
     return rows;
   }
   if(section==='detalle'){
@@ -1439,17 +1136,8 @@ function buildSectionDataForExport(section, flows){
  **********************/
 function filtersSummary() {
   const f = state.filtros;
-  const flows = (f.flujo.length===0) ? 'Todos' : f.flujo.map(titleFlow).join(' + ');
-  return {
-    Equipo: f.equipo.join(' | ') || '',
-    Trimestre: f.q.join(' | ') || '',
-    Mes: f.mes.join(' | ') || '',
-    Semana: f.semana.join(' | ') || '',
-    Ubicacion: f.ubic.join(' | ') || '',
-    Lider: f.lider.join(' | ') || '',
-    Usuario: f.usuario.join(' | ') || '',
-    Flujo: flows
-  };
+  const flows = (f.flujo.length===0) ? 'Todos' : f.flujo.map(flowTitle).join(' + ');
+  return { Equipo: f.equipo.join(' | ') || '', Trimestre: f.q.join(' | ') || '', Mes: f.mes.join(' | ') || '', Semana: f.semana.join(' | ') || '', Ubicacion: f.ubic.join(' | ') || '', Lider: f.lider.join(' | ') || '', Usuario: f.usuario.join(' | ') || '', Flujo: flows };
 }
 function buildNineboxPrompt(){
   const filtros_activos = JSON.stringify(filtersSummary());
@@ -1458,8 +1146,7 @@ function buildNineboxPrompt(){
   const efVals= currentData.map(r=>r.efectividad).filter(v=>v!==''&&v!=null);
   const efectividad = (efVals.length? (100*efVals.reduce((a,b)=>a+b,0)/efVals.length) : 0).toFixed(2);
 
-  const prodBand=p=>(p>=80?'Alta':p>=70?'Media':'Baja'); // referencia PM para el texto
-  const calBand=e=>(e>=0.90?'Alta':e>=0.75?'Media':'Baja');
+  const prodBand=p=>(p>=80?'Alta':p>=70?'Media':'Baja'); const calBand=e=>(e>=0.90?'Alta':e>=0.75?'Media':'Baja');
   const buckets = { 'Prod Alta / Cal Alta':0,'Prod Alta / Cal Media':0,'Prod Alta / Cal Baja':0,'Prod Media / Cal Alta':0,'Prod Media / Cal Media':0,'Prod Media / Cal Baja':0,'Prod Baja / Cal Alta':0,'Prod Baja / Cal Media':0,'Prod Baja / Cal Baja':0 };
   const map=new Map();
   currentData.forEach(r=>{
@@ -1542,27 +1229,28 @@ function setupGeminiFeatures(){
  **********************/
 document.addEventListener('DOMContentLoaded', async ()=>{
   try{
-    const [tProd,tCal,tBase,tLid, tKVProd, tCreaQ, tMergeQ] = await Promise.all([
-      fetchCSVFile(FILES.productividad),
-      fetchCSVFile(FILES.calidad),
-      fetchCSVFile(FILES.base),
-      fetchCSVFile(FILES.lideres),
-      fetchCSVFile(FILES_KV.prod),
-      fetchCSVFile(FILES_KV.creaQ),
-      fetchCSVFile(FILES_KV.mergeQ)
+    const [tProdPM,tCalPM,tBase,tLids,tKvProd,tKvQCrea,tKvQMerge] = await Promise.all([
+      fetchCSVFile(FILES_PM.productividad),
+      fetchCSVFile(FILES_PM.calidad),
+      fetchCSVFile(FILES_PM.base),
+      fetchCSVFile(FILES_PM.lideres),
+      fetchCSVFile(FILES_KV.productividad),
+      fetchCSVFile(FILES_KV.calidad_crea),
+      fetchCSVFile(FILES_KV.calidad_merge)
     ]);
 
-    const prod = parseCSV(tProd);
-    const cal  = parseCSV(tCal);
-    const base = parseCSV(tBase);
-    const lids = parseCSV(tLid);
+    const prodPM = parseCSV(tProdPM);
+    const calPM  = parseCSV(tCalPM);
+    const base   = parseCSV(tBase);
+    const lids   = parseCSV(tLids);
+    const leadersMap = buildLeadersMap(lids);
 
-    const kvProd   = parseCSV(tKVProd);
-    const kvCreaQ  = parseCSV(tCreaQ);
-    const kvMergeQ = parseCSV(tMergeQ);
+    const kvProd   = parseCSV(tKvProd);
+    const kvQCrea  = parseCSV(tKvQCrea);
+    const kvQMerge = parseCSV(tKvQMerge);
 
-    const pmRows = buildWeeklyRows(prod, cal, base, lids);        // PM
-    const kvRows = buildKVRows(kvProd, kvCreaQ, kvMergeQ);         // KV (nuevo)
+    const pmRows = buildPMRows(prodPM, calPM, base, leadersMap);
+    const kvRows = buildKVRows(kvProd, kvQCrea, kvQMerge, leadersMap);
 
     originalData = [...pmRows, ...kvRows];
 
@@ -1580,4 +1268,3 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 </script>
 </body>
 </html>
-
