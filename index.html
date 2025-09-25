@@ -477,26 +477,77 @@ function buildKVQualityMaps(qCreaRows, qMergeRows){
 function buildKVRows(prodRows, qCreaRows, qMergeRows, leadersMap){
   const quality = buildKVQualityMaps(qCreaRows, qMergeRows);
 
-  // Agrego productividad por (usuario, semana, flujo) calculando semana/mes/Q desde Fecha
+  // Función auxiliar para detectar el flujo con múltiples variantes
+  function readFlow(r){
+    const raw = pick(r, [
+      'tarea_detalle','tarea detalle','detalle tarea','detalle',
+      'flujo','flow','task_detail','task detail','accion','accionamiento'
+    ]);
+    return kvFlowKey(raw);
+  }
+
+  // Lee fecha o semana (si no hay fecha)
+  function readWeek(r){
+    const fechaRaw = pick(r, ['fecha','date','día','dia','fecha accion','fecha acc','created','creation date']);
+    const semanaRaw = pick(r, ['week','semana','week_accionamiento','week accionamiento','w']);
+
+    let fecha = parseDateAny(fechaRaw);
+    if (fecha) return { week: isoWeekNumber(fecha), mesIndex: fecha.getMonth(), fecha };
+
+    const w = normalizeWeekLabel(semanaRaw);
+    if (w) return { week: w, mesIndex: null, fecha: null };
+
+    return { week: null, mesIndex: null, fecha: null };
+  }
+
+  // Lee usuario y cantidad de tareas con variantes
+  function readUser(r){
+    return correoAUsuario(pick(r, ['usuario','user','mail','email','operador','agent','owner']));
+  }
+  function readCount(r){
+    return Number(
+      pick(r, [
+        'tareas realizadas','tareas','cantidad','total','count','items','qty','quantity'
+      ])
+    ) || 1;
+  }
+
+  // Agrego productividad por (usuario, semana, flujo)
   const agg = new Map(); // u|w|flow -> {usuario, week, mesIndex, dias:Set, tareas, flow}
   (prodRows||[]).forEach(r=>{
-    const fecha = parseDateAny(r.Fecha || r.fecha || r.Date);
-    const usuario = correoAUsuario(r.Usuario || r.User || r.Mail || r.Email);
-    const flowKey = kvFlowKey(r.tarea_detalle || r['tarea detalle'] || r.flujo || r.Flow || r.Flujo || r.Task_Detail);
-    if(!usuario || !fecha || !flowKey) return;
+    const { week, mesIndex, fecha } = readWeek(r);
+    const usuario = readUser(r);
+    const flowKey = readFlow(r);
+    if(!usuario || !week || !flowKey) return;
 
-    const week = isoWeekNumber(fecha);
-    const mesIndex = fecha.getMonth();
-    const tareas = Number(r['Tareas realizadas'] || r.Tareas || r.Cantidad || r.Total || r.Count || r.Items) || 1;
-
+    const tareas = readCount(r);
     const k = `${usuario}|${week}|${flowKey}`;
-    const o = agg.get(k) || {usuario, week, mesIndex, dias:new Set(), tareas:0, flow:flowKey};
+    const o = agg.get(k) || {usuario, week, mesIndex: (mesIndex ?? (fecha? fecha.getMonth():0)), dias:new Set(), tareas:0, flow:flowKey};
     o.tareas += tareas;
-    o.dias.add(fecha.toDateString());
+    if (fecha) o.dias.add(fecha.toDateString());     // si no hay fecha, luego “relleno” días
     agg.set(k,o);
   });
 
   const rows = [];
+  agg.forEach(o=>{
+    const q = quality.get(`${o.usuario}|${o.week}`) || {aud:0, err:0};
+    // Si no tengo fechas (solo semana), asumo 5 días hábiles
+    const dias = o.dias.size || 5;
+    const ef = q.aud>0 ? (1 - (q.err/q.aud)) : '';
+    rows.push({
+      equipo:'KV', flujo:o.flow,
+      week:o.week,
+      mes: (o.mesIndex!=null ? MONTHS_ES[o.mesIndex] : ''), mesIndex: (o.mesIndex ?? 0), q: (o.mesIndex!=null ? Q_OF_MONTH_INDEX(o.mesIndex) : ''),
+      usuario:o.usuario, 'líder': leadersMap.get(o.usuario) || TEAM_CONFIG['KV'].defaultLeader, ciudad:'', antigüedad:'',
+      promedio_diario: (dias? o.tareas/dias : 0), efectividad: ef,
+      tareas_demanda:0, tareas_enhancement:0, total_tareas:o.tareas,
+      ids_trabajados:0, correcciones_auditadas:q.aud, dias_activos:dias
+    });
+  });
+
+  return rows;
+}
+
   agg.forEach(o=>{
     const q = quality.get(`${o.usuario}|${o.week}`) || {aud:0, err:0};
     const dias = o.dias.size || 5;
