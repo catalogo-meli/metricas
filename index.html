@@ -575,8 +575,8 @@ const state = {
 /**********************
  * UI FILTROS
  **********************/
-const FILTER_ORDER  = ['equipo','q','mes','semana','ubic','lider','usuario','flujo'];
-const FILTER_PREFIX = { equipo:'Equipo', q:'Trimestre', mes:'Mes', semana:'Semana', ubic:'Ubicación', lider:'Líder', usuario:'Usuario', flujo:'Flujo' };
+const FILTER_ORDER  = ['q', 'mes', 'semana', 'equipo', 'lider', 'usuario', 'flujo', 'ubic'];
+const FILTER_PREFIX = { equipo:'Equipo', q:'Q', mes:'Mes', semana:'Semana', ubic:'Ubicación', lider:'Líder', usuario:'Usuario', flujo:'Flujo' };
 
 function uniqueSorted(arr){ return Array.from(new Set(arr)).sort(); }
 function uniqueSortedNum(arr){ return Array.from(new Set(arr)).sort((a,b)=>a-b); }
@@ -1393,6 +1393,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 </script>
 </body>
 </html>
+
 
 
 
