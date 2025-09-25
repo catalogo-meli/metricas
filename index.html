@@ -224,11 +224,12 @@
 const SHEETS_WEB_APP = "https://script.google.com/macros/s/AKfycbxqTzxdY090fV2JWIFxiqAVnkre_dtUw1M09ZMv9mNKYz3GQW-d1ONSP_FIJTswZ9t2qA/exec";
 const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
 
-const FILES_PM = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
+// Después (PM opcional; KV usa productividad.csv)
+const FILES_PM = { productividad:'productividad-pm.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
 const FILES_KV = {
-  productividad:'productividad-kv.csv',     // único file de productividad KV (Fecha, flujo, tarea_detalle, Usuario, Tareas realizadas)
-  calidad_crea:'calidad-creacion-kv.csv',   // Week_Accionamiento, Usuario, Decision
-  calidad_merge:'calidad-merge-kv.csv'      // (flexible) Decision / booleano correcto
+  productividad:'productividad.csv',          // <- así como está en el repo
+  calidad_crea:'calidad-creacion-kv.csv',
+  calidad_merge:'calidad-merge-kv.csv'
 };
 
 /* Paleta charts */
@@ -277,14 +278,19 @@ const TEAM_CONFIG = {
 
 /* KV: mapeo tarea_detalle → clave interna */
 function kvFlowKey(codeRaw){
-  const c = String(codeRaw||'').trim().toUpperCase();
-  if(c==='REMOVE_OUTSIDERS') return 'outsiders';
-  if(c==='KNOWN_VALUE_CREATION') return 'creacion';
-  if(c==='KNOWN_VALUE_MERGE') return 'merge1';
-  if(c==='KNOWN_VALUE_MERGE_DA') return 'merge2';
-  if(c==='ENHANCEMENT_AD_HOC') return 'adhoc';
+  const s = String(codeRaw || '').toUpperCase().replace(/[^A-Z0-9]+/g,' ');
+  if (/\bOUTSIDER/.test(s)) return 'outsiders';
+  if (/\bADHOC\b/.test(s) || /AD HOC/.test(s)) return 'adhoc';
+  if (/\bCREATION\b/.test(s) || /\bCREA(CION|CIONAMIENTO)?\b/.test(s)) return 'creacion';
+  if (/\bMERGE\b/.test(s)) {
+    if (/DA\b/.test(s) || /\b2\b/.test(s) || /\bSEGUNDA\b/.test(s)) return 'merge2';
+    return 'merge1';
+  }
+  // fallback: a veces viene el nombre del flujo solo
+  if (/\bKNOWN VALUE\b/.test(s)) return 'creacion';
   return null;
 }
+
 function flowTitle(key){
   switch(key){
     case 'demanda': return 'Demanda';
@@ -1286,34 +1292,35 @@ function setupGeminiFeatures(){
  **********************/
 document.addEventListener('DOMContentLoaded', async ()=>{
   try{
+    // Helper: intenta; si falla, devuelve string vacío
+    const tryFetch = async (file) => {
+      try { return await fetchCSVFile(file); } catch { return ''; }
+    };
+
+    // Traigo todo (algunos pueden no existir)
     const [tProdPM,tCalPM,tBase,tLids,tKvProd,tKvQCrea,tKvQMerge] = await Promise.all([
-      fetchCSVFile(FILES_PM.productividad),
-      fetchCSVFile(FILES_PM.calidad),
-      fetchCSVFile(FILES_PM.base),
-      fetchCSVFile(FILES_PM.lideres),
-      fetchCSVFile(FILES_KV.productividad),
-      fetchCSVFile(FILES_KV.calidad_crea),
-      fetchCSVFile(FILES_KV.calidad_merge)
+      tryFetch(FILES_PM.productividad),
+      tryFetch(FILES_PM.calidad),
+      tryFetch(FILES_PM.base),
+      tryFetch(FILES_PM.lideres),
+      fetchCSVFile(FILES_KV.productividad),   // este sí es requerido
+      tryFetch(FILES_KV.calidad_crea),
+      tryFetch(FILES_KV.calidad_merge)
     ]);
 
-    const prodPM = parseCSV(tProdPM);
-    const calPM  = parseCSV(tCalPM);
-    const base   = parseCSV(tBase);
-    const lids   = parseCSV(tLids);
+    const prodPM = tProdPM ? parseCSV(tProdPM) : [];
+    const calPM  = tCalPM  ? parseCSV(tCalPM)  : [];
+    const base   = tBase   ? parseCSV(tBase)   : [];
+    const lids   = tLids   ? parseCSV(tLids)   : [];
     const leadersMap = buildLeadersMap(lids);
 
-    /* KV:
-       - productividad-kv.csv => {Fecha, flujo, tarea_detalle, Usuario, Tareas realizadas}
-         (calculamos semana, mes y Q desde Fecha)
-       - calidad-creacion-kv.csv => {Week_Accionamiento, Usuario, Decision}
-         (calculamos semana desde Week_Accionamiento; mes y Q por la ISO-week en el año actual si no trae año)
-       - calidad-merge-kv.csv => flexible; si no existe/está vacío igual seguimos
-    */
     const kvProd   = parseCSV(tKvProd);
-    const kvQCrea  = parseCSV(tKvQCrea);
-    const kvQMerge = parseCSV(tKvQMerge);
+    const kvQCrea  = tKvQCrea  ? parseCSV(tKvQCrea)  : [];
+    const kvQMerge = tKvQMerge ? parseCSV(tKvQMerge) : [];
 
-    const pmRows = buildPMRows(prodPM, calPM, base, leadersMap);
+    const pmRows = (prodPM.length && calPM.length && base.length)
+      ? buildPMRows(prodPM, calPM, base, leadersMap)
+      : [];
     const kvRows = buildKVRows(kvProd, kvQCrea, kvQMerge, leadersMap);
 
     originalData = [...pmRows, ...kvRows];
@@ -1329,6 +1336,8 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     document.body.innerHTML = `<div class="p-8 text-center text-red-600" style="background:#fee2e2">${err.message}</div>`;
   }
 });
+
 </script>
 </body>
 </html>
+
