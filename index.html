@@ -35,7 +35,7 @@
   }
   [data-theme="dark"]{
     --bg:#0b1220; --panel:#0f1b2d; --panel-2:#0c1626; --text:#e2e8f0; --muted:#a3b2c7; --border:#1e293b; --shadow:0 10px 28px rgba(0,0,0,.45);
-    --sidebar:#3b4756; --accent:#22c3ee; --success:#22c55e; --warn:#f59e0b;
+    --sidebar:#3b4756; --accent:#22c3ee;
     --pie1:#6ee7e7; --pie2:#1d8bd9; --pie3:#8b5cf6; --pie4:#f59e0b; --pie5:#fb923c; --pie6:#10b981; --pie7:#f87171;
     --nine-green:#0f3c36; --nine-yellow:#3b3416; --nine-orange:#422006; --nine-red:#3f1d1d;
   }
@@ -226,24 +226,23 @@ const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=g
 
 const FILES_PM = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
 const FILES_KV = {
-  productividad:'productividad-kv.csv',          // único file de productividad KV
-  calidad_crea:'calidad-creacion-kv.csv',
-  calidad_merge:'calidad-merge-kv.csv'
+  productividad:'productividad-kv.csv',     // único file de productividad KV (Fecha, flujo, tarea_detalle, Usuario, Tareas realizadas)
+  calidad_crea:'calidad-creacion-kv.csv',   // Week_Accionamiento, Usuario, Decision
+  calidad_merge:'calidad-merge-kv.csv'      // (flexible) Decision / booleano correcto
 };
 
-/* Paleta charts acorde a tema */
+/* Paleta charts */
 const PALETTE = { c0:'#86eae9', c1:'#3edad8', c2:'#37c9ef', c3:'#8b5cf6', c4:'#2c92d5', c5:'#13538a', c6:'#f59e0b', c7:'#fb923c', c8:'#10b981', c9:'#f87171' };
 const BAR_BG = 'rgba(55,201,239,0.45)';
 const LINE_ACC = '#22c3ee';
 
+/* Chart defaults */
 Chart.defaults.elements.bar.borderRadius = 6;
 Chart.defaults.elements.line.borderWidth = 4;
 Chart.defaults.elements.point.radius = 3;
 Chart.defaults.elements.point.hoverRadius = 5;
 Chart.defaults.elements.point.borderWidth = 2;
 Chart.defaults.plugins.legend.labels.usePointStyle = true;
-
-/* --- Helpers gráficos --- */
 const charts = {};
 function createOrUpdateChart(id, cfg){
   if (charts[id]) { charts[id].data=cfg.data; charts[id].options=cfg.options||{}; charts[id].update(); return charts[id]; }
@@ -260,13 +259,23 @@ function lineDataset(label,data,color,yAxis='y'){ return { type:'line', label, d
 const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const Q_OF_MONTH_INDEX = m => 'Q' + (Math.floor(m/3)+1);
 
+/* ISO week (W01..W53) */
+function isoWeekNumber(date){
+  const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));
+  const dayNum=d.getUTCDay()||7;
+  d.setUTCDate(d.getUTCDate()+4-dayNum);
+  const yearStart=new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+}
+
+/* Equipo config */
 const TEAM_CONFIG = {
   'PM': { prodDaily: { low:70, high:80 }, flows: ['demanda','enhancement'] },
   'KV': { prodDaily: { low:24, high:28 }, flows: ['outsiders','creacion','merge1','merge2','adhoc'], defaultLeader: 'Celeste Cignoli' },
   'Matchers': { prodDaily: { low:70, high:80 }, flows: [] }
 };
 
-// KV: mapeo de tarea_detalle -> clave interna
+/* KV: mapeo tarea_detalle → clave interna */
 function kvFlowKey(codeRaw){
   const c = String(codeRaw||'').trim().toUpperCase();
   if(c==='REMOVE_OUTSIDERS') return 'outsiders';
@@ -289,6 +298,7 @@ function flowTitle(key){
   }
 }
 
+/* IO helpers */
 function ghURL(file){
   const bust = `?v=${Date.now()}`;
   return [ `/metricas/${file}${bust}`, `https://raw.githubusercontent.com/catalogo-meli/metricas/main/${file}${bust}` ];
@@ -322,7 +332,6 @@ function parseDateAny(val){
 function keyIncludes(k,needle){ return k.toLowerCase().includes(needle); }
 function pick(row,needles){ const keys=Object.keys(row); for(const n of needles){ const k=keys.find(k=>keyIncludes(k,n)); if(k) return row[k]; } }
 function correoAUsuario(mail){ if(!mail) return ''; return String(mail).toLowerCase().replace(/\s/g,'').replace(/@mercadolibre\.com/i,''); }
-
 const fmt = { int: n => (n ?? 0).toLocaleString('es-AR'), pct: x => (x ?? 0).toLocaleString('es-AR',{style:'percent',minimumFractionDigits:2,maximumFractionDigits:2}), dec: x => (x ?? 0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}) };
 function setColor(el, color){ el.classList.remove('text-red-600','text-yellow-500','text-green-600','text-orange-500'); if(color) el.classList.add(color); }
 
@@ -399,7 +408,7 @@ function buildPMRows(prod, cal, base, leadersMap){
 }
 
 /**********************
- * CONSOLIDADO – KV
+ * CONSOLIDADO – KV (productividad-kv + calidades)
  **********************/
 function normalizeWeekLabel(w){
   if(w==null||w==='') return null;
@@ -410,64 +419,80 @@ function normalizeWeekLabel(w){
   const cand = nums.reverse().find(n=>n>=1 && n<=53);
   return cand || null;
 }
-function numOrOne(...vals){
-  for(const v of vals){
-    if(v===undefined||v===null||v==='') continue;
-    const n = Number(v);
-    if(Number.isFinite(n) && n>0) return n;
+
+/* Calidad: agrega auditados/errores por (usuario, semana) usando esquema PM */
+function buildKVQualityMaps(qCreaRows, qMergeRows){
+  const map = new Map(); // key u|w -> {aud: n, err: e}
+  function add(u, w, isError){
+    if(!u||!w) return;
+    const k=`${u}|${w}`; const o=map.get(k)||{aud:0, err:0};
+    o.aud += 1; if(isError) o.err += 1; map.set(k,o);
   }
-  return 1;
+
+  // Creación: Week_Accionamiento, Usuario, Decision (correcta/incorrecta)
+  (qCreaRows||[]).forEach(r=>{
+    const week = normalizeWeekLabel(r.Week_Accionamiento || r['Week Accionamiento'] || r.Week || r.Semana);
+    const user = correoAUsuario(r.Usuario || r.User || r.Mail || r.Email);
+    const dec  = String(r.Decision||'').toLowerCase();
+    const isError = dec && !dec.includes('correcta'); // incorrecta => error
+    add(user, week, isError);
+  });
+
+  // Merge: acepto Decision o booleanos típicos
+  (qMergeRows||[]).forEach(r=>{
+    const week = normalizeWeekLabel(r.Week_Accionamiento || r['Week Accionamiento'] || r.Week || r.Semana);
+    const user = correoAUsuario(r.Usuario || r.User || r.Mail || r.Email);
+    let isError = false;
+    if(r.Decision!=null){
+      const dec = String(r.Decision).toLowerCase();
+      isError = dec && !dec.includes('correcta');
+    }else{
+      const val = String(r.Valor_Correcto_Audit_TL ?? r.Correcto ?? r.Resultado ?? '').toLowerCase();
+      if(val!==''){ isError = (val==='false' || val==='incorrecto' || val==='incorrecta' || val==='error'); }
+    }
+    add(user, week, isError);
+  });
+
+  return map; // {aud,err}
 }
-function buildKVRows(productividad, calidadCrea, calidadMerge, leadersMap){
-  // Calidad por (usuario, semana)
-  const qMap = new Map();
-  const addQ = (user, week, ok)=>{ if(!user||!week) return; const k=`${user}|${week}`; const o=qMap.get(k)||{ok:0,n:0}; o.n+=1; if(ok) o.ok+=1; qMap.set(k,o); };
 
-  // Calidad CREACIÓN
-  (calidadCrea||[]).forEach(r=>{
-    const usuario = correoAUsuario(pick(r,['usuario','user','mail','email']));
-    const week = normalizeWeekLabel(pick(r,['week','semana','week_accionamiento','week accionamiento']));
-    const decision = String(pick(r,['decision','resultado']||'')).toLowerCase();
-    const ok = decision.includes('correcta') || decision.includes('true') || decision.includes('ok');
-    addQ(usuario, week, ok);
-  });
-  // Calidad MERGE
-  (calidadMerge||[]).forEach(r=>{
-    const usuario = correoAUsuario(pick(r,['usuario','user','mail','email']));
-    const week = normalizeWeekLabel(pick(r,['week','semana','week_accionamiento','week accionamiento']));
-    const val = pick(r,['valor_correcto_audit_tl','correcto','decision','resultado']);
-    const ok = String(val).toLowerCase()==='true' || String(val).toLowerCase().includes('correcta') || String(val).toLowerCase()==='ok';
-    addQ(usuario, week, ok);
-  });
+function buildKVRows(prodRows, qCreaRows, qMergeRows, leadersMap){
+  const quality = buildKVQualityMaps(qCreaRows, qMergeRows);
 
-  // Productividad unificada
-  const agg = new Map(); // key u|w|flow -> {tareas, dias:Set, usuario, week, flow}
-  (productividad||[]).forEach(r=>{
-    const usuario = correoAUsuario(pick(r,['usuario','user','mail','email']));
-    const week = normalizeWeekLabel(pick(r,['week','semana','week_accionamiento','week accionamiento']));
-    const fecha = parseDateAny(pick(r,['fecha','fecha_accionamiento','fecha accionamiento','date']));
-    const flowKey = kvFlowKey(pick(r,['tarea_detalle','tarea detalle','flow','flujo','task_detail']));
-    if(!usuario || !week || !flowKey) return;
+  // Agrego productividad por (usuario, semana, flujo) calculando semana/mes/Q desde Fecha
+  const agg = new Map(); // u|w|flow -> {usuario, week, mesIndex, dias:Set, tareas, flow}
+  (prodRows||[]).forEach(r=>{
+    const fecha = parseDateAny(r.Fecha || r.fecha || r.Date);
+    const usuario = correoAUsuario(r.Usuario || r.User || r.Mail || r.Email);
+    const flowKey = kvFlowKey(r.tarea_detalle || r['tarea detalle'] || r.flujo || r.Flow || r.Flujo || r.Task_Detail);
+    if(!usuario || !fecha || !flowKey) return;
 
-    const cant = numOrOne(pick(r,['publicaciones','publicacion','cantidad','cant','tareas','tasks','count','total','procesadas','items','registros']));
+    const week = isoWeekNumber(fecha);
+    const mesIndex = fecha.getMonth();
+    const tareas = Number(r['Tareas realizadas'] || r.Tareas || r.Cantidad || r.Total || r.Count || r.Items) || 1;
+
     const k = `${usuario}|${week}|${flowKey}`;
-    const o = agg.get(k) || {usuario, week, flow:flowKey, tareas:0, dias:new Set()};
-    o.tareas += cant; if(fecha) o.dias.add(fecha.toDateString()); agg.set(k,o);
+    const o = agg.get(k) || {usuario, week, mesIndex, dias:new Set(), tareas:0, flow:flowKey};
+    o.tareas += tareas;
+    o.dias.add(fecha.toDateString());
+    agg.set(k,o);
   });
 
   const rows = [];
   agg.forEach(o=>{
-    const q = qMap.get(`${o.usuario}|${o.week}`) || {ok:0,n:0};
+    const q = quality.get(`${o.usuario}|${o.week}`) || {aud:0, err:0};
     const dias = o.dias.size || 5;
+    const ef = q.aud>0 ? (1 - (q.err/q.aud)) : '';
     rows.push({
       equipo:'KV', flujo:o.flow,
-      week:o.week, mes:'', mesIndex:0, q:'',
+      week:o.week, mes: MONTHS_ES[o.mesIndex], mesIndex:o.mesIndex, q: Q_OF_MONTH_INDEX(o.mesIndex),
       usuario:o.usuario, 'líder': leadersMap.get(o.usuario) || TEAM_CONFIG['KV'].defaultLeader, ciudad:'', antigüedad:'',
-      promedio_diario: (dias? o.tareas/dias : 0), efectividad:(q.n? q.ok/q.n : ''),
+      promedio_diario: (dias? o.tareas/dias : 0), efectividad: ef,
       tareas_demanda:0, tareas_enhancement:0, total_tareas:o.tareas,
-      ids_trabajados:0, correcciones_auditadas:q.n, dias_activos:dias
+      ids_trabajados:0, correcciones_auditadas:q.aud, dias_activos:dias
     });
   });
+
   return rows;
 }
 
@@ -609,7 +634,7 @@ function setupNavigation(){
     renderFiltersBar(); applyFilters();
   });
 
-  // Theme toggle
+  // Theme
   function applyTheme(){
     document.body.setAttribute('data-theme',state.theme);
     const isDark = state.theme==='dark';
@@ -817,36 +842,68 @@ function renderNineBox(){
       const parts=[]; if(m.prom!==null) parts.push(`Promedio Diario: ${m.prom?.toFixed(2)}`); if(m.eff!==null) parts.push(`% Efectividad: ${(m.eff*100)?.toFixed(2)}%`);
       return `• ${m.u} — ${parts.join(' | ') || 'sin datos'}`;
     });
-    missDiv.innerHTML = `<div class="font-medium mb-1">Perfiles no incluidos por datos faltantes</div><div class="whitespace-pre-line">${lines.join('\n')}</div>`;
-  }else missDiv.innerHTML='';
+   if (missing.length) {
+  const lines = missing
+    .sort((a, b) => (a.u > b.u ? 1 : -1))
+    .map(m => {
+      const parts = [];
+      if (m.prom !== null) parts.push(`Promedio Diario: ${m.prom?.toFixed(2)}`);
+      if (m.eff  !== null) parts.push(`% Efectividad: ${(m.eff * 100)?.toFixed(2)}%`);
+      return `• ${m.u} — ${parts.join(' | ') || 'sin datos'}`;
+    });
+
+  missDiv.innerHTML = `
+    <div class="font-medium mb-1">Perfiles no incluidos por datos faltantes</div>
+    <div class="whitespace-pre-line">${lines.join('\n')}</div>`;
+} else {
+  missDiv.innerHTML = '';
 }
-function showNineboxDetails(bucketKey, labelFn){
+}
+
+function showNineboxDetails(bucketKey, labelFn) {
   const box = document.getElementById('ninebox-details');
-  const rows = (nineboxDetailsData[bucketKey]||[]).slice().sort((a,b)=>b.prom-a.prom);
+  const rows = (nineboxDetailsData[bucketKey] || [])
+    .slice()
+    .sort((a, b) => b.prom - a.prom);
+
   const [prod, cal] = bucketKey.split('-').map(labelFn);
+
   const header = `
     <div class="flex items-center justify-between mb-2">
-      <div class="font-semibold">Prod. ${prod} / Calidad ${cal} — <span class="font-normal" style="color:var(--muted)">${rows.length} perfiles</span></div>
+      <div class="font-semibold">
+        Prod. ${prod} / Calidad ${cal}
+        — <span class="font-normal" style="color:var(--muted)">${rows.length} perfiles</span>
+      </div>
       <button class="text-sm" style="color:var(--muted)" id="nb-close">Cerrar</button>
     </div>`;
-  const table = rows.length? `
+
+  const table = rows.length ? `
     <div class="overflow-x-auto border rounded-md" style="border-color:var(--border)">
       <table class="min-w-full text-sm">
-        <thead style="background:var(--panel-2);color:var(--muted)"><tr>
-          <th class="text-left px-3 py-2">Usuario</th>
-          <th class="text-right px-3 py-2">Prom. Diario</th>
-          <th class="text-right px-3 py-2">% Efectividad</th>
-        </tr></thead>
-        <tbody>${rows.map(r=>`
-          <tr style="border-top:1px solid var(--border)">
-            <td class="px-3 py-2">${r.usuario}</td>
-            <td class="px-3 py-2 text-right">${fmt.dec(r.prom)}</td>
-            <td class="px-3 py-2 text-right">${fmt.pct(r.eff)}</td>
-          </tr>`).join('')}
+        <thead style="background:var(--panel-2);color:var(--muted)">
+          <tr>
+            <th class="text-left px-3 py-2">Usuario</th>
+            <th class="text-right px-3 py-2">Prom. Diario</th>
+            <th class="text-right px-3 py-2">% Efectividad</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(r => `
+            <tr style="border-top:1px solid var(--border)">
+              <td class="px-3 py-2">${r.usuario}</td>
+              <td class="px-3 py-2 text-right">${(r.prom ?? 0).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+              <td class="px-3 py-2 text-right">${((r.eff ?? 0)*100).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2})}%</td>
+            </tr>`).join('')}
         </tbody>
       </table>
-    </div>` : `<div class="text-sm" style="color:var(--muted)">Sin perfiles en este cuadrante para los filtros actuales.</div>`;
-  box.innerHTML = header+table; box.classList.remove('hidden'); document.getElementById('nb-close').onclick=()=>box.classList.add('hidden');
+    </div>` : `
+    <div class="text-sm" style="color:var(--muted)">
+      Sin perfiles en este cuadrante para los filtros actuales.
+    </div>`;
+
+  box.innerHTML = header + table;
+  box.classList.remove('hidden');
+  document.getElementById('nb-close').onclick = () => box.classList.add('hidden');
 }
 
 /* ---------- Tareas por Flujo (pie) ---------- */
@@ -931,7 +988,7 @@ function renderTasksByUser(){
   });
 }
 
-/* ---------- Comparativa por equipo ---------- */
+/* ---------- Comparativa por líder ---------- */
 function renderTasksByLeader(){
   const flows = selectedFlows();
   const agg = new Map(); // líder -> {num,den, effNum, effDen}
@@ -1132,7 +1189,7 @@ function buildSectionDataForExport(section, flows){
 }
 
 /**********************
- * GEMINI (igual)
+ * GEMINI (opcional)
  **********************/
 function filtersSummary() {
   const f = state.filtros;
@@ -1245,6 +1302,13 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     const lids   = parseCSV(tLids);
     const leadersMap = buildLeadersMap(lids);
 
+    /* KV:
+       - productividad-kv.csv => {Fecha, flujo, tarea_detalle, Usuario, Tareas realizadas}
+         (calculamos semana, mes y Q desde Fecha)
+       - calidad-creacion-kv.csv => {Week_Accionamiento, Usuario, Decision}
+         (calculamos semana desde Week_Accionamiento; mes y Q por la ISO-week en el año actual si no trae año)
+       - calidad-merge-kv.csv => flexible; si no existe/está vacío igual seguimos
+    */
     const kvProd   = parseCSV(tKvProd);
     const kvQCrea  = parseCSV(tKvQCrea);
     const kvQMerge = parseCSV(tKvQMerge);
