@@ -307,14 +307,26 @@ function flowTitle(key){
 /* IO helpers */
 function ghURL(file){
   const bust = `?v=${Date.now()}`;
-  return [ `/metricas/${file}${bust}`, `https://raw.githubusercontent.com/catalogo-meli/metricas/main/${file}${bust}` ];
+  return [
+    file + bust,                 // mismo directorio que index.html
+    './' + file + bust,          // explícito relativo
+    '/' + file + bust,           // raíz del sitio
+    '/metricas/' + file + bust,  // subcarpeta (para cuando lo publiques ahí)
+    'https://raw.githubusercontent.com/catalogo-meli/metricas/main/' + file + bust
+  ];
 }
+
 async function fetchCSVFile(file){
-  const [u1,u2] = ghURL(file);
-  let r = await fetch(u1,{cache:'no-store'}); if(!r.ok) r = await fetch(u2,{cache:'no-store'});
-  if(!r.ok) throw new Error(`No pude cargar ${file}. HTTP ${r.status}`);
-  return r.text();
+  const urls = ghURL(file);
+  for (const u of urls) {
+    try {
+      const r = await fetch(u, { cache: 'no-store' });
+      if (r.ok) return r.text();
+    } catch (_) {}
+  }
+  throw new Error(`No pude cargar ${file}`);
 }
+
 function parseCSV(text){
   const parsed = Papa.parse(text,{ header:true, skipEmptyLines:true, delimitersToGuess:[',',';','\t','|'] });
   return parsed.data.map(row=>{ const out={}; for(const [k,v] of Object.entries(row)) out[k]=normalizeValue(v); return out; });
@@ -1340,5 +1352,6 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 </script>
 </body>
 </html>
+
 
 
