@@ -529,24 +529,6 @@ function buildKVRows(prodRows, qCreaRows, qMergeRows, leadersMap){
   });
 
   const rows = [];
-  agg.forEach(o=>{
-    const q = quality.get(`${o.usuario}|${o.week}`) || {aud:0, err:0};
-    // Si no tengo fechas (solo semana), asumo 5 días hábiles
-    const dias = o.dias.size || 5;
-    const ef = q.aud>0 ? (1 - (q.err/q.aud)) : '';
-    rows.push({
-      equipo:'KV', flujo:o.flow,
-      week:o.week,
-      mes: (o.mesIndex!=null ? MONTHS_ES[o.mesIndex] : ''), mesIndex: (o.mesIndex ?? 0), q: (o.mesIndex!=null ? Q_OF_MONTH_INDEX(o.mesIndex) : ''),
-      usuario:o.usuario, 'líder': leadersMap.get(o.usuario) || TEAM_CONFIG['KV'].defaultLeader, ciudad:'', antigüedad:'',
-      promedio_diario: (dias? o.tareas/dias : 0), efectividad: ef,
-      tareas_demanda:0, tareas_enhancement:0, total_tareas:o.tareas,
-      ids_trabajados:0, correcciones_auditadas:q.aud, dias_activos:dias
-    });
-  });
-
-  return rows;
-}
 
 /**********************
  * ESTADO
@@ -1386,6 +1368,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
 </script>
 </body>
 </html>
+
 
 
 
