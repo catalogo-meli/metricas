@@ -30,13 +30,13 @@
   :root{
     --bg:#f1f5f9; --panel:#fff; --panel-2:#f8fafc; --text:#0f172a; --muted:#64748b; --border:#e2e8f0; --shadow:0 8px 24px rgba(15,23,42,.08);
     --sidebar:#6b7280; --accent:#0ea5e9; --success:#16a34a; --warn:#f59e0b;
-    --pie1:#86eae9; --pie2:#2c92d5; --pie3:#8b5cf6; --pie4:#f59e0b; --pie5:#fb923c; --pie6:#10b981; --pie7:#f87171;
+    --pie1:#86eae9; --pie2:#2c92d5; --pie8:#22c55e;
     --nine-green:#dcfce7; --nine-yellow:#fef9c3; --nine-orange:#ffedd5; --nine-red:#fee2e2;
   }
   [data-theme="dark"]{
     --bg:#0b1220; --panel:#0f1b2d; --panel-2:#0c1626; --text:#e2e8f0; --muted:#a3b2c7; --border:#1e293b; --shadow:0 10px 28px rgba(0,0,0,.45);
     --sidebar:#3b4756; --accent:#22c3ee;
-    --pie1:#6ee7e7; --pie2:#1d8bd9; --pie3:#8b5cf6; --pie4:#f59e0b; --pie5:#fb923c; --pie6:#10b981; --pie7:#f87171;
+    --pie1:#6ee7e7; --pie2:#1d8bd9; --pie8:#22c55e;
     --nine-green:#0f3c36; --nine-yellow:#3b3416; --nine-orange:#422006; --nine-red:#3f1d1d;
   }
   html,body{height:100%}
@@ -149,8 +149,8 @@
               </div>
               <div id="ninebox-grid" class="grid grid-cols-4 gap-2"></div>
               <p class="mt-3 text-xs" style="color:var(--muted)">
-                PM: Prod. Alta ≥80; Media 70–&lt;80 · KV: Prod. Alta ≥28; Media 24–&lt;28 (equivalente diario).<br>
-                Calidad (ambos): Alta ≥90%; Media 75%–&lt;90%; Baja &lt;75%.
+                PM: Prod. Alta ≥80; Media 70–&lt;80.<br>
+                Calidad: Alta ≥90%; Media 75%–&lt;90%; Baja &lt;75%.
               </p>
               <div id="ninebox-missing" class="mt-4 text-sm"></div>
               <div id="ninebox-details" class="mt-4 hidden"></div>
@@ -224,13 +224,8 @@
 const SHEETS_WEB_APP = "https://script.google.com/macros/s/AKfycbxqTzxdY090fV2JWIFxiqAVnkre_dtUw1M09ZMv9mNKYz3GQW-d1ONSP_FIJTswZ9t2qA/exec";
 const GEMINI_PROXY_URL = "https://catalogo.ezequiel-galarza.workers.dev/?model=gemini-1.5-flash";
 
-// Después (PM opcional; KV usa productividad.csv)
+// PM only
 const FILES_PM = { productividad:'productividad.csv', calidad:'calidad.csv', base:'base.csv', lideres:'lideres.csv' };
-const FILES_KV = {
-  productividad:'productividad-kv.csv',          // <- así como está en el repo
-  calidad_crea:'calidad-creacion-kv.csv',
-  calidad_merge:'calidad-merge-kv.csv'
-};
 
 /* Paleta charts */
 const PALETTE = { c0:'#86eae9', c1:'#3edad8', c2:'#37c9ef', c3:'#8b5cf6', c4:'#2c92d5', c5:'#13538a', c6:'#f59e0b', c7:'#fb923c', c8:'#10b981', c9:'#f87171' };
@@ -269,37 +264,16 @@ function isoWeekNumber(date){
   return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
 }
 
-/* Equipo config */
+/* Equipo config (PM only) */
 const TEAM_CONFIG = {
-  'PM': { prodDaily: { low:70, high:80 }, flows: ['demanda','enhancement'] },
-  'KV': { prodDaily: { low:24, high:28 }, flows: ['outsiders','creacion','merge1','merge2','adhoc'], defaultLeader: 'Celeste Cignoli' },
-  'Matchers': { prodDaily: { low:70, high:80 }, flows: [] }
+  'PM': { prodDaily: { low:70, high:80 }, flows: ['demanda','enhancement','soporte'] }
 };
-
-/* KV: mapeo tarea_detalle → clave interna */
-function kvFlowKey(codeRaw){
-  const s = String(codeRaw || '').toUpperCase().replace(/[^A-Z0-9]+/g,' ');
-  if (/\bOUTSIDER/.test(s)) return 'outsiders';
-  if (/\bADHOC\b/.test(s) || /AD HOC/.test(s)) return 'adhoc';
-  if (/\bCREATION\b/.test(s) || /\bCREA(CION|CIONAMIENTO)?\b/.test(s)) return 'creacion';
-  if (/\bMERGE\b/.test(s)) {
-    if (/DA\b/.test(s) || /\b2\b/.test(s) || /\bSEGUNDA\b/.test(s)) return 'merge2';
-    return 'merge1';
-  }
-  // fallback: a veces viene el nombre del flujo solo
-  if (/\bKNOWN VALUE\b/.test(s)) return 'creacion';
-  return null;
-}
 
 function flowTitle(key){
   switch(key){
     case 'demanda': return 'Demanda';
     case 'enhancement': return 'Enhancement';
-    case 'outsiders': return 'Outsiders';
-    case 'creacion': return 'Creación';
-    case 'merge1': return 'Merge 1ª Revisión';
-    case 'merge2': return 'Merge 2ª Revisión';
-    case 'adhoc': return 'Tareas Adhoc';
+    case 'soporte': return 'Soporte';
     default: return key;
   }
 }
@@ -308,10 +282,10 @@ function flowTitle(key){
 function ghURL(file){
   const bust = `?v=${Date.now()}`;
   return [
-    file + bust,                 // mismo directorio que index.html
-    './' + file + bust,          // explícito relativo
-    '/' + file + bust,           // raíz del sitio
-    '/metricas/' + file + bust,  // subcarpeta (para cuando lo publiques ahí)
+    file + bust,
+    './' + file + bust,
+    '/' + file + bust,
+    '/metricas/' + file + bust,
     'https://raw.githubusercontent.com/catalogo-meli/metricas/main/' + file + bust
   ];
 }
@@ -367,7 +341,7 @@ function buildLeadersMap(lideresRows){
 }
 
 /**********************
- * CONSOLIDADO – PM
+ * CONSOLIDADO – PM (incluye Soporte)
  **********************/
 function buildPMRows(prod, cal, base, leadersMap){
   const P = prod.map(r=>({
@@ -376,6 +350,7 @@ function buildPMRows(prod, cal, base, leadersMap){
     user:  correoAUsuario(pick(r,['usuario','user','mail','email'])),
     dem:   Number(pick(r,['tareas de demanda','demanda']))||0,
     enh:   Number(pick(r,['tareas de enhancement','enhancement']))||0,
+    sop:   Number(pick(r,['soporte']))||0,
     total: Number(pick(r,['total tareas','total']))||0,
     idsW:  Number(pick(r,['ids trabaj']))||0
   })).filter(r=>r.fecha && r.week && r.user);
@@ -403,10 +378,16 @@ function buildPMRows(prod, cal, base, leadersMap){
       const ingreso = perf.ingreso, hoy=new Date();
       const finAnt = (ingreso && ingreso<=hoy)? hoy : ingreso || hoy;
       const antig = ingreso ? Math.max(0,(finAnt.getFullYear()-ingreso.getFullYear())*12+(finAnt.getMonth()-ingreso.getMonth())) : '';
-      weeks.set(key,{ week:r.week, mes:MONTHS_ES[m], mesIndex:m, user:r.user, lider:leadersMap.get(r.user)||'Sin líder', ciudad:perf.ciudad||'', antig, dias:new Set(), demand:0, enh:0, total:0, idsWork:0, idsCal:0, errCal:0 });
+      weeks.set(key,{
+        week:r.week, mes:MONTHS_ES[m], mesIndex:m, user:r.user, lider:leadersMap.get(r.user)||'Sin líder',
+        ciudad:perf.ciudad||'', antig,
+        dias:new Set(),
+        demand:0, enh:0, sop:0, total:0, idsWork:0,
+        idsCal:0, errCal:0
+      });
     }
     const o=weeks.get(key);
-    o.demand+=r.dem; o.enh+=r.enh; o.total+=r.total; o.idsWork+=r.idsW;
+    o.demand+=r.dem; o.enh+=r.enh; o.sop+=r.sop; o.total+=r.total; o.idsWork+=r.idsW;
     const dKey = `${r.fecha.getFullYear()}-${String(r.fecha.getMonth()+1).padStart(2,'0')}-${String(r.fecha.getDate()).padStart(2,'0')}`;
     o.dias.add(dKey);
   }
@@ -421,143 +402,16 @@ function buildPMRows(prod, cal, base, leadersMap){
   return Array.from(weeks.values()).sort((a,b)=>a.week-b.week).map(o=>{
     const prom = o.dias.size ? (o.total/o.dias.size) : '';
     const pEf  = o.idsCal>0 ? (1 - (o.errCal/o.idsCal)) : '';
-    return { equipo:'PM', flujo:null, week:o.week, mes:o.mes, mesIndex:o.mesIndex, q:Q_OF_MONTH_INDEX(o.mesIndex), usuario:o.user, 'líder':o.lider, ciudad:o.ciudad, antigüedad:o.antig, promedio_diario: prom, efectividad:pEf, tareas_demanda:o.demand, tareas_enhancement:o.enh, total_tareas:o.total, ids_trabajados:o.idsWork, correcciones_auditadas:o.idsCal, dias_activos:o.dias.size };
+    return {
+      equipo:'PM', flujo:null,
+      week:o.week, mes:o.mes, mesIndex:o.mesIndex, q:Q_OF_MONTH_INDEX(o.mesIndex),
+      usuario:o.user, 'líder':o.lider, ciudad:o.ciudad, antigüedad:o.antig,
+      promedio_diario: prom, efectividad:pEf,
+      tareas_demanda:o.demand, tareas_enhancement:o.enh, tareas_soporte:o.sop,
+      total_tareas:o.total, ids_trabajados:o.idsWork,
+      correcciones_auditadas:o.idsCal, dias_activos:o.dias.size
+    };
   });
-}
-
-/**********************
- * CONSOLIDADO – KV (productividad-kv + calidades)
- **********************/
-function normalizeWeekLabel(w){
-  if(w==null||w==='') return null;
-  if(typeof w==='number') return Number(w);
-  const s=String(w).trim();
-  const wMatch = s.match(/W\s*?(\d{1,2})/i); if(wMatch) return Number(wMatch[1]);
-  const nums = Array.from(s.matchAll(/(\d{1,2})/g)).map(m=>Number(m[1]));
-  const cand = nums.reverse().find(n=>n>=1 && n<=53);
-  return cand || null;
-}
-
-/* Calidad: agrega auditados/errores por (usuario, semana) usando esquema PM */
-function buildKVQualityMaps(qCreaRows, qMergeRows){
-  const map = new Map(); // key u|w -> {aud: n, err: e}
-  function add(u, w, isError){
-    if(!u||!w) return;
-    const k=`${u}|${w}`; const o=map.get(k)||{aud:0, err:0};
-    o.aud += 1; if(isError) o.err += 1; map.set(k,o);
-  }
-
-  // Creación: Week_Accionamiento, Usuario, Decision (correcta/incorrecta)
-  (qCreaRows||[]).forEach(r=>{
-    const week = normalizeWeekLabel(r.Week_Accionamiento || r['Week Accionamiento'] || r.Week || r.Semana);
-    const user = correoAUsuario(r.Usuario || r.User || r.Mail || r.Email);
-    const dec  = String(r.Decision||'').toLowerCase();
-    const isError = dec && !dec.includes('correcta'); // incorrecta => error
-    add(user, week, isError);
-  });
-
-  // Merge: acepto Decision o booleanos típicos
-  (qMergeRows||[]).forEach(r=>{
-    const week = normalizeWeekLabel(r.Week_Accionamiento || r['Week Accionamiento'] || r.Week || r.Semana);
-    const user = correoAUsuario(r.Usuario || r.User || r.Mail || r.Email);
-    let isError = false;
-    if(r.Decision!=null){
-      const dec = String(r.Decision).toLowerCase();
-      isError = dec && !dec.includes('correcta');
-    }else{
-      const val = String(r.Valor_Correcto_Audit_TL ?? r.Correcto ?? r.Resultado ?? '').toLowerCase();
-      if(val!==''){ isError = (val==='false' || val==='incorrecto' || val==='incorrecta' || val==='error'); }
-    }
-    add(user, week, isError);
-  });
-
-  return map; // {aud,err}
-}
-
-function buildKVRows(prodRows, qCreaRows, qMergeRows, leadersMap){
-  const quality = buildKVQualityMaps(qCreaRows, qMergeRows);
-
-  // Función auxiliar para detectar el flujo con múltiples variantes
-  function readFlow(r){
-    const raw = pick(r, [
-      'tarea_detalle','tarea detalle','detalle tarea','detalle',
-      'flujo','flow','task_detail','task detail','accion','accionamiento'
-    ]);
-    return kvFlowKey(raw);
-  }
-
-  // Lee fecha o semana (si no hay fecha)
-  function readWeek(r){
-    const fechaRaw = pick(r, ['fecha','date','día','dia','fecha accion','fecha acc','created','creation date']);
-    const semanaRaw = pick(r, ['week','semana','week_accionamiento','week accionamiento','w']);
-
-    let fecha = parseDateAny(fechaRaw);
-    if (fecha) return { week: isoWeekNumber(fecha), mesIndex: fecha.getMonth(), fecha };
-
-    const w = normalizeWeekLabel(semanaRaw);
-    if (w) return { week: w, mesIndex: null, fecha: null };
-
-    return { week: null, mesIndex: null, fecha: null };
-  }
-
-  // Lee usuario y cantidad de tareas con variantes
-  function readUser(r){
-    return correoAUsuario(pick(r, ['usuario','user','mail','email','operador','agent','owner']));
-  }
-  function readCount(r){
-    return Number(
-      pick(r, [
-        'tareas realizadas','tareas','cantidad','total','count','items','qty','quantity'
-      ])
-    ) || 1;
-  }
-
-  // Agrego productividad por (usuario, semana, flujo)
-  const agg = new Map(); // u|w|flow -> {usuario, week, mesIndex, dias:Set, tareas, flow}
-  (prodRows||[]).forEach(r=>{
-    const { week, mesIndex, fecha } = readWeek(r);
-    const usuario = readUser(r);
-    const flowKey = readFlow(r);
-    if(!usuario || !week || !flowKey) return;
-
-    const tareas = readCount(r);
-    const k = `${usuario}|${week}|${flowKey}`;
-    const o = agg.get(k) || {usuario, week, mesIndex: (mesIndex ?? (fecha? fecha.getMonth():0)), dias:new Set(), tareas:0, flow:flowKey};
-    o.tareas += tareas;
-    if (fecha) o.dias.add(fecha.toDateString());     // si no hay fecha, luego “relleno” días
-    agg.set(k,o);
-  });
-
-  const rows = [];
-
-    agg.forEach(o => {
-    const q = quality.get(`${o.usuario}|${o.week}`) || { aud: 0, err: 0 };
-    const dias = o.dias.size || 5;                 // si no hay fechas, asumimos 5 hábiles
-    const ef = q.aud > 0 ? (1 - (q.err / q.aud)) : '';
-
-    rows.push({
-      equipo: 'KV',
-      flujo: o.flow,
-      week: o.week,
-      mes: (o.mesIndex != null ? MONTHS_ES[o.mesIndex] : ''),
-      mesIndex: (o.mesIndex ?? 0),
-      q: (o.mesIndex != null ? Q_OF_MONTH_INDEX(o.mesIndex) : ''),
-      usuario: o.usuario,
-      'líder': leadersMap.get(o.usuario) || TEAM_CONFIG['KV'].defaultLeader,
-      ciudad: '',
-      antigüedad: '',
-      promedio_diario: (dias ? o.tareas / dias : 0),
-      efectividad: ef,
-      tareas_demanda: 0,
-      tareas_enhancement: 0,
-      total_tareas: o.tareas,
-      ids_trabajados: 0,
-      correcciones_auditadas: q.aud,
-      dias_activos: dias
-    });
-  });
-
-  return rows;
 }
 
 /**********************
@@ -594,7 +448,7 @@ function filteredOriginalDataExcept(exceptKeys){
   );
 }
 function flowsForSelectedEquipos(){
-  const eq = state.filtros.equipo; const teams = (eq.length===0) ? ['PM','KV'] : eq;
+  const teams = ['PM'];
   const set = new Set(); teams.forEach(t => (TEAM_CONFIG[t]?.flows||[]).forEach(f=>set.add(f))); return Array.from(set);
 }
 function computeFilterOptions(){
@@ -605,7 +459,7 @@ function computeFilterOptions(){
   const forLider  = filteredOriginalDataExcept('lider');
   const forUser   = filteredOriginalDataExcept('usuario');
   return {
-    equipo: ['PM','KV','Matchers'],
+    equipo: ['PM'],
     q: ['Q1','Q2','Q3','Q4'].filter(q => forQ.some(r=>r.q===q)),
     mes: MONTHS_ES.filter(m => forMes.some(r=>r.mes===m)),
     semana: uniqueSortedNum(forSemana.map(r=>r.week)).map(String),
@@ -618,7 +472,11 @@ function computeFilterOptions(){
 function pillValueText(key){
   const sel = state.filtros[key];
   const pluralTodos = (key==='semana' || key==='ubic') ? 'Todas' : 'Todos';
-  if(key==='flujo'){ if(sel.length===0) return 'Todos'; if(sel.length===1) return flowTitle(sel[0]); return `${sel.length} seleccionados`; }
+  if(key==='flujo'){
+    if(sel.length===0) return 'Todos';
+    if(sel.length===1) return flowTitle(sel[0]);
+    return `${sel.length} seleccionados`;
+  }
   if(sel.length===0) return pluralTodos;
   if(sel.length===1) return sel[0];
   return `${sel.length} seleccionados`;
@@ -638,7 +496,7 @@ function renderFiltersBar(){
     function labelize(v){ return key==='flujo'? flowTitle(v) : v; }
     function buildList(){
       list.innerHTML='';
-      const values = opts[key].filter(v => String(labelize(v)).toLowerCase().includes(search.value.trim().toLowerCase()));
+      const values = (opts[key]||[]).filter(v => String(labelize(v)).toLowerCase().includes(search.value.trim().toLowerCase()));
       values.forEach(v=>{
         const id = `${key}-${v}`.replace(/\s+/g,'_'); const selected = state.filtros[key].includes(v);
         const item = document.createElement('label'); item.className='item';
@@ -726,10 +584,10 @@ function tareasByFlows(row, flowsSet){
     let sum=0;
     if(f.has('demanda')) sum += (row.tareas_demanda||0);
     if(f.has('enhancement')) sum += (row.tareas_enhancement||0);
-    if(f.has('demanda') && f.has('enhancement') && sum===0) sum = row.total_tareas||0;
+    if(f.has('soporte')) sum += (row.tareas_soporte||0);
+    if(sum===0) sum = row.total_tareas||0;
     return sum;
   }
-  if(row.equipo==='KV'){ return f.has(row.flujo) ? (row.total_tareas||0) : 0; }
   return row.total_tareas||0;
 }
 function promedioDiario(rows){
@@ -828,8 +686,8 @@ function updateDetailKPIs(){
 }
 
 /* ---------- Nine-box ---------- */
-function prodBandByTeam(value, team){
-  const cfg = TEAM_CONFIG[team] || TEAM_CONFIG['PM'];
+function prodBandByTeam(value){
+  const cfg = TEAM_CONFIG['PM'];
   const { low, high } = cfg.prodDaily;
   if(value>=high) return 'alta';
   if(value>=low)  return 'media';
@@ -850,8 +708,7 @@ function renderNineBox(){
   const users = Array.from(map.entries()).map(([u,o])=>{
     const prom = o.den? o.num/o.den : null;
     const eff  = o.effN? o.effSum/o.effN : null;
-    const team = o.teams.values().next().value || 'PM';
-    return {u, prom, eff, team};
+    return {u, prom, eff, team:'PM'};
   });
 
   const calBand  = e => (e>=0.90 ? 'alta' : e>=0.75 ? 'media' : 'baja');
@@ -863,7 +720,7 @@ function renderNineBox(){
   users.forEach(x=>{
     if(x.prom===null || x.eff===null){ missing.push(x); }
     else{
-      const key = `${prodBandByTeam(x.prom,x.team)}-${calBand(x.eff)}`;
+      const key = `${prodBandByTeam(x.prom)}-${calBand(x.eff)}`;
       buckets[key].push(x.u);
       details[key].push({usuario:x.u, prom:x.prom, eff:x.eff});
     }
@@ -972,11 +829,7 @@ function renderDemandPie(){
   const colorsVars = {
     demanda: css('--pie1')||PALETTE.c0,
     enhancement: css('--pie2')||PALETTE.c4,
-    creacion: css('--pie3')||PALETTE.c3,
-    merge1: css('--pie4')||PALETTE.c6,
-    merge2: css('--pie5')||PALETTE.c7,
-    outsiders: css('--pie6')||PALETTE.c8,
-    adhoc: css('--pie7')||PALETTE.c9
+    soporte: css('--pie8')||'#22c55e'
   };
 
   const labels=[]; const values=[]; const colors=[];
@@ -984,9 +837,7 @@ function renderDemandPie(){
 
   if(flows.has('demanda'))     push('demanda',     currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0));
   if(flows.has('enhancement')) push('enhancement', currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0));
-
-  const sumKV = (k)=> currentData.filter(r=>r.equipo==='KV' && r.flujo===k).reduce((s,r)=> s + (r.total_tareas||0), 0);
-  ['outsiders','creacion','merge1','merge2','adhoc'].forEach(k=>{ if(flows.has(k)) push(k, sumKV(k)); });
+  if(flows.has('soporte'))     push('soporte',     currentData.reduce((s,r)=> s + (r.tareas_soporte||0), 0));
 
   const tot = values.reduce((a,b)=>a+b,0);
 
@@ -1235,8 +1086,7 @@ function buildSectionDataForExport(section, flows){
     const add=(key, total)=>{ if(flows.includes(key)) rows.push({ Flujo: flowTitle(key), Total: total }); };
     add('demanda',     currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0));
     add('enhancement', currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0));
-    const sumKV = (k)=> currentData.filter(r=>r.equipo==='KV' && r.flujo===k).reduce((s,r)=> s + (r.total_tareas||0), 0);
-    ['outsiders','creacion','merge1','merge2','adhoc'].forEach(k=> add(k, sumKV(k)));
+    add('soporte',     currentData.reduce((s,r)=> s + (r.tareas_soporte||0), 0));
     return rows;
   }
   if(section==='detalle'){
@@ -1253,7 +1103,7 @@ function buildSectionDataForExport(section, flows){
 function filtersSummary() {
   const f = state.filtros;
   const flows = (f.flujo.length===0) ? 'Todos' : f.flujo.map(flowTitle).join(' + ');
-  return { Equipo: f.equipo.join(' | ') || '', Trimestre: f.q.join(' | ') || '', Mes: f.mes.join(' | ') || '', Semana: f.semana.join(' | ') || '', Ubicacion: f.ubic.join(' | ') || '', Lider: f.lider.join(' | ') || '', Usuario: f.usuario.join(' | ') || '', Flujo: flows };
+  return { Equipo: (f.equipo.join(' | ') || 'PM'), Trimestre: f.q.join(' | ') || '', Mes: f.mes.join(' | ') || '', Semana: f.semana.join(' | ') || '', Ubicacion: f.ubic.join(' | ') || '', Lider: f.lider.join(' | ') || '', Usuario: f.usuario.join(' | ') || '', Flujo: flows };
 }
 function buildNineboxPrompt(){
   const filtros_activos = JSON.stringify(filtersSummary());
@@ -1345,38 +1195,24 @@ function setupGeminiFeatures(){
  **********************/
 document.addEventListener('DOMContentLoaded', async ()=>{
   try{
-    // Helper: intenta; si falla, devuelve string vacío
-    const tryFetch = async (file) => {
-      try { return await fetchCSVFile(file); } catch { return ''; }
-    };
-
-    // Traigo todo (algunos pueden no existir)
-    const [tProdPM,tCalPM,tBase,tLids,tKvProd,tKvQCrea,tKvQMerge] = await Promise.all([
-      tryFetch(FILES_PM.productividad),
-      tryFetch(FILES_PM.calidad),
-      tryFetch(FILES_PM.base),
-      tryFetch(FILES_PM.lideres),
-      fetchCSVFile(FILES_KV.productividad),   // este sí es requerido
-      tryFetch(FILES_KV.calidad_crea),
-      tryFetch(FILES_KV.calidad_merge)
+    const [tProdPM,tCalPM,tBase,tLids] = await Promise.all([
+      fetchCSVFile(FILES_PM.productividad),
+      fetchCSVFile(FILES_PM.calidad),
+      fetchCSVFile(FILES_PM.base),
+      fetchCSVFile(FILES_PM.lideres)
     ]);
 
-    const prodPM = tProdPM ? parseCSV(tProdPM) : [];
-    const calPM  = tCalPM  ? parseCSV(tCalPM)  : [];
-    const base   = tBase   ? parseCSV(tBase)   : [];
-    const lids   = tLids   ? parseCSV(tLids)   : [];
+    const prodPM = parseCSV(tProdPM);
+    const calPM  = parseCSV(tCalPM);
+    const base   = parseCSV(tBase);
+    const lids   = parseCSV(tLids);
     const leadersMap = buildLeadersMap(lids);
-
-    const kvProd   = parseCSV(tKvProd);
-    const kvQCrea  = tKvQCrea  ? parseCSV(tKvQCrea)  : [];
-    const kvQMerge = tKvQMerge ? parseCSV(tKvQMerge) : [];
 
     const pmRows = (prodPM.length && calPM.length && base.length)
       ? buildPMRows(prodPM, calPM, base, leadersMap)
       : [];
-    const kvRows = buildKVRows(kvProd, kvQCrea, kvQMerge, leadersMap);
 
-    originalData = [...pmRows, ...kvRows];
+    originalData = [...pmRows];
 
     renderFiltersBar();
     setupNavigation();
@@ -1389,15 +1225,6 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     document.body.innerHTML = `<div class="p-8 text-center text-red-600" style="background:#fee2e2">${err.message}</div>`;
   }
 });
-
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
