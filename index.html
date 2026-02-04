@@ -30,13 +30,13 @@
   :root{
     --bg:#f1f5f9; --panel:#fff; --panel-2:#f8fafc; --text:#0f172a; --muted:#64748b; --border:#e2e8f0; --shadow:0 8px 24px rgba(15,23,42,.08);
     --sidebar:#6b7280; --accent:#0ea5e9; --success:#16a34a; --warn:#f59e0b;
-    --pie1:#86eae9; --pie2:#2c92d5; --pie8:#22c55e;
+    --pie1:#86eae9; --pie2:#2c92d5; --pie3:#37c9ef; --pie4:#8b5cf6; --pie8:#22c55e;
     --nine-green:#dcfce7; --nine-yellow:#fef9c3; --nine-orange:#ffedd5; --nine-red:#fee2e2;
   }
   [data-theme="dark"]{
     --bg:#0b1220; --panel:#0f1b2d; --panel-2:#0c1626; --text:#e2e8f0; --muted:#a3b2c7; --border:#1e293b; --shadow:0 10px 28px rgba(0,0,0,.45);
     --sidebar:#3b4756; --accent:#22c3ee;
-    --pie1:#6ee7e7; --pie2:#1d8bd9; --pie8:#22c55e;
+    --pie1:#6ee7e7; --pie2:#1d8bd9; --pie3:#37c9ef; --pie4:#8b5cf6; --pie8:#22c55e;
     --nine-green:#0f3c36; --nine-yellow:#3b3416; --nine-orange:#422006; --nine-red:#3f1d1d;
   }
   html,body{height:100%}
@@ -266,19 +266,19 @@ function isoWeekNumber(date){
 
 /* Equipo config (PM only) */
 const TEAM_CONFIG = {
-  'PM': { prodDaily: { low:70, high:80 }, flows: ['demanda','enhancement','soporte'] }
+  'PM': { prodDaily: { low:70, high:80 }, flows: ['demanda','enhanced_content','enhancement','fallos','soporte'] }
 };
 
 function flowTitle(key){
   switch(key){
     case 'demanda': return 'Demanda';
+    case 'enhanced_content': return 'Enhanced Content';
     case 'enhancement': return 'Enhancement';
+    case 'fallos': return 'Fallos';
     case 'soporte': return 'Soporte';
     default: return key;
   }
-}
-
-/* IO helpers */
+}/* IO helpers */
 function ghURL(file){
   const bust = `?v=${Date.now()}`;
   return [
@@ -349,8 +349,10 @@ function buildPMRows(prod, cal, base, leadersMap){
     week:  Number(pick(r,['week'])),
     user:  correoAUsuario(pick(r,['usuario','user','mail','email'])),
     dem:   Number(pick(r,['tareas de demanda','demanda']))||0,
+    ec:    Number(pick(r,['tareas de enhanced content','enhanced content','enhanced_content','enhancedcontent']))||0,
     enh:   Number(pick(r,['tareas de enhancement','enhancement']))||0,
-    sop:   Number(pick(r,['soporte']))||0,
+    fal:   Number(pick(r,['tareas de fallos','fallos','fallo']))||0,
+    sop:   Number(pick(r,['tareas de soporte','soporte']))||0,
     total: Number(pick(r,['total tareas','total']))||0,
     idsW:  Number(pick(r,['ids trabaj']))||0
   })).filter(r=>r.fecha && r.week && r.user);
@@ -382,12 +384,12 @@ function buildPMRows(prod, cal, base, leadersMap){
         week:r.week, mes:MONTHS_ES[m], mesIndex:m, user:r.user, lider:leadersMap.get(r.user)||'Sin líder',
         ciudad:perf.ciudad||'', antig,
         dias:new Set(),
-        demand:0, enh:0, sop:0, total:0, idsWork:0,
+        demand:0, ec:0, enh:0, fal:0, sop:0, total:0, idsWork:0,
         idsCal:0, errCal:0
       });
     }
     const o=weeks.get(key);
-    o.demand+=r.dem; o.enh+=r.enh; o.sop+=r.sop; o.total+=r.total; o.idsWork+=r.idsW;
+    o.demand+=r.dem; o.ec+=r.ec; o.enh+=r.enh; o.fal+=r.fal; o.sop+=r.sop; o.total+=r.total; o.idsWork+=r.idsW;
     const dKey = `${r.fecha.getFullYear()}-${String(r.fecha.getMonth()+1).padStart(2,'0')}-${String(r.fecha.getDate()).padStart(2,'0')}`;
     o.dias.add(dKey);
   }
@@ -407,7 +409,7 @@ function buildPMRows(prod, cal, base, leadersMap){
       week:o.week, mes:o.mes, mesIndex:o.mesIndex, q:Q_OF_MONTH_INDEX(o.mesIndex),
       usuario:o.user, 'líder':o.lider, ciudad:o.ciudad, antigüedad:o.antig,
       promedio_diario: prom, efectividad:pEf,
-      tareas_demanda:o.demand, tareas_enhancement:o.enh, tareas_soporte:o.sop,
+      tareas_demanda:o.demand, tareas_enhanced_content:o.ec, tareas_enhancement:o.enh, tareas_fallos:o.fal, tareas_soporte:o.sop,
       total_tareas:o.total, ids_trabajados:o.idsWork,
       correcciones_auditadas:o.idsCal, dias_activos:o.dias.size
     };
@@ -583,7 +585,9 @@ function tareasByFlows(row, flowsSet){
   if(row.equipo==='PM'){
     let sum=0;
     if(f.has('demanda')) sum += (row.tareas_demanda||0);
+    if(f.has('enhanced_content')) sum += (row.tareas_enhanced_content||0);
     if(f.has('enhancement')) sum += (row.tareas_enhancement||0);
+    if(f.has('fallos')) sum += (row.tareas_fallos||0);
     if(f.has('soporte')) sum += (row.tareas_soporte||0);
     if(sum===0) sum = row.total_tareas||0;
     return sum;
@@ -828,16 +832,20 @@ function renderDemandPie(){
   const css = (v)=> getComputedStyle(document.body).getPropertyValue(v).trim();
   const colorsVars = {
     demanda: css('--pie1')||PALETTE.c0,
+    enhanced_content: css('--pie3')||PALETTE.c2,
     enhancement: css('--pie2')||PALETTE.c4,
+    fallos: css('--pie4')||PALETTE.c3,
     soporte: css('--pie8')||'#22c55e'
   };
 
   const labels=[]; const values=[]; const colors=[];
   function push(flowKey, value){ labels.push(flowTitle(flowKey)); values.push(value); colors.push(colorsVars[flowKey]); }
 
-  if(flows.has('demanda'))     push('demanda',     currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0));
-  if(flows.has('enhancement')) push('enhancement', currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0));
-  if(flows.has('soporte'))     push('soporte',     currentData.reduce((s,r)=> s + (r.tareas_soporte||0), 0));
+  if(flows.has('demanda'))           push('demanda',           currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0));
+  if(flows.has('enhanced_content')) push('enhanced_content', currentData.reduce((s,r)=> s + (r.tareas_enhanced_content||0), 0));
+  if(flows.has('enhancement'))       push('enhancement',       currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0));
+  if(flows.has('fallos'))            push('fallos',            currentData.reduce((s,r)=> s + (r.tareas_fallos||0), 0));
+  if(flows.has('soporte'))           push('soporte',           currentData.reduce((s,r)=> s + (r.tareas_soporte||0), 0));
 
   const tot = values.reduce((a,b)=>a+b,0);
 
@@ -1084,9 +1092,11 @@ function buildSectionDataForExport(section, flows){
   if(section==='resumen'){
     const rows=[];
     const add=(key, total)=>{ if(flows.includes(key)) rows.push({ Flujo: flowTitle(key), Total: total }); };
-    add('demanda',     currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0));
-    add('enhancement', currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0));
-    add('soporte',     currentData.reduce((s,r)=> s + (r.tareas_soporte||0), 0));
+    add('demanda',           currentData.reduce((s,r)=> s + (r.tareas_demanda||0), 0));
+    add('enhanced_content', currentData.reduce((s,r)=> s + (r.tareas_enhanced_content||0), 0));
+    add('enhancement',       currentData.reduce((s,r)=> s + (r.tareas_enhancement||0), 0));
+    add('fallos',            currentData.reduce((s,r)=> s + (r.tareas_fallos||0), 0));
+    add('soporte',           currentData.reduce((s,r)=> s + (r.tareas_soporte||0), 0));
     return rows;
   }
   if(section==='detalle'){
